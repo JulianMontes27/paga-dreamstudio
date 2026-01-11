@@ -1,0 +1,170 @@
+"use client";
+
+import { useCallback, useState } from "react";
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+  MouseSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  pointerWithin,
+} from "@dnd-kit/core";
+import { useFloorPlan, TableData } from "./floor-plan-context";
+import { FloorPlanCanvasInner } from "./floor-plan-canvas";
+import { UnplacedTablesPanel } from "./unplaced-tables-panel";
+import { TableShape } from "./table-shape";
+
+interface FloorPlanEditorProps {
+  className?: string;
+}
+
+/**
+ * FloorPlanEditor - Wraps the canvas and unplaced tables panel in a shared DndContext
+ * This allows dragging tables from the unplaced panel onto the canvas
+ */
+export function FloorPlanEditor({ className }: FloorPlanEditorProps) {
+  const {
+    currentFloor,
+    selectedTableId,
+    updateTablePosition,
+    updateTableFloor,
+    removeTableFromFloor,
+    snapToGrid,
+    gridSize,
+  } = useFloorPlan();
+
+  const [draggedTable, setDraggedTable] = useState<TableData | null>(null);
+
+  const mouseSensor = useSensor(MouseSensor, {
+    activationConstraint: {
+      distance: 5,
+    },
+  });
+
+  const touchSensor = useSensor(TouchSensor, {
+    activationConstraint: {
+      delay: 100,
+      tolerance: 5,
+    },
+  });
+
+  const sensors = useSensors(mouseSensor, touchSensor);
+
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    const { active } = event;
+    const table = active.data.current?.table as TableData | undefined;
+    if (table) {
+      setDraggedTable(table);
+    }
+  }, []);
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, delta, over } = event;
+      setDraggedTable(null);
+
+      const tableData = active.data.current?.table as TableData | undefined;
+      if (!tableData) return;
+
+      // Check if dropped on the unplaced panel (remove from floor)
+      if (over?.id === "unplaced-panel") {
+        if (tableData.floorId !== null) {
+          removeTableFromFloor(tableData.id);
+        }
+        return;
+      }
+
+      // Check if dropped on the canvas
+      if (over?.id === "floor-canvas") {
+        // If it's an unplaced table, assign it to the current floor
+        if (tableData.floorId === null && currentFloor) {
+          // Set initial position for newly placed table
+          let newX = 50;
+          let newY = 50;
+
+          if (snapToGrid) {
+            newX = Math.round(newX / gridSize) * gridSize;
+            newY = Math.round(newY / gridSize) * gridSize;
+          }
+
+          updateTableFloor(tableData.id, currentFloor.id);
+          updateTablePosition(tableData.id, newX, newY);
+          return;
+        }
+      }
+
+      // For tables already on the floor, update position based on delta
+      if (tableData.floorId !== null && tableData.xPosition !== null && tableData.yPosition !== null) {
+        let newX = tableData.xPosition + delta.x;
+        let newY = tableData.yPosition + delta.y;
+
+        // Snap to grid if enabled
+        if (snapToGrid) {
+          newX = Math.round(newX / gridSize) * gridSize;
+          newY = Math.round(newY / gridSize) * gridSize;
+        }
+
+        // Ensure within canvas bounds
+        const canvasWidth = currentFloor?.canvasWidth ?? 800;
+        const canvasHeight = currentFloor?.canvasHeight ?? 600;
+        const tableWidth = tableData.width ?? 80;
+        const tableHeight = tableData.height ?? 80;
+
+        newX = Math.max(0, Math.min(newX, canvasWidth - tableWidth));
+        newY = Math.max(0, Math.min(newY, canvasHeight - tableHeight));
+
+        updateTablePosition(tableData.id, newX, newY);
+      }
+    },
+    [currentFloor, snapToGrid, gridSize, updateTablePosition, updateTableFloor, removeTableFromFloor]
+  );
+
+  return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={pointerWithin}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+    >
+      <div className="flex gap-4">
+        {/* Canvas */}
+        <div className="flex-1">
+          <FloorPlanCanvasInner className={className} />
+        </div>
+
+        {/* Unplaced tables sidebar - desktop */}
+        <UnplacedTablesPanel className="hidden lg:flex" />
+      </div>
+
+      {/* Mobile unplaced tables */}
+      <div className="lg:hidden mt-4">
+        <UnplacedTablesPanel />
+      </div>
+
+      {/* Drag overlay */}
+      <DragOverlay>
+        {draggedTable && (
+          <TableShape
+            shape={
+              (draggedTable.shape as "rectangular" | "circular" | "oval" | "bar") ||
+              "rectangular"
+            }
+            width={draggedTable.width ?? 80}
+            height={draggedTable.height ?? 80}
+            status={
+              (draggedTable.status as "available" | "occupied" | "reserved" | "cleaning") ||
+              "available"
+            }
+            tableNumber={draggedTable.tableNumber}
+            capacity={draggedTable.capacity}
+            isSelected={draggedTable.id === selectedTableId}
+            className="shadow-lg opacity-80"
+          />
+        )}
+      </DragOverlay>
+    </DndContext>
+  );
+}
