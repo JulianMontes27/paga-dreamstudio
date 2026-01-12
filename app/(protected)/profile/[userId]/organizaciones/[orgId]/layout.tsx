@@ -1,77 +1,44 @@
-import RestaurantTabs from "@/components/restaurant-tabs";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
-import { db } from "@/db";
-import { member, organization } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
-import Link from "next/link";
+import React, { ReactNode } from "react";
+import { AdminSidebar } from "@/components/admin-sidebar";
+import { AdminLayoutWrapper } from "@/components/admin-layout-wrapper";
+import { Metadata } from "next";
 
-export default async function RestaurantLayout({
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: "Administrador de Eventos",
+  };
+}
+
+interface AdministradorLayoutProps {
+  children: ReactNode;
+  params: Promise<{
+    userId: string;
+    orgId: string;
+  }>;
+}
+
+const AdministradorLayout = async ({
   children,
   params,
-}: {
-  children: React.ReactNode;
-  params: Promise<{ userId: string; orgId: string }>;
-}) {
+}: AdministradorLayoutProps) => {
   const { userId, orgId } = await params;
 
-  // Get session
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session?.user) {
-    redirect("/sign-in");
-  }
-
-  // Efficiently fetch member role in a single query
-  // This joins member with organization to verify membership and get role
-  const memberData = await db
-    .select({
-      memberId: member.id,
-      role: member.role,
-      organizationId: organization.id,
-      organizationName: organization.name,
-    })
-    .from(member)
-    .innerJoin(organization, eq(member.organizationId, organization.id))
-    .where(
-      and(
-        eq(member.userId, session.user.id),
-        eq(organization.slug, orgId) // Using slug from URL
-      )
-    )
-    .limit(1);
-
-  // Check if user is a member
-  if (!memberData || memberData.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-4">
-        <h1 className="text-2xl font-bold mb-4">Acceso Denegado</h1>
-        <p className="text-muted-foreground mb-6">
-          No eres parte de esta organización.
-        </p>
-        <Link
-          href={`/${userId}/organizaciones`}
-          className="text-primary hover:underline"
-        >
-          Volver a organizaciones
-        </Link>
-      </div>
-    );
-  }
-
-  const userMember = memberData[0];
-
   return (
-    <div>
-      {/* Restaurant Navigation Tabs */}
-      <RestaurantTabs
-        role={userMember.role as "waiter" | "administrator" | "owner"}
-      />
-      {/* Page Content */}
-      <div className="mt-4 sm:mt-6 px-4">{children}</div>
-    </div>
+    <AdminLayoutWrapper>
+      <div className="min-h-screen bg-background">
+        {/* Sidebar */}
+        <AdminSidebar
+          userId={userId}
+          orgId={orgId} // First render organization_id
+        />
+
+        {/* Main Content - with left margin to accommodate fixed sidebar */}
+        <main className="lg:ml-64 min-h-screen pt-4 px-4 sm:pt-6 sm:px-6 lg:pt-8 lg:px-8">
+          {children}
+        </main>
+      </div>
+    </AdminLayoutWrapper>
   );
-}
+};
+
+export default AdministradorLayout;

@@ -9,7 +9,7 @@ import {
   foreignKey,
   decimal,
   integer,
-  index,
+  // index,
   pgEnum,
 } from "drizzle-orm/pg-core";
 import { sql, type InferSelectModel, type InferInsertModel } from "drizzle-orm";

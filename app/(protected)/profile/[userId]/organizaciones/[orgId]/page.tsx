@@ -6,5 +6,5 @@ export default async function OverviewPage({
   params: Promise<{ userId: string; orgId: string }>;
 }) {
   const { userId, orgId } = await params;
-  redirect(`/$}/${userId}/organization/${orgId}/tables`);
+  redirect(`/profile/${userId}/organizaciones/${orgId}/mesas`);
 }

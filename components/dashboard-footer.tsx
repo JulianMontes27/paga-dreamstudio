@@ -31,30 +31,6 @@ export function DashboardFooter() {
               >
                 Home
               </Link>
-              <Link
-                href="/docs"
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Docs
-              </Link>
-              <Link
-                href="/guides"
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Guides
-              </Link>
-              <Link
-                href="/help"
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Help
-              </Link>
-              <Link
-                href="/contact"
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Contact
-              </Link>
             </nav>
 
             {/* Theme Selector */}

@@ -42,7 +42,7 @@ export function LandingHeader() {
                 Pricing
               </Link>
               <Link
-                href="/dashboard"
+                href="/profile"
                 className="bg-white text-black hover:bg-gray-200 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
               >
                 Dashboard
@@ -86,7 +86,7 @@ export function LandingHeader() {
                   </Link>
                   <div className="border-t border-white/10 pt-6 w-full max-w-xs space-y-4">
                     <Link
-                      href="/dashboard"
+                      href="/profile"
                       onClick={() => setIsOpen(false)}
                       className="block bg-white text-black hover:bg-gray-200 px-6 py-3 rounded-lg text-center font-medium transition-colors duration-200"
                     >

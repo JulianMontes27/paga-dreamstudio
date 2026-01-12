@@ -47,7 +47,7 @@ export default async function OrganizacionesPage({
           {organizations.map((org) => (
             <Link
               key={org.id}
-              href={`/profile/${userId}/organizaciones/${org.id}/administrador`}
+              href={`/profile/${userId}/organizaciones/${org.id}`}
               className="block group"
             >
               <div className="flex items-center gap-4 p-4 rounded-xl border border-gray-200 bg-gray-50 dark:border-[#2a2a2a] dark:bg-[#1a1a1a] hover:border-gray-300 hover:bg-gray-100 dark:hover:border-[#3a3a3a] dark:hover:bg-[#202020] transition-all cursor-pointer">

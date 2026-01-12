@@ -1,5 +1,3 @@
-"use client";
-
 import { ReactNode } from "react";
 import ProfileTabs from "@/components/profile_layout_tabs_switch";
 

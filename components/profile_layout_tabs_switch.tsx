@@ -3,15 +3,13 @@
 import { usePathname, useRouter } from "next/navigation";
 import { User, Building2 } from "lucide-react";
 import { useEffect, useRef } from "react";
+import { authClient } from "@/lib/auth-client";
 
 const ProfileTabs = () => {
   const pathname = usePathname();
   const router = useRouter();
+  const { data: session } = authClient.useSession();
   const navRef = useRef<HTMLDivElement>(null);
-
-  // Extract userId from pathname: /profile/[userId]/[tab]
-  const pathSegments = pathname.split("/").filter(Boolean);
-  const userId = pathSegments[1]; // Gets userId from /profile/[userId]/...
 
   // Fix for Safari's dynamic viewport
   useEffect(() => {
@@ -63,9 +61,9 @@ const ProfileTabs = () => {
 
   const handleTabChange = (value: string) => {
     if (value === "general") {
-      router.push(`/profile/${userId}`);
+      router.push(`/profile`);
     } else {
-      router.push(`/profile/${userId}/${value}`);
+      router.push(`/profile/${session?.user.id}/${value}`);
     }
   };
 
@@ -73,6 +71,11 @@ const ProfileTabs = () => {
     { value: "general", icon: User, label: "General" },
     { value: "organizaciones", icon: Building2, label: "Organizaciones" },
   ];
+
+  // Don't show ProfileTabs on organization admin routes (they have their own sidebar)
+  if (pathname.includes("/organizaciones/")) {
+    return null;
+  }
 
   return (
     <>
