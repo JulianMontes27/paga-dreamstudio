@@ -1,15 +1,17 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
-import { User, Ticket, Building2 } from "lucide-react";
+import { User, Building2 } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 const ProfileTabs = () => {
   const pathname = usePathname();
   const router = useRouter();
-  const { data: session } = authClient.useSession();
   const navRef = useRef<HTMLDivElement>(null);
+
+  // Extract userId from pathname: /profile/[userId]/[tab]
+  const pathSegments = pathname.split("/").filter(Boolean);
+  const userId = pathSegments[1]; // Gets userId from /profile/[userId]/...
 
   // Fix for Safari's dynamic viewport
   useEffect(() => {
@@ -50,9 +52,6 @@ const ProfileTabs = () => {
     };
   }, []);
 
-  // Hide tabs if in administrador section
-  const isAdministrador = pathname.includes("/administrador");
-
   // Determine current tab from pathname
   const getCurrentTab = () => {
     if (pathname.includes("/organizaciones")) return "organizaciones";
@@ -63,18 +62,12 @@ const ProfileTabs = () => {
   const currentTab = getCurrentTab();
 
   const handleTabChange = (value: string) => {
-    if (!session?.user?.id) return;
-
     if (value === "general") {
-      router.push("/profile");
+      router.push(`/${userId}`);
     } else {
-      router.push(`/profile/${session.user.id}/${value}`);
+      router.push(`/${userId}/${value}`);
     }
   };
-
-  if (!session?.user || isAdministrador) {
-    return null;
-  }
 
   const tabs = [
     { value: "general", icon: User, label: "General" },

@@ -3,12 +3,6 @@ import { z } from "zod";
 import { db } from "@/db";
 import { table, organization } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
-import {
-  generateQRCode,
-  generateCheckoutUrl,
-  generateQRCodeId,
-  generateExpirationDate,
-} from "@/lib/qr-code";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 
@@ -16,7 +10,7 @@ const createTableSchema = z.object({
   tableNumber: z.string().min(1, "Table number is required"),
   capacity: z.number().min(1, "Capacity must be at least 1"),
   section: z.string().optional(),
-  generateQr: z.boolean().default(true),
+  isNFCEnabled: z.boolean().default(true),
   organizationId: z.string().min(1, "Organization ID is required"),
 });
 
@@ -40,9 +34,9 @@ export async function POST(request: NextRequest) {
     // Verify user has permission to create tables in this organization
     // TODO: Add proper permission check here based on your auth system
 
-    // Get organization details for QR code generation
+    // Verify organization exists
     const org = await db
-      .select({ slug: organization.slug })
+      .select({ id: organization.id })
       .from(organization)
       .where(eq(organization.id, validatedData.organizationId))
       .limit(1);
@@ -53,8 +47,6 @@ export async function POST(request: NextRequest) {
         { status: 404 }
       );
     }
-
-    const organizationSlug = org[0].slug || validatedData.organizationId;
 
     // Check if table number already exists in this organization
     const existingTable = await db
@@ -87,45 +79,16 @@ export async function POST(request: NextRequest) {
         tableNumber: validatedData.tableNumber,
         capacity: validatedData.capacity,
         section: validatedData.section || null,
-        isQrEnabled: validatedData.generateQr,
+        isNFCEnabled: validatedData.isNFCEnabled,
+        nfcScanCount: 0,
         status: "available",
       })
       .returning();
-
-    let qrCodeData = null;
-
-    // Generate QR code if requested
-    if (validatedData.generateQr) {
-      const qrCodeString = generateQRCode(
-        organizationSlug,
-        validatedData.tableNumber
-      );
-      const checkoutUrl = generateCheckoutUrl(BASE_URL, qrCodeString);
-      const qrCodeId = generateQRCodeId();
-      const expiresAt = generateExpirationDate(365); // 1 year expiration
-
-      const newQrCode = await db
-        .insert(qrCode)
-        .values({
-          id: qrCodeId,
-          organizationId: validatedData.organizationId,
-          tableId: tableId,
-          code: qrCodeString,
-          checkoutUrl: checkoutUrl,
-          isActive: true,
-          scanCount: 0,
-          expiresAt: expiresAt,
-        })
-        .returning();
-
-      qrCodeData = newQrCode[0];
-    }
 
     return NextResponse.json(
       {
         success: true,
         table: newTable[0],
-        qrCode: qrCodeData,
       },
       { status: 201 }
     );
@@ -168,44 +131,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get all tables for the organization with their QR codes
+    // Get all tables for the organization
     const tables = await db
-      .select({
-        table: table,
-        qrCode: qrCode,
-      })
-      .from(restaurantTable)
-      .leftJoin(qrCode, eq(qrCode.tableId, restaurantTable.id))
-      .where(eq(restaurantTable.organizationId, organizationId));
-
-    // Group the results
-    const tablesWithQrCodes = tables.reduce(
-      (acc, row) => {
-        const existingTable = acc.find((t) => t.id === row.table.id);
-
-        if (existingTable) {
-          if (row.qrCode) {
-            existingTable.qrCode = row.qrCode;
-          }
-        } else {
-          acc.push({
-            ...row.table,
-            qrCode: row.qrCode,
-          });
-        }
-
-        return acc;
-      },
-      [] as Array<
-        typeof restaurantTable.$inferSelect & {
-          qrCode: typeof qrCode.$inferSelect | null;
-        }
-      >
-    );
+      .select()
+      .from(table)
+      .where(eq(table.organizationId, organizationId));
 
     return NextResponse.json({
       success: true,
-      tables: tablesWithQrCodes,
+      tables: tables,
     });
   } catch (error) {
     console.error("Error fetching tables:", error);

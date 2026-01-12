@@ -48,7 +48,8 @@ interface Order {
 
 interface OrdersViewProps {
   orders: Order[];
-  organizationSlug: string;
+  userId: string;
+  orgId: string;
 }
 
 const STATUS_OPTIONS = [
@@ -66,7 +67,7 @@ const DATE_OPTIONS = [
   { value: "month", label: "This month" },
 ] as const;
 
-export function OrdersView({ orders, organizationSlug }: OrdersViewProps) {
+export function OrdersView({ orders, userId, orgId }: OrdersViewProps) {
   const [statusFilter, setStatusFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -217,7 +218,7 @@ export function OrdersView({ orders, organizationSlug }: OrdersViewProps) {
             return (
               <Link
                 key={order.id}
-                href={`/dashboard/${organizationSlug}/orders/${order.id}`}
+                href={`/${userId}/organizaciones/${orgId}/orders/${order.id}`}
                 className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors"
               >
                 {/* Status indicator */}

@@ -359,6 +359,8 @@ export const table = pgTable("table", {
   status: text("status").notNull().default("available"), // available, occupied, reserved, cleaning
   section: text("section"), // e.g., "Main Floor", "Patio", "Bar"
   isNFCEnabled: boolean("is_nfc_enabled").default(true),
+  nfcScanCount: integer("nfc_scan_count").default(0), // Track NFC tag scans
+  lastNfcScanAt: timestamp("last_nfc_scan_at", { withTimezone: true }), // Last scan timestamp
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

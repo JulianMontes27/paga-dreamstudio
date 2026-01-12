@@ -60,7 +60,8 @@ interface Order {
 
 interface OrderDetailViewProps {
   order: Order;
-  organizationSlug: string;
+  userId: string;
+  orgId: string;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -71,7 +72,7 @@ const STATUS_COLORS: Record<string, string> = {
   cancelled: "bg-red-500",
 };
 
-export function OrderDetailView({ order, organizationSlug }: OrderDetailViewProps) {
+export function OrderDetailView({ order, userId, orgId }: OrderDetailViewProps) {
   const router = useRouter();
 
   const formatCurrency = (amount: string | number | null) => {

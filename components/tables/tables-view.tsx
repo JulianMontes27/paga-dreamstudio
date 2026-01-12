@@ -15,13 +15,15 @@ import { List, Map } from "lucide-react";
 
 type OrderActivity = "idle" | "active" | "payment_made";
 
-type TableWithQr = {
+type TableWithCheckout = {
   id: string;
   tableNumber: string;
   capacity: number;
   status: "available" | "occupied" | "reserved" | "cleaning";
   section: string | null;
-  isQrEnabled: boolean;
+  isNFCEnabled: boolean;
+  nfcScanCount: number;
+  lastNfcScanAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
   floorId: string | null;
@@ -31,27 +33,19 @@ type TableWithQr = {
   height: number | null;
   shape: string | null;
   orderActivity?: OrderActivity;
-  qrCode: {
-    id: string;
-    code: string;
-    checkoutUrl: string;
-    isActive: boolean;
-    scanCount: number;
-    lastScannedAt: Date | null;
-    expiresAt: Date | null;
-  } | null;
+  checkoutUrl: string;
 };
 
 interface TablesViewProps {
-  tablesWithQr: TableWithQr[];
+  tables: TableWithCheckout[];
   floors: FloorData[];
   userRole: "member" | "admin" | "owner";
-  organizationSlug: string;
+  organizationSlug?: string;
   organizationId: string;
 }
 
 export function TablesView({
-  tablesWithQr,
+  tables,
   floors,
   userRole,
   organizationSlug,
@@ -59,7 +53,7 @@ export function TablesView({
 }: TablesViewProps) {
   const [viewMode, setViewMode] = useState<"list" | "map">("map");
 
-  const floorPlanTables: TableData[] = tablesWithQr.map((table) => ({
+  const floorPlanTables: TableData[] = tables.map((table) => ({
     id: table.id,
     tableNumber: table.tableNumber,
     capacity: table.capacity,
@@ -72,14 +66,9 @@ export function TablesView({
     height: table.height,
     shape: table.shape,
     orderActivity: table.orderActivity,
-    qrCode: table.qrCode
-      ? {
-          id: table.qrCode.id,
-          code: table.qrCode.code,
-          isActive: table.qrCode.isActive,
-          scanCount: table.qrCode.scanCount,
-        }
-      : null,
+    checkoutUrl: table.checkoutUrl,
+    nfcScanCount: table.nfcScanCount,
+    isNFCEnabled: table.isNFCEnabled,
   }));
 
   return (
@@ -93,7 +82,7 @@ export function TablesView({
           className="gap-2"
         >
           <List className="h-4 w-4" />
-          List
+          Lista
         </Button>
         <Button
           variant={viewMode === "map" ? "secondary" : "ghost"}
@@ -102,14 +91,14 @@ export function TablesView({
           className="gap-2"
         >
           <Map className="h-4 w-4" />
-          Floor Plan
+          Plano
         </Button>
       </div>
 
       {/* List View */}
       {viewMode === "list" && (
         <TableFilters
-          tablesWithQr={tablesWithQr}
+          tables={tables}
           userRole={userRole}
           organizationSlug={organizationSlug}
         />
@@ -125,7 +114,10 @@ export function TablesView({
         >
           <div className="space-y-4">
             <div className="flex items-center justify-between gap-4 flex-wrap">
-              <FloorSelector organizationId={organizationId} canEdit={userRole === "admin" || userRole === "owner"} />
+              <FloorSelector
+                organizationId={organizationId}
+                canEdit={userRole === "admin" || userRole === "owner"}
+              />
               {(userRole === "admin" || userRole === "owner") && (
                 <FloorPlanToolbar organizationId={organizationId} />
               )}

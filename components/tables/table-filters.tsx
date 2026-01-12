@@ -31,36 +31,39 @@ const CAPACITY_OPTIONS = [
   { value: "7+", label: "7+ seats" },
 ] as const;
 
-type TableWithQr = {
+type OrderActivity = "idle" | "active" | "payment_made";
+
+type TableWithCheckout = {
   id: string;
   tableNumber: string;
   capacity: number;
   status: "available" | "occupied" | "reserved" | "cleaning";
   section: string | null;
-  isQrEnabled: boolean;
+  isNFCEnabled: boolean;
+  nfcScanCount: number;
+  lastNfcScanAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
-  qrCode: {
-    id: string;
-    code: string;
-    checkoutUrl: string;
-    isActive: boolean;
-    scanCount: number;
-    lastScannedAt: Date | null;
-    expiresAt: Date | null;
-  } | null;
+  floorId: string | null;
+  xPosition: number | null;
+  yPosition: number | null;
+  width: number | null;
+  height: number | null;
+  shape: string | null;
+  orderActivity?: OrderActivity;
+  checkoutUrl: string;
 };
 
 interface TableFiltersProps {
-  tablesWithQr: TableWithQr[];
+  tables: TableWithCheckout[];
   userRole: "member" | "admin" | "owner";
-  organizationSlug: string;
+  organizationSlug?: string;
 }
 
 export function TableFilters({
-  tablesWithQr,
+  tables,
   userRole,
-  organizationSlug,
+  organizationSlug = "",
 }: TableFiltersProps) {
   const searchParams = useSearchParams();
 
@@ -83,7 +86,7 @@ export function TableFilters({
   const hasActiveFilters = statusFilter || capacityFilter || searchQuery;
 
   const filteredTables = useMemo(() => {
-    let filtered = tablesWithQr;
+    let filtered = tables;
 
     if (statusFilter && statusFilter !== "all") {
       filtered = filtered.filter((table) => table.status === statusFilter);
@@ -121,7 +124,7 @@ export function TableFilters({
     }
 
     return filtered;
-  }, [tablesWithQr, statusFilter, capacityFilter, searchQuery]);
+  }, [tables, statusFilter, capacityFilter, searchQuery]);
 
   const getStatusConfig = (status: string) => {
     return STATUS_OPTIONS.find((s) => s.value === status) || STATUS_OPTIONS[0];
@@ -229,10 +232,10 @@ export function TableFilters({
                       <Users className="h-3 w-3" />
                       {table.capacity}
                     </span>
-                    {table.isQrEnabled && table.qrCode && (
+                    {table.isNFCEnabled && (
                       <span className="flex items-center gap-1">
                         <QrCode className="h-3 w-3" />
-                        {table.qrCode.scanCount} scans
+                        {table.nfcScanCount} scans
                       </span>
                     )}
                   </div>
@@ -248,15 +251,15 @@ export function TableFilters({
 
                 {/* Actions */}
                 <div className="flex items-center gap-1" onClick={(e) => e.preventDefault()}>
-                  {table.isQrEnabled && table.qrCode && (
-                    <QRCodeModal table={table} organizationSlug={organizationSlug} />
+                  {table.isNFCEnabled && (
+                    <QRCodeModal table={table} organizationSlug={organizationSlug || ""} />
                   )}
 
                   {canManage && (
                     <TableActions
                       table={table}
                       userRole={userRole}
-                      organizationSlug={organizationSlug}
+                      organizationSlug={organizationSlug || ""}
                     />
                   )}
                 </div>
@@ -266,7 +269,7 @@ export function TableFilters({
             );
           })}
         </div>
-      ) : tablesWithQr.length === 0 ? (
+      ) : tables.length === 0 ? (
         <div className="text-center py-12 border rounded-lg">
           <div className="text-4xl mb-3">🪑</div>
           <h3 className="font-medium mb-1">No tables yet</h3>

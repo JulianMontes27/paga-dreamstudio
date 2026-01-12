@@ -15,9 +15,6 @@ const statement = {
   // Table management
   table: ["create", "read", "update", "delete", "assign"],
 
-  // Inventory management
-  inventory: ["create", "read", "update", "delete"],
-
   // Financial operations
   finance: ["viewReports", "viewRevenue", "managePricing", "procesRefunds"],
 
@@ -42,14 +39,13 @@ const waiter = ac.newRole({
 // Backoffice/Manager role - operational management
 const administrator = ac.newRole({
   invitation: ["create", "cancel"],
-  member: ["update"], // Can update member roles but not create or remove
-  menu: ["create", "read", "update"],
+  member: ["create", "update", "delete"], // Full member management
+  menu: ["create", "read", "update", "delete"],
   menuItem: ["create", "read", "update", "delete"],
-  order: ["create", "read", "update", "cancel"],
+  order: ["create", "read", "update", "delete", "cancel"],
   orderItem: ["create", "read", "update", "delete"],
   table: ["create", "read", "update", "delete", "assign"],
-  inventory: ["create", "read", "update", "delete"],
-  finance: ["viewReports"],
+  finance: ["viewReports", "viewRevenue", "managePricing", "procesRefunds"],
   staff: ["viewSchedule"],
   restaurant: ["updateHours"],
 });
@@ -64,9 +60,7 @@ const owner = ac.newRole({
   order: ["create", "read", "update", "delete", "cancel"],
   orderItem: ["create", "read", "update", "delete"],
   table: ["create", "read", "update", "delete", "assign"],
-  inventory: ["create", "read", "update", "delete"],
   finance: ["viewReports", "viewRevenue", "managePricing", "procesRefunds"],
-  staff: ["invite", "remove", "updateRole", "viewSchedule", "manageSchedule"],
   restaurant: ["updateInfo", "updateHours", "updateSettings"],
 });
 

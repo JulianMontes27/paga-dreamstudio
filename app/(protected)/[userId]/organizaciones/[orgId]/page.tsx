@@ -3,8 +3,8 @@ import { redirect } from "next/navigation";
 export default async function OverviewPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ userId: string; orgId: string }>;
 }) {
-  const slug = (await params).slug;
-  redirect(`/dashboard/${slug}/tables`);
+  const { userId, orgId } = await params;
+  redirect(`/$}/${userId}/organization/${orgId}/tables`);
 }

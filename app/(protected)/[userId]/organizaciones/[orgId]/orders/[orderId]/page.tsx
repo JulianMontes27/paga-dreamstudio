@@ -1,36 +1,37 @@
 import { db } from "@/db";
-import { organization, order } from "@/db/schema";
+import { organization, order, member } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { notFound, redirect } from "next/navigation";
-import { getCurrentUser } from "@/server/users";
 import { OrderDetailView } from "@/components/orders/order-detail-view";
 
 export default async function OrderDetailPage({
   params,
 }: {
-  params: Promise<{ slug: string; orderId: string }>;
+  params: Promise<{ userId: string; orgId: string; orderId: string }>;
 }) {
-  const { slug, orderId } = await params;
-  const { user } = await getCurrentUser();
+  const { userId, orgId, orderId } = await params;
 
-  const org = await db.query.organization.findFirst({
-    where: eq(organization.slug, slug),
-    with: {
-      members: {
-        with: {
-          user: true,
-        },
-      },
-    },
-  });
+  // Fetch organization by ID
+  const org = await db
+    .select()
+    .from(organization)
+    .where(eq(organization.id, orgId))
+    .limit(1)
+    .then((rows) => rows[0]);
 
   if (!org) {
     notFound();
   }
 
-  const member = org.members.find((m) => m.userId === user.id);
+  // Fetch current user's membership
+  const userMembership = await db
+    .select()
+    .from(member)
+    .where(and(eq(member.organizationId, org.id), eq(member.userId, userId)))
+    .limit(1)
+    .then((rows) => rows[0]);
 
-  if (!member?.role) {
+  if (!userMembership?.role) {
     return redirect("/");
   }
 
@@ -52,7 +53,5 @@ export default async function OrderDetailPage({
     notFound();
   }
 
-  return (
-    <OrderDetailView order={orderData} organizationSlug={slug} />
-  );
+  return <OrderDetailView order={orderData} userId={userId} orgId={orgId} />;
 }

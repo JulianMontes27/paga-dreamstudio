@@ -6,7 +6,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { CreditCard, CheckCircle, Clock, Wallet } from "lucide-react";
-import AddPaymentProcessorDialog from "./add-payment-processor-dialog";
 import { PaymentAccountActions } from "./payment-account-actions";
 import { PaymentStatusSwitch } from "./payment-status-switch";
 import { StripeLogo } from "@/components/logos";

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/db";
-import { restaurantTable } from "@/db/schema";
+import { table } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
@@ -39,12 +39,12 @@ export async function PATCH(
 
     // Update table status
     const updatedTable = await db
-      .update(restaurantTable)
+      .update(table)
       .set({
         status,
         updatedAt: new Date(),
       })
-      .where(eq(restaurantTable.id, tableId))
+      .where(eq(table.id, tableId))
       .returning();
 
     if (!updatedTable.length) {

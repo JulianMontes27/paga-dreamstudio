@@ -77,7 +77,7 @@ export const TabButton: React.FC<TabButtonProps> = ({
 export default function RestaurantTabs({
   role,
 }: {
-  role: "member" | "admin" | "owner";
+  role: "waiter" | "administrator" | "owner";
 }) {
   const pathname = usePathname();
 
@@ -85,11 +85,11 @@ export default function RestaurantTabs({
   // These are synchronous and don't make API calls
   // Members can only view tables, orders, and menu
   // Admins and Owners can view everything
-  const canViewStaff = role === "admin" || role === "owner";
-  const canViewInventory = role === "admin" || role === "owner";
-  const canViewAnalytics = role === "admin" || role === "owner";
-  const canViewPayments = role === "admin" || role === "owner";
-  const canViewSettings = role === "admin" || role === "owner";
+  const canViewStaff = role === "administrator" || role === "owner";
+  const canViewInventory = role === "administrator" || role === "owner";
+  const canViewAnalytics = role === "administrator" || role === "owner";
+  const canViewPayments = role === "administrator" || role === "owner";
+  const canViewSettings = role === "administrator" || role === "owner";
 
   // Change Log
   // const { data: activeOrganization } = authClient.useActiveOrganization();
@@ -160,66 +160,66 @@ export default function RestaurantTabs({
           "
         >
           {/* Always visible tabs for all roles */}
-        <TabButton
-          icon={<UtensilsCrossed className="h-4 w-4" />}
-          label="Mesas"
-          href={`/dashboard/${slug}/tables`}
-          isActive={activeTab === "tables"}
-        />
-        <TabButton
-          icon={<ShoppingBag className="h-4 w-4" />}
-          label="Pedidos"
-          href={`/dashboard/${slug}/orders`}
-          isActive={activeTab === "orders"}
-        />
-        <TabButton
-          icon={<Menu className="h-4 w-4" />}
-          label="Menú"
-          href={`/dashboard/${slug}/menu`}
-          isActive={activeTab === "menu"}
-        />
+          <TabButton
+            icon={<UtensilsCrossed className="h-4 w-4" />}
+            label="Mesas"
+            href={`/dashboard/${slug}/tables`}
+            isActive={activeTab === "tables"}
+          />
+          <TabButton
+            icon={<ShoppingBag className="h-4 w-4" />}
+            label="Pedidos"
+            href={`/dashboard/${slug}/orders`}
+            isActive={activeTab === "orders"}
+          />
+          <TabButton
+            icon={<Menu className="h-4 w-4" />}
+            label="Menú"
+            href={`/dashboard/${slug}/menu`}
+            isActive={activeTab === "menu"}
+          />
 
-        {/* Conditionally visible tabs based on permissions */}
-        {canViewStaff && (
-          <TabButton
-            icon={<Users className="h-4 w-4" />}
-            label="Personal"
-            href={`/dashboard/${slug}/staff`}
-            isActive={activeTab === "staff"}
-          />
-        )}
-        {canViewInventory && (
-          <TabButton
-            icon={<Package className="h-4 w-4" />}
-            label="Inventario"
-            href={`/dashboard/${slug}/inventory`}
-            isActive={activeTab === "inventory"}
-          />
-        )}
-        {canViewAnalytics && (
-          <TabButton
-            icon={<BarChart3 className="h-4 w-4" />}
-            label="Análisis"
-            href={`/dashboard/${slug}/analytics`}
-            isActive={activeTab === "analytics"}
-          />
-        )}
-        {canViewPayments && (
-          <TabButton
-            icon={<DollarSign className="h-4 w-4" />}
-            label="Pagos"
-            href={`/dashboard/${slug}/payments`}
-            isActive={activeTab === "payments"}
-          />
-        )}
-        {canViewSettings && (
-          <TabButton
-            icon={<Settings className="h-4 w-4" />}
-            label="Configuración"
-            href={`/dashboard/${slug}/settings`}
-            isActive={activeTab === "settings"}
-          />
-        )}
+          {/* Conditionally visible tabs based on permissions */}
+          {canViewStaff && (
+            <TabButton
+              icon={<Users className="h-4 w-4" />}
+              label="Personal"
+              href={`/dashboard/${slug}/staff`}
+              isActive={activeTab === "staff"}
+            />
+          )}
+          {canViewInventory && (
+            <TabButton
+              icon={<Package className="h-4 w-4" />}
+              label="Inventario"
+              href={`/dashboard/${slug}/inventory`}
+              isActive={activeTab === "inventory"}
+            />
+          )}
+          {canViewAnalytics && (
+            <TabButton
+              icon={<BarChart3 className="h-4 w-4" />}
+              label="Análisis"
+              href={`/dashboard/${slug}/analytics`}
+              isActive={activeTab === "analytics"}
+            />
+          )}
+          {canViewPayments && (
+            <TabButton
+              icon={<DollarSign className="h-4 w-4" />}
+              label="Pagos"
+              href={`/dashboard/${slug}/payments`}
+              isActive={activeTab === "payments"}
+            />
+          )}
+          {canViewSettings && (
+            <TabButton
+              icon={<Settings className="h-4 w-4" />}
+              label="Configuración"
+              href={`/dashboard/${slug}/settings`}
+              isActive={activeTab === "settings"}
+            />
+          )}
         </div>
       </div>
     </div>

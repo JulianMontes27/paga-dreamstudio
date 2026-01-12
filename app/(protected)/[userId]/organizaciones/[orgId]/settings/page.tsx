@@ -7,53 +7,59 @@ import {
 } from "@/components/ui/card";
 import { Settings, Bell, Shield, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  getFullOrganizationWithPayments,
-  listInvitations,
-} from "@/server/organizations";
-import { getCurrentUser } from "@/server/users";
 import { redirect, notFound } from "next/navigation";
 import PaymentSettings from "@/components/payment-settings";
-import { getTranslations } from "next-intl/server";
+import { db } from "@/db";
+import { organization, member } from "@/db/schema";
+import { eq, and } from "drizzle-orm";
 
 export default async function OrganizationSettings({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ userId: string; orgId: string }>;
 }) {
-  const slug = (await params).slug;
-  const t = await getTranslations("settings");
+  const { userId, orgId } = await params;
 
-  // Use cached version with payment accounts (slug-based)
-  const { user } = await getCurrentUser();
-  const org = await getFullOrganizationWithPayments({ organizationSlug: slug });
+  const org = await db
+    .select()
+    .from(organization)
+    .where(eq(organization.id, orgId))
+    .limit(1)
+    .then((rows) => rows[0]);
 
   if (!org) {
     notFound();
   }
 
-  // Find current user's role in this organization (slug-based)
-  const currentUserMember = org.members.find(
-    (member) => member.userId === user.id
-  );
+  // Fetch current user's membership
+  const userMembership = await db
+    .select()
+    .from(member)
+    .where(
+      and(eq(member.organizationId, org.id), eq(member.userId, userId))
+    )
+    .limit(1)
+    .then((rows) => rows[0]);
 
-  if (!currentUserMember) {
-    redirect("/dashboard");
+  if (!userMembership) {
+    redirect(`/${userId}/organizaciones`);
   }
 
-  const userRole = currentUserMember.role;
+  const userRole = userMembership.role;
 
   // Check if user has permission to view settings (only owners and admins)
-  if (userRole !== "owner" && userRole !== "admin") {
-    redirect(`/dashboard/${slug}/tables`);
+  if (userRole !== "owner" && userRole !== "administrator") {
+    redirect(`/${userId}/organizaciones/${orgId}`);
   }
 
   return (
     <div className="space-y-5">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
-        <p className="text-sm text-muted-foreground mt-1">{t("description")}</p>
+        <h1 className="text-2xl font-bold tracking-tight">Configuración</h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Administra la configuración de tu organización
+        </p>
       </div>
 
       <div className="grid gap-5">
@@ -62,31 +68,29 @@ export default async function OrganizationSettings({
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
               <Settings className="h-4 w-4" />
-              {t("generalSettings")}
+              Configuración General
             </CardTitle>
             <CardDescription className="text-xs">
-              {t("basicInfo")}
+              Información básica de tu restaurante
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-xs font-medium text-muted-foreground">
-                  {t("restaurantName")}
+                  Nombre del Restaurante
                 </label>
-                <p className="text-sm font-medium mt-1">
-                  {org?.name || slug.replace(/-/g, " ")}
-                </p>
+                <p className="text-sm font-medium mt-1">{org?.name}</p>
               </div>
               <div>
                 <label className="text-xs font-medium text-muted-foreground">
-                  {t("urlSlug")}
+                  ID
                 </label>
-                <p className="text-sm font-medium mt-1">{slug}</p>
+                <p className="text-sm font-medium mt-1">{org.id}</p>
               </div>
             </div>
             <Button variant="outline" size="sm">
-              {t("editInfo")}
+              Editar Información
             </Button>
           </CardContent>
         </Card>
@@ -96,10 +100,10 @@ export default async function OrganizationSettings({
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
               <Bell className="h-4 w-4" />
-              {t("notifications")}
+              Notificaciones
             </CardTitle>
             <CardDescription className="text-xs">
-              {t("configureNotifications")}
+              Configura tus preferencias de notificaciones
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -107,25 +111,25 @@ export default async function OrganizationSettings({
               <div className="flex items-center justify-between py-2">
                 <div>
                   <p className="text-sm font-medium">
-                    {t("orderNotifications")}
+                    Notificaciones de Pedidos
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {t("getNotifiedOrders")}
+                    Recibe notificaciones de nuevos pedidos
                   </p>
                 </div>
                 <Button variant="outline" size="sm">
-                  {t("configure")}
+                  Configurar
                 </Button>
               </div>
               <div className="flex items-center justify-between py-2">
                 <div>
-                  <p className="text-sm font-medium">{t("emailReports")}</p>
+                  <p className="text-sm font-medium">Reportes por Email</p>
                   <p className="text-xs text-muted-foreground">
-                    {t("dailyWeeklyReports")}
+                    Reportes diarios y semanales
                   </p>
                 </div>
                 <Button variant="outline" size="sm">
-                  {t("configure")}
+                  Configurar
                 </Button>
               </div>
             </div>
@@ -137,34 +141,36 @@ export default async function OrganizationSettings({
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
               <Shield className="h-4 w-4" />
-              {t("security")}
+              Seguridad
             </CardTitle>
             <CardDescription className="text-xs">
-              {t("securitySettings")}
+              Configuración de seguridad de tu cuenta
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               <div className="flex items-center justify-between py-2">
                 <div>
-                  <p className="text-sm font-medium">{t("twoFactor")}</p>
+                  <p className="text-sm font-medium">
+                    Autenticación de Dos Factores
+                  </p>
                   <p className="text-xs text-muted-foreground">
-                    {t("extraSecurity")}
+                    Seguridad adicional para tu cuenta
                   </p>
                 </div>
                 <Button variant="outline" size="sm">
-                  {t("setup")}
+                  Configurar
                 </Button>
               </div>
               <div className="flex items-center justify-between py-2">
                 <div>
-                  <p className="text-sm font-medium">{t("apiAccess")}</p>
+                  <p className="text-sm font-medium">Acceso API</p>
                   <p className="text-xs text-muted-foreground">
-                    {t("manageApiKeys")}
+                    Administra tus claves de API
                   </p>
                 </div>
                 <Button variant="outline" size="sm">
-                  {t("manage")}
+                  Administrar
                 </Button>
               </div>
             </div>
@@ -179,34 +185,32 @@ export default async function OrganizationSettings({
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
               <CreditCard className="h-4 w-4" />
-              {t("billing")}
+              Facturación
             </CardTitle>
             <CardDescription className="text-xs">
-              {t("manageBilling")}
+              Administra tu plan y métodos de pago
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               <div className="flex items-center justify-between py-2">
                 <div>
-                  <p className="text-sm font-medium">{t("currentPlan")}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {t("freePlan")}
-                  </p>
+                  <p className="text-sm font-medium">Plan Actual</p>
+                  <p className="text-xs text-muted-foreground">Plan Gratuito</p>
                 </div>
                 <Button variant="outline" size="sm">
-                  {t("upgrade")}
+                  Mejorar Plan
                 </Button>
               </div>
               <div className="flex items-center justify-between py-2">
                 <div>
-                  <p className="text-sm font-medium">{t("paymentMethod")}</p>
+                  <p className="text-sm font-medium">Método de Pago</p>
                   <p className="text-xs text-muted-foreground">
-                    {t("noPaymentMethod")}
+                    Sin método de pago configurado
                   </p>
                 </div>
                 <Button variant="outline" size="sm">
-                  {t("addPayment")}
+                  Agregar Método
                 </Button>
               </div>
             </div>

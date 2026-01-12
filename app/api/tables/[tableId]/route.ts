@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { restaurantTable, qrCode } from "@/db/schema";
+import { table } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
@@ -21,7 +21,7 @@ const updateTableSchema = z.object({
     .max(20, "Capacity cannot exceed 20")
     .optional(),
   section: z.string().nullable().optional(),
-  isQrEnabled: z.boolean().optional(),
+  isNFCEnabled: z.boolean().optional(),
   // Floor plan positioning fields
   floorId: z.string().nullable().optional(),
   xPosition: z.number().nullable().optional(),
@@ -60,7 +60,7 @@ export async function PATCH(
     // TODO: Add permission check for admin/owner role
 
     // Build update object with only provided fields
-    const updateData: Partial<typeof restaurantTable.$inferInsert> = {
+    const updateData: Partial<typeof table.$inferInsert> = {
       updatedAt: new Date(),
     };
 
@@ -73,8 +73,8 @@ export async function PATCH(
     if (validatedData.section !== undefined) {
       updateData.section = validatedData.section;
     }
-    if (validatedData.isQrEnabled !== undefined) {
-      updateData.isQrEnabled = validatedData.isQrEnabled;
+    if (validatedData.isNFCEnabled !== undefined) {
+      updateData.isNFCEnabled = validatedData.isNFCEnabled;
     }
     // Floor plan positioning fields
     if (validatedData.floorId !== undefined) {
@@ -98,9 +98,9 @@ export async function PATCH(
 
     // Update the table
     const updatedTable = await db
-      .update(restaurantTable)
+      .update(table)
       .set(updateData)
-      .where(eq(restaurantTable.id, tableId))
+      .where(eq(table.id, tableId))
       .returning();
 
     if (!updatedTable.length) {
@@ -133,7 +133,7 @@ export async function PATCH(
 
 /**
  * DELETE /api/tables/[tableId]
- * Deletes a specific table and its associated QR code
+ * Deletes a specific table
  * Requires admin or owner permissions
  */
 export async function DELETE(
@@ -155,13 +155,10 @@ export async function DELETE(
 
     // TODO: Add permission check for admin/owner role
 
-    // Delete associated QR codes first (due to foreign key constraint)
-    await db.delete(qrCode).where(eq(qrCode.tableId, tableId));
-
     // Delete the table
     const deletedTable = await db
-      .delete(restaurantTable)
-      .where(eq(restaurantTable.id, tableId))
+      .delete(table)
+      .where(eq(table.id, tableId))
       .returning();
 
     if (!deletedTable.length) {
