@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/db";
-import { floor, restaurantTable } from "@/db/schema";
+import { floor, table } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
@@ -163,14 +163,14 @@ export async function DELETE(
 
     // Reset floorId for tables on this floor (they become unplaced)
     await db
-      .update(restaurantTable)
+      .update(table)
       .set({
         floorId: null,
         xPosition: null,
         yPosition: null,
         updatedAt: new Date(),
       })
-      .where(eq(restaurantTable.floorId, floorId));
+      .where(eq(table.floorId, floorId));
 
     // Delete the floor
     await db.delete(floor).where(eq(floor.id, floorId));

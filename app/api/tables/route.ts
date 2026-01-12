@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/db";
-import { restaurantTable, qrCode, organization } from "@/db/schema";
+import { table, organization } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import {
   generateQRCode,
@@ -59,11 +59,11 @@ export async function POST(request: NextRequest) {
     // Check if table number already exists in this organization
     const existingTable = await db
       .select()
-      .from(restaurantTable)
+      .from(table)
       .where(
         and(
-          eq(restaurantTable.organizationId, validatedData.organizationId),
-          eq(restaurantTable.tableNumber, validatedData.tableNumber)
+          eq(table.organizationId, validatedData.organizationId),
+          eq(table.tableNumber, validatedData.tableNumber)
         )
       )
       .limit(1);
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
 
     // Create the table
     const newTable = await db
-      .insert(restaurantTable)
+      .insert(table)
       .values({
         id: tableId,
         organizationId: validatedData.organizationId,
@@ -171,7 +171,7 @@ export async function GET(request: NextRequest) {
     // Get all tables for the organization with their QR codes
     const tables = await db
       .select({
-        table: restaurantTable,
+        table: table,
         qrCode: qrCode,
       })
       .from(restaurantTable)
@@ -179,22 +179,29 @@ export async function GET(request: NextRequest) {
       .where(eq(restaurantTable.organizationId, organizationId));
 
     // Group the results
-    const tablesWithQrCodes = tables.reduce((acc, row) => {
-      const existingTable = acc.find((t) => t.id === row.table.id);
+    const tablesWithQrCodes = tables.reduce(
+      (acc, row) => {
+        const existingTable = acc.find((t) => t.id === row.table.id);
 
-      if (existingTable) {
-        if (row.qrCode) {
-          existingTable.qrCode = row.qrCode;
+        if (existingTable) {
+          if (row.qrCode) {
+            existingTable.qrCode = row.qrCode;
+          }
+        } else {
+          acc.push({
+            ...row.table,
+            qrCode: row.qrCode,
+          });
         }
-      } else {
-        acc.push({
-          ...row.table,
-          qrCode: row.qrCode,
-        });
-      }
 
-      return acc;
-    }, [] as Array<typeof restaurantTable.$inferSelect & { qrCode: typeof qrCode.$inferSelect | null }>);
+        return acc;
+      },
+      [] as Array<
+        typeof restaurantTable.$inferSelect & {
+          qrCode: typeof qrCode.$inferSelect | null;
+        }
+      >
+    );
 
     return NextResponse.json({
       success: true,

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -52,8 +51,6 @@ export function InvitationManagementSection({
   invitations,
   currentUserRole,
 }: InvitationManagementSectionProps) {
-  const t = useTranslations('settings');
-  const tRoles = useTranslations('roles');
   const [isPending, startTransition] = useTransition();
   const [cancelingId, setCancelingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -66,7 +63,7 @@ export function InvitationManagementSection({
     email: string
   ) => {
     if (!canManageInvitations) {
-      toast.error("You don't have permission to cancel invitations");
+      toast.error("No tienes permiso para cancelar invitaciones");
       return;
     }
 
@@ -75,12 +72,12 @@ export function InvitationManagementSection({
     startTransition(async () => {
       try {
         await cancelInvitation(invitationId);
-        toast.success(`Invitation to ${email} has been canceled`);
+        toast.success(`La invitación a ${email} ha sido cancelada`);
         // Refresh the page to update the invitations list
         window.location.reload();
       } catch (error) {
         console.error("Failed to cancel invitation:", error);
-        toast.error("Failed to cancel invitation. Please try again.");
+        toast.error("Error al cancelar la invitación. Por favor, intenta de nuevo.");
       } finally {
         setCancelingId(null);
       }
@@ -92,7 +89,7 @@ export function InvitationManagementSection({
     email: string
   ) => {
     if (!canManageInvitations) {
-      toast.error("You don't have permission to delete invitations");
+      toast.error("No tienes permiso para eliminar invitaciones");
       return;
     }
 
@@ -101,12 +98,12 @@ export function InvitationManagementSection({
     startTransition(async () => {
       try {
         await deleteInvitation(invitationId);
-        toast.success(`Invitation to ${email} has been deleted`);
+        toast.success(`La invitación a ${email} ha sido eliminada`);
         // Refresh the page to update the invitations list
         window.location.reload();
       } catch (error) {
         console.error("Failed to delete invitation:", error);
-        toast.error("Failed to delete invitation. Please try again.");
+        toast.error("Error al eliminar la invitación. Por favor, intenta de nuevo.");
       } finally {
         setDeletingId(null);
       }
@@ -115,7 +112,7 @@ export function InvitationManagementSection({
 
   const formatDate = (date: string | Date) => {
     const dateObj = typeof date === "string" ? new Date(date) : date;
-    return dateObj.toLocaleDateString("en-US", {
+    return dateObj.toLocaleDateString("es-ES", {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -136,7 +133,7 @@ export function InvitationManagementSection({
     return (
       <div className="text-center py-6 text-muted-foreground">
         <Mail className="h-8 w-8 mx-auto mb-2 opacity-50" />
-        <p className="text-sm">{t('noInvitations')}</p>
+        <p className="text-sm">No hay invitaciones pendientes</p>
       </div>
     );
   }
@@ -145,7 +142,7 @@ export function InvitationManagementSection({
     <div className="space-y-3">
       <div className="flex items-center gap-2">
         <Mail className="h-4 w-4" />
-        <h3 className="text-base font-medium">{t('invitations')}</h3>
+        <h3 className="text-base font-medium">Invitaciones</h3>
         <Badge variant="secondary" className="text-xs">{invitations.length}</Badge>
       </div>
 
@@ -153,11 +150,11 @@ export function InvitationManagementSection({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>{t('email')}</TableHead>
-              <TableHead>{t('role')}</TableHead>
-              <TableHead>{t('invitedBy')}</TableHead>
-              <TableHead>{t('expires')}</TableHead>
-              <TableHead className="text-right">{t('actions')}</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Rol</TableHead>
+              <TableHead>Invitado por</TableHead>
+              <TableHead>Expira</TableHead>
+              <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -168,7 +165,7 @@ export function InvitationManagementSection({
                 </TableCell>
                 <TableCell>
                   <Badge variant="outline" className="text-xs capitalize">
-                    {tRoles(invitation.role)}
+                    {invitation.role === 'member' ? 'Mesero' : invitation.role === 'admin' ? 'Administrador' : 'Propietario'}
                   </Badge>
                 </TableCell>
                 <TableCell>
@@ -202,24 +199,23 @@ export function InvitationManagementSection({
                               }
                             >
                               <X className="h-3 w-3 mr-1" />
-                              {t('cancel')}
+                              Cancelar
                             </Button>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
                               <AlertDialogTitle>
-                                Cancel Invitation
+                                Cancelar Invitación
                               </AlertDialogTitle>
                               <AlertDialogDescription>
-                                Are you sure you want to cancel the invitation
-                                sent to <strong>{invitation.email}</strong>?
-                                This will prevent them from accepting the
-                                invitation.
+                                ¿Estás seguro de que quieres cancelar la invitación
+                                enviada a <strong>{invitation.email}</strong>?
+                                Esto evitará que puedan aceptar la invitación.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>
-                                Keep Invitation
+                                Mantener Invitación
                               </AlertDialogCancel>
                               <AlertDialogAction
                                 onClick={() =>
@@ -230,7 +226,7 @@ export function InvitationManagementSection({
                                 }
                                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                               >
-                                Cancel Invitation
+                                Cancelar Invitación
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
@@ -249,16 +245,16 @@ export function InvitationManagementSection({
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Invitation</AlertDialogTitle>
+                          <AlertDialogTitle>Eliminar Invitación</AlertDialogTitle>
                           <AlertDialogDescription>
-                            Are you sure you want to permanently delete the
-                            invitation sent to{" "}
-                            <strong>{invitation.email}</strong>? This action
-                            cannot be undone.
+                            ¿Estás seguro de que quieres eliminar permanentemente la
+                            invitación enviada a{" "}
+                            <strong>{invitation.email}</strong>? Esta acción
+                            no se puede deshacer.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel>Keep Invitation</AlertDialogCancel>
+                          <AlertDialogCancel>Mantener Invitación</AlertDialogCancel>
                           <AlertDialogAction
                             onClick={() =>
                               handleDeleteInvitation(
@@ -268,7 +264,7 @@ export function InvitationManagementSection({
                             }
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                           >
-                            Delete Permanently
+                            Eliminar Permanentemente
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>

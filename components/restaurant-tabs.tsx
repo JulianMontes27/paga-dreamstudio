@@ -2,7 +2,6 @@
 
 import React from "react";
 import { usePathname } from "next/navigation";
-import { useTranslations } from "next-intl";
 import Link from "next/link";
 import {
   BarChart3,
@@ -81,7 +80,6 @@ export default function RestaurantTabs({
   role: "member" | "admin" | "owner";
 }) {
   const pathname = usePathname();
-  const t = useTranslations('nav');
 
   // Use role-based checks directly for efficient client-side permission checks
   // These are synchronous and don't make API calls
@@ -164,19 +162,19 @@ export default function RestaurantTabs({
           {/* Always visible tabs for all roles */}
         <TabButton
           icon={<UtensilsCrossed className="h-4 w-4" />}
-          label={t('tables')}
+          label="Mesas"
           href={`/dashboard/${slug}/tables`}
           isActive={activeTab === "tables"}
         />
         <TabButton
           icon={<ShoppingBag className="h-4 w-4" />}
-          label={t('orders')}
+          label="Pedidos"
           href={`/dashboard/${slug}/orders`}
           isActive={activeTab === "orders"}
         />
         <TabButton
           icon={<Menu className="h-4 w-4" />}
-          label={t('menu')}
+          label="Menú"
           href={`/dashboard/${slug}/menu`}
           isActive={activeTab === "menu"}
         />
@@ -185,7 +183,7 @@ export default function RestaurantTabs({
         {canViewStaff && (
           <TabButton
             icon={<Users className="h-4 w-4" />}
-            label={t('staff')}
+            label="Personal"
             href={`/dashboard/${slug}/staff`}
             isActive={activeTab === "staff"}
           />
@@ -193,7 +191,7 @@ export default function RestaurantTabs({
         {canViewInventory && (
           <TabButton
             icon={<Package className="h-4 w-4" />}
-            label={t('inventory')}
+            label="Inventario"
             href={`/dashboard/${slug}/inventory`}
             isActive={activeTab === "inventory"}
           />
@@ -201,7 +199,7 @@ export default function RestaurantTabs({
         {canViewAnalytics && (
           <TabButton
             icon={<BarChart3 className="h-4 w-4" />}
-            label={t('analytics')}
+            label="Análisis"
             href={`/dashboard/${slug}/analytics`}
             isActive={activeTab === "analytics"}
           />
@@ -209,7 +207,7 @@ export default function RestaurantTabs({
         {canViewPayments && (
           <TabButton
             icon={<DollarSign className="h-4 w-4" />}
-            label={t('payments')}
+            label="Pagos"
             href={`/dashboard/${slug}/payments`}
             isActive={activeTab === "payments"}
           />
@@ -217,7 +215,7 @@ export default function RestaurantTabs({
         {canViewSettings && (
           <TabButton
             icon={<Settings className="h-4 w-4" />}
-            label={t('settings')}
+            label="Configuración"
             href={`/dashboard/${slug}/settings`}
             isActive={activeTab === "settings"}
           />

@@ -1,66 +1,65 @@
-import { auth } from "@/lib/auth";
-import { getCurrentUser } from "@/server/users";
+import { redirect } from "next/navigation";
 import { headers } from "next/headers";
-import { Button } from "@/components/ui/button";
+import { auth } from "@/lib/auth";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Building2, Mail, Calendar, User, AlertCircle } from "lucide-react";
-import HandleInvitation from "./handle-inv";
-import Link from "next/link";
+import { Building2, Mail, UserCheck, Calendar } from "lucide-react";
+import { AcceptInvitationActions } from "@/components/accept-invitation-actions";
 
-const AcceptInvitationPage = async ({
-  params,
-}: {
+interface AcceptInvitationPageProps {
   params: Promise<{ invitationId: string }>;
-}) => {
-  // Await the params Promise
-  // The invitation link should include the invitation ID, which will be used to accept the invitation.
+  searchParams: Promise<{ org?: string }>;
+}
+
+export default async function AcceptInvitationPage({
+  params,
+  searchParams,
+}: AcceptInvitationPageProps) {
   const { invitationId } = await params;
+  const { org } = await searchParams;
+  const organizationName = org || "Organización";
 
-  // Make sure to call the acceptInvitation function after the user is logged in.
-  const session = await getCurrentUser();
+  // Get current session
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
 
-  // Get the specficic invitation from the url params
-  let invitation;
-  let error = null;
-
-  try {
-    invitation = await auth.api.getInvitation({
-      query: {
-        id: invitationId, // required -> The ID of the invitation to get.
-      },
-      // This endpoint requires session cookies.
-      headers: await headers(),
-    });
-  } catch (e) {
-    error = "Invalid or expired invitation";
+  // If not logged in, redirect to sign-in with return URL
+  if (!session?.user) {
+    const callbackURL = org
+      ? `/accept-invitation/${invitationId}?org=${encodeURIComponent(org)}`
+      : `/accept-invitation/${invitationId}`;
+    redirect(`/sign-in?callbackURL=${encodeURIComponent(callbackURL)}`);
   }
 
-  if (error || !invitation) {
+  // Fetch invitation details
+  let invitation;
+  try {
+    invitation = await auth.api.getInvitation({
+      query: { id: invitationId },
+      headers: await headers(),
+    });
+  } catch (error) {
+    console.error("Error fetching invitation:", error);
+  }
+
+  if (!invitation) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="max-w-md w-full">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-red-600">
-              <AlertCircle className="h-5 w-5" />
-              Invalid Invitation
+            <CardTitle className="text-destructive">
+              Invitación no encontrada
             </CardTitle>
             <CardDescription>
-              This invitation link is invalid or has expired.
+              Esta invitación no existe o ya ha expirado.
             </CardDescription>
           </CardHeader>
-          <CardFooter>
-            <Button asChild variant="outline" className="w-full">
-              <Link href="/dashboard">Go to Dashboard</Link>
-            </Button>
-          </CardFooter>
         </Card>
       </div>
     );
@@ -69,140 +68,120 @@ const AcceptInvitationPage = async ({
   // Check if invitation is expired
   const isExpired = new Date(invitation.expiresAt) < new Date();
 
+  // Check if invitation is not pending
+  const isPending = invitation.status === "pending";
+
+  // Format date
+  const formatDate = (dateString: string | Date) => {
+    return new Date(dateString).toLocaleDateString("es-ES", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
   // Format role for display
-  const roleDisplay =
-    invitation.role.charAt(0).toUpperCase() + invitation.role.slice(1);
+  const formatRole = (role: string) => {
+    const roleMap: { [key: string]: string } = {
+      owner: "Propietario",
+      administrator: "Administrador",
+      seller: "Vendedor",
+      member: "Miembro",
+    };
+    return roleMap[role] || role;
+  };
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <Card className="max-w-md w-full">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <Card className="max-w-lg w-full">
         <CardHeader>
-          <CardTitle className="text-2xl">Restaurant Invitation</CardTitle>
-          <CardDescription>
-            You&apos;ve been invited to join a restaurant team
-          </CardDescription>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <Building2 className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <CardTitle className="text-2xl">
+                Invitación a Organización
+              </CardTitle>
+              <CardDescription>{organizationName}</CardDescription>
+            </div>
+          </div>
         </CardHeader>
-
         <CardContent className="space-y-6">
-          {/* Organization Info */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Building2 className="h-4 w-4" />
-              <span>Restaurant</span>
-            </div>
-            <div className="pl-6">
-              <h3 className="text-xl font-semibold">
-                {invitation.organizationName}
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                /{invitation.organizationSlug}
-              </p>
-            </div>
-          </div>
-
-          {/* Role */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <User className="h-4 w-4" />
-              <span>Your Role</span>
-            </div>
-            <div className="pl-6">
-              <Badge
-                variant={
-                  invitation.role === "owner"
-                    ? "default"
-                    : invitation.role === "admin"
-                      ? "secondary"
-                      : "outline"
-                }
-              >
-                {roleDisplay}
-              </Badge>
-            </div>
-          </div>
-
-          {/* Inviter Info */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Mail className="h-4 w-4" />
-              <span>Invited by</span>
-            </div>
-            <div className="pl-6">
-              <p className="text-sm">{invitation.inviterEmail}</p>
-            </div>
-          </div>
-
-          {/* Expiration */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Calendar className="h-4 w-4" />
-              <span>Expires</span>
-            </div>
-            <div className="pl-6">
-              <p className="text-sm">
-                {new Date(invitation.expiresAt).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </p>
-              {isExpired && (
-                <p className="text-sm text-red-600 mt-1">
-                  This invitation has expired
+          {/* Invitation Details */}
+          <div className="space-y-4">
+            <div className="flex items-start gap-3">
+              <Mail className="h-5 w-5 mt-0.5 text-muted-foreground" />
+              <div className="flex-1">
+                <p className="text-sm font-medium">Invitación enviada a</p>
+                <p className="text-sm text-muted-foreground">
+                  {invitation.email}
                 </p>
-              )}
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <UserCheck className="h-5 w-5 mt-0.5 text-muted-foreground" />
+              <div className="flex-1">
+                <p className="text-sm font-medium">Rol asignado</p>
+                <p className="text-sm text-muted-foreground">
+                  {formatRole(invitation.role)}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <Calendar className="h-5 w-5 mt-0.5 text-muted-foreground" />
+              <div className="flex-1">
+                <p className="text-sm font-medium">Expira el</p>
+                <p className="text-sm text-muted-foreground">
+                  {formatDate(invitation.expiresAt)}
+                </p>
+              </div>
             </div>
           </div>
 
           {/* Status Messages */}
-          <div>
-            {!session && (
-              <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
-                <p className="text-sm text-blue-600 dark:text-blue-400">
-                  Please log in or sign up to accept this invitation
-                </p>
-              </div>
-            )}
+          {!isPending && (
+            <div className="p-4 rounded-lg bg-muted">
+              <p className="text-sm text-muted-foreground">
+                {invitation.status === "accepted" &&
+                  "Ya has aceptado esta invitación."}
+                {invitation.status === "rejected" &&
+                  "Has rechazado esta invitación."}
+                {invitation.status === "canceled" &&
+                  "Esta invitación ha sido cancelada."}
+              </p>
+            </div>
+          )}
 
-            {session && invitation.status === "accepted" && (
-              <div className="p-4 bg-green-50 dark:bg-green-950 rounded-lg">
-                <p className="text-sm text-green-600 dark:text-green-400">
-                  You have already accepted this invitation
-                </p>
-              </div>
-            )}
+          {isExpired && isPending && (
+            <div className="p-4 rounded-lg bg-destructive/10">
+              <p className="text-sm text-destructive">
+                Esta invitación ha expirado.
+              </p>
+            </div>
+          )}
 
-            {session && invitation.status === "rejected" && (
-              <div className="p-4 bg-red-50 dark:bg-red-950 rounded-lg">
-                <p className="text-sm text-red-600 dark:text-red-400">
-                  This invitation was previously declined
-                </p>
-              </div>
-            )}
+          {/* Email verification warning */}
+          {!session.user.emailVerified && isPending && !isExpired && (
+            <div className="p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+              <p className="text-sm text-yellow-600 dark:text-yellow-500">
+                Debes verificar tu correo electrónico antes de aceptar esta
+                invitación.
+              </p>
+            </div>
+          )}
 
-            {session && invitation.status === "canceled" && (
-              <div className="p-4 bg-gray-50 dark:bg-gray-950 rounded-lg">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  This invitation has been canceled
-                </p>
-              </div>
-            )}
-          </div>
-        </CardContent>
-
-        <CardFooter className="flex gap-3">
-          {invitation.status === "pending" && !isExpired && (
-            <HandleInvitation
+          {/* Actions */}
+          {isPending && !isExpired && (
+            <AcceptInvitationActions
               invitationId={invitationId}
-              organizationSlug={invitation.organizationSlug}
+              canAccept={session.user.emailVerified}
             />
           )}
-        </CardFooter>
+        </CardContent>
       </Card>
     </div>
   );
-};
-
-export default AcceptInvitationPage;
+}

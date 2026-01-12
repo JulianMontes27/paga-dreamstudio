@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from "react";
 import dynamic from "next/dynamic";
-import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -58,7 +57,7 @@ const InviteMemberDialog = dynamic(
     loading: () => (
       <Button size="sm" disabled>
         <UserPlus className="mr-2 h-4 w-4" />
-        Invite Member
+        Invitar Miembro
       </Button>
     ),
     ssr: false, // Dialog requires client-side rendering
@@ -95,8 +94,6 @@ export function MemberManagementSection({
   organizationId,
   organizationSlug,
 }: MemberManagementSectionProps) {
-  const t = useTranslations('settings');
-  const tRoles = useTranslations('roles');
   const [isPending, startTransition] = useTransition();
   const [updatingMemberId, setUpdatingMemberId] = useState<string | null>(null);
   const [removingMemberId, setRemovingMemberId] = useState<string | null>(null);
@@ -111,7 +108,7 @@ export function MemberManagementSection({
     memberEmail: string
   ) => {
     if (!canManageMembers) {
-      toast.error("You don't have permission to remove members");
+      toast.error("No tienes permiso para eliminar miembros");
       return;
     }
 
@@ -122,14 +119,14 @@ export function MemberManagementSection({
         const result = await removeMemberAction(organizationId, memberEmail);
 
         if (result.success) {
-          toast.success(`${memberName} has been removed from the organization`);
+          toast.success(`${memberName} ha sido eliminado de la organización`);
           window.location.reload();
         } else {
-          toast.error(result.error || "Failed to remove member");
+          toast.error(result.error || "Error al eliminar miembro");
         }
       } catch (error) {
         console.error("Failed to remove member:", error);
-        toast.error("Failed to remove member. Please try again.");
+        toast.error("Error al eliminar miembro. Por favor, intenta de nuevo.");
       } finally {
         setRemovingMemberId(null);
       }
@@ -142,17 +139,23 @@ export function MemberManagementSection({
     memberName: string
   ) => {
     if (!canManageMembers) {
-      toast.error("You don't have permission to update member roles");
+      toast.error("No tienes permiso para actualizar roles de miembros");
       return;
     }
 
     // Prevent admins from creating owners
     if (!isOwner && newRole === "owner") {
-      toast.error("Only owners can promote members to owner role");
+      toast.error("Solo los propietarios pueden promover miembros a propietario");
       return;
     }
 
     setUpdatingMemberId(memberId);
+
+    const roleNames: Record<string, string> = {
+      member: 'mesero',
+      admin: 'administrador',
+      owner: 'propietario'
+    };
 
     startTransition(async () => {
       try {
@@ -163,14 +166,14 @@ export function MemberManagementSection({
         );
 
         if (result.success) {
-          toast.success(`${memberName}'s role has been updated to ${newRole}`);
+          toast.success(`El rol de ${memberName} ha sido actualizado a ${roleNames[newRole] || newRole}`);
           window.location.reload();
         } else {
-          toast.error(result.error || "Failed to update member role");
+          toast.error(result.error || "Error al actualizar el rol del miembro");
         }
       } catch (error) {
         console.error("Failed to update member role:", error);
-        toast.error("Failed to update member role. Please try again.");
+        toast.error("Error al actualizar el rol. Por favor, intenta de nuevo.");
       } finally {
         setUpdatingMemberId(null);
       }
@@ -202,7 +205,7 @@ export function MemberManagementSection({
   };
 
   const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString("en-US", {
+    return new Date(date).toLocaleDateString("es-ES", {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -222,7 +225,7 @@ export function MemberManagementSection({
     return (
       <div className="text-center py-6 text-muted-foreground">
         <User className="h-8 w-8 mx-auto mb-2 opacity-50" />
-        <p className="text-sm">{t('noMembers')}</p>
+        <p className="text-sm">No hay miembros en la organización</p>
       </div>
     );
   }
@@ -241,8 +244,10 @@ export function MemberManagementSection({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <User className="h-4 w-4" />
-          <h3 className="text-base font-medium">{t('organizationMembers')}</h3>
-          <Badge variant="secondary" className="text-xs">{members.length}</Badge>
+          <h3 className="text-base font-medium">Miembros de la Organización</h3>
+          <Badge variant="secondary" className="text-xs">
+            {members.length}
+          </Badge>
         </div>
 
         {/* Invite Member - dynamically loaded to reduce initial bundle size */}
@@ -258,11 +263,11 @@ export function MemberManagementSection({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>{t('member')}</TableHead>
-              <TableHead>{t('role')}</TableHead>
-              <TableHead>{t('joined')}</TableHead>
+              <TableHead>Miembro</TableHead>
+              <TableHead>Rol</TableHead>
+              <TableHead>Se unió</TableHead>
               {canManageMembers && (
-                <TableHead className="text-right">{t('actions')}</TableHead>
+                <TableHead className="text-right">Acciones</TableHead>
               )}
             </TableRow>
           </TableHeader>
@@ -290,10 +295,12 @@ export function MemberManagementSection({
                       </Avatar>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="font-medium text-sm">{member.user.name}</p>
+                          <p className="font-medium text-sm">
+                            {member.user.name}
+                          </p>
                           {isCurrentUser && (
                             <Badge variant="outline" className="text-xs">
-                              {t('you')}
+                              Tú
                             </Badge>
                           )}
                         </div>
@@ -319,21 +326,24 @@ export function MemberManagementSection({
                           <SelectItem value="member">
                             <div className="flex items-center">
                               <User className="h-3.5 w-3.5 mr-1.5" />
-                              {tRoles('member')}
+                              Mesero
                             </div>
                           </SelectItem>
                           <SelectItem value="admin">
                             <div className="flex items-center">
                               <Shield className="h-3.5 w-3.5 mr-1.5" />
-                              {tRoles('admin')}
+                              Administrador
                             </div>
                           </SelectItem>
                         </SelectContent>
                       </Select>
                     ) : (
-                      <Badge variant={getRoleBadgeVariant(member.role)} className="text-xs inline-flex items-center">
+                      <Badge
+                        variant={getRoleBadgeVariant(member.role)}
+                        className="text-xs inline-flex items-center"
+                      >
                         {getRoleIcon(member.role)}
-                        {tRoles(member.role as "owner" | "admin" | "member")}
+                        {member.role === 'owner' ? 'Propietario' : member.role === 'admin' ? 'Administrador' : 'Mesero'}
                       </Badge>
                     )}
                   </TableCell>
@@ -356,7 +366,7 @@ export function MemberManagementSection({
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
@@ -366,22 +376,22 @@ export function MemberManagementSection({
                                   disabled={removingMemberId === member.id}
                                 >
                                   <UserMinus className="h-4 w-4 mr-2" />
-                                  Remove Member
+                                  Eliminar Miembro
                                 </DropdownMenuItem>
                               </AlertDialogTrigger>
                               <AlertDialogContent>
                                 <AlertDialogHeader>
                                   <AlertDialogTitle>
-                                    Remove Member
+                                    Eliminar Miembro
                                   </AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    Are you sure you want to remove{" "}
-                                    <strong>{member.user.name}</strong> from the
-                                    organization? This action cannot be undone.
+                                    ¿Estás seguro de que quieres eliminar a{" "}
+                                    <strong>{member.user.name}</strong> de la
+                                    organización? Esta acción no se puede deshacer.
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
                                   <AlertDialogAction
                                     onClick={() =>
                                       handleRemoveMember(
@@ -392,7 +402,7 @@ export function MemberManagementSection({
                                     }
                                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                   >
-                                    Remove Member
+                                    Eliminar Miembro
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>

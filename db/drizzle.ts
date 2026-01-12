@@ -1,6 +1,7 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { schema } from "./schema";
+import * as relations from "./relations";
 
 /**
  * Connect to your database using the Connection Pooler.
@@ -10,7 +11,6 @@ import { schema } from "./schema";
  */
 
 // Next.js automatically loads .env files, no need for dotenv here
-
 const connectionString = process.env.DATABASE_URL;
 
 // Disable prefetch as it is not supported for "Transaction" pool mode
@@ -19,6 +19,10 @@ const client = postgres(connectionString!, {
   max: 1, // Limit to 1 connection per serverless instance
   idle_timeout: 20, // Close idle connections after 20s
   connect_timeout: 10, // Connection timeout in seconds
+  ssl: "require", // Required for Supabase
 });
 
-export const db = drizzle(client, { schema });
+// Merge schema and relations to avoid circular dependency
+const fullSchema = { ...schema, ...relations };
+
+export const db = drizzle(client, { schema: fullSchema });

@@ -9,10 +9,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { CreditCard, Plus, Loader2, ExternalLink, Shield, Zap } from "lucide-react";
+import { Plus, Loader2, ExternalLink, Shield, Zap } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { toast } from "sonner";
 import { StripeLogo } from "@/components/logos";
 import Image from "next/image";
 
@@ -40,12 +39,12 @@ export default function AddPaymentProcessorDialog({
         <DialogHeader className="text-center pb-2">
           <DialogTitle>Connect Payment Processor</DialogTitle>
           <DialogDescription>
-            Choose a payment processor to start accepting customer payments securely.
+            Choose a payment processor to start accepting customer payments
+            securely.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-6 py-2">
           <div className="space-y-4">
-
             {/* Stripe Option */}
             <div className="group relative overflow-hidden border rounded-xl hover:border-accent transition-all duration-200 hover:shadow-md">
               <div className="p-6">
@@ -57,7 +56,8 @@ export default function AddPaymentProcessorDialog({
                     <div className="space-y-1">
                       <div className="font-semibold">Stripe</div>
                       <div className="text-sm text-muted-foreground">
-                        Global payment processing platform with advanced features
+                        Global payment processing platform with advanced
+                        features
                       </div>
                       <div className="flex items-center gap-4 text-xs text-muted-foreground mt-2">
                         <div className="flex items-center gap-1">
@@ -71,7 +71,11 @@ export default function AddPaymentProcessorDialog({
                       </div>
                     </div>
                   </div>
-                  <Button size="sm" disabled={connecting !== null} className="min-w-[80px]">
+                  <Button
+                    size="sm"
+                    disabled={connecting !== null}
+                    className="min-w-[80px]"
+                  >
                     {connecting === "stripe" ? (
                       <>
                         <Loader2 className="h-3 w-3 animate-spin mr-1" />
@@ -169,7 +173,11 @@ export default function AddPaymentProcessorDialog({
                       </div>
                     </div>
                   </div>
-                  <Button size="sm" disabled={connecting !== null} className="min-w-[80px]">
+                  <Button
+                    size="sm"
+                    disabled={connecting !== null}
+                    className="min-w-[80px]"
+                  >
                     {connecting === "toast" ? (
                       <>
                         <Loader2 className="h-3 w-3 animate-spin mr-1" />

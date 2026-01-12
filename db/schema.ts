@@ -358,7 +358,7 @@ export const table = pgTable("table", {
   capacity: integer("capacity").notNull(),
   status: text("status").notNull().default("available"), // available, occupied, reserved, cleaning
   section: text("section"), // e.g., "Main Floor", "Patio", "Bar"
-  isNFCEnabled: boolean("is_qr_enabled").default(true),
+  isNFCEnabled: boolean("is_nfc_enabled").default(true),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -490,6 +490,13 @@ export const schema = {
   invitation,
   countries,
   documentType,
+  menuCategory,
+  menuItem,
+  floor,
+  table,
+  order,
+  orderItem,
+  paymentClaim,
 };
 
 // Inferred types from Drizzle schema
@@ -501,3 +508,21 @@ export type Member = InferSelectModel<typeof member>;
 export type NewMember = InferInsertModel<typeof member>;
 export type Invitation = InferSelectModel<typeof invitation>;
 export type NewInvitation = InferInsertModel<typeof invitation>;
+export type Country = InferSelectModel<typeof countries>;
+export type NewCountry = InferInsertModel<typeof countries>;
+export type DocumentType = InferSelectModel<typeof documentType>;
+export type NewDocumentType = InferInsertModel<typeof documentType>;
+export type MenuCategory = InferSelectModel<typeof menuCategory>;
+export type NewMenuCategory = InferInsertModel<typeof menuCategory>;
+export type MenuItem = InferSelectModel<typeof menuItem>;
+export type NewMenuItem = InferInsertModel<typeof menuItem>;
+export type Floor = InferSelectModel<typeof floor>;
+export type NewFloor = InferInsertModel<typeof floor>;
+export type Table = InferSelectModel<typeof table>;
+export type NewTable = InferInsertModel<typeof table>;
+export type Order = InferSelectModel<typeof order>;
+export type NewOrder = InferInsertModel<typeof order>;
+export type OrderItem = InferSelectModel<typeof orderItem>;
+export type NewOrderItem = InferInsertModel<typeof orderItem>;
+export type PaymentClaim = InferSelectModel<typeof paymentClaim>;
+export type NewPaymentClaim = InferInsertModel<typeof paymentClaim>;

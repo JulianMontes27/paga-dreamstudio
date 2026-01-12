@@ -1,6 +1,5 @@
 import { UserButton } from "./user-button";
 import { ModeSwitcher } from "./mode-switcher";
-import { LanguageSwitcher } from "./language-switcher";
 import { getOrganizations } from "@/server/organizations";
 import OrganizationSwitcher from "./organization-switcher";
 import { getCurrentUser } from "@/server/users";
@@ -22,7 +21,6 @@ export async function Header() {
 
       {/* User Management items*/}
       <div className="flex items-center gap-2">
-        <LanguageSwitcher />
         <UserButton user={user} />
         <ModeSwitcher />
       </div>

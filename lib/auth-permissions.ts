@@ -31,7 +31,7 @@ const statement = {
 const ac = createAccessControl(statement);
 
 // Waiter role - basic operations for serving customers
-const member = ac.newRole({
+const waiter = ac.newRole({
   menu: ["read"],
   menuItem: ["read"],
   order: ["create", "read", "update"],
@@ -40,7 +40,7 @@ const member = ac.newRole({
 });
 
 // Backoffice/Manager role - operational management
-const admin = ac.newRole({
+const administrator = ac.newRole({
   invitation: ["create", "cancel"],
   member: ["update"], // Can update member roles but not create or remove
   menu: ["create", "read", "update"],
@@ -71,14 +71,4 @@ const owner = ac.newRole({
 });
 
 // Export with more descriptive names for restaurant context
-export {
-  ac,
-  admin as backoffice,
-  member as waiter,
-  owner as restaurantOwner,
-  // Keep original names for backward compatibility
-  admin,
-  member,
-  owner,
-  statement,
-};
+export { ac, administrator, waiter, owner, statement };

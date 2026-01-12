@@ -10,7 +10,6 @@ import AddPaymentProcessorDialog from "./add-payment-processor-dialog";
 import { PaymentAccountActions } from "./payment-account-actions";
 import { PaymentStatusSwitch } from "./payment-status-switch";
 import { StripeLogo } from "@/components/logos";
-import { getMercadopagoAuthorizationUrl } from "@/lib/mercadopago";
 import Image from "next/image";
 
 // Payment processor types based on the schema
@@ -105,7 +104,6 @@ const PaymentSettings = async ({ org }: PaymentSettingsProps) => {
   };
 
   // Retrieve Oauth Urls
-  const mpOauthUrl = await getMercadopagoAuthorizationUrl(org?.id);
 
   return (
     <Card className="w-full">
@@ -140,7 +138,7 @@ const PaymentSettings = async ({ org }: PaymentSettingsProps) => {
               </div>
             )}
           </div>
-          {paymentAccounts.length > 0 && (
+          {/* {paymentAccounts.length > 0 && (
             <div className="flex-shrink-0">
               {org && (
                 <AddPaymentProcessorDialog
@@ -149,7 +147,7 @@ const PaymentSettings = async ({ org }: PaymentSettingsProps) => {
                 />
               )}
             </div>
-          )}
+          )} */}
         </div>
       </CardHeader>
 
@@ -315,12 +313,12 @@ const PaymentSettings = async ({ org }: PaymentSettingsProps) => {
               </div>
             </div>
 
-            {org && (
+            {/* {org && (
               <AddPaymentProcessorDialog
                 organizationId={org?.id}
                 mpOauthUrl={mpOauthUrl}
               />
-            )}
+            )} */}
           </div>
         )}
       </CardContent>

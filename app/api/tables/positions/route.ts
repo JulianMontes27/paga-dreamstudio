@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/db";
-import { restaurantTable } from "@/db/schema";
+import { table } from "@/db/schema";
 import { eq, inArray } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
@@ -43,9 +43,9 @@ export async function PATCH(request: NextRequest) {
     // Verify all tables belong to the organization
     const tableIds = validatedData.tables.map((t) => t.id);
     const existingTables = await db
-      .select({ id: restaurantTable.id, organizationId: restaurantTable.organizationId })
-      .from(restaurantTable)
-      .where(inArray(restaurantTable.id, tableIds));
+      .select({ id: table.id, organizationId: table.organizationId })
+      .from(table)
+      .where(inArray(table.id, tableIds));
 
     const existingTableIds = new Set(existingTables.map((t) => t.id));
     const invalidTables = tableIds.filter((id) => !existingTableIds.has(id));
@@ -71,7 +71,7 @@ export async function PATCH(request: NextRequest) {
 
     // Update all tables
     const updatePromises = validatedData.tables.map((tableUpdate) => {
-      const updateData: Partial<typeof restaurantTable.$inferInsert> = {
+      const updateData: Partial<typeof table.$inferInsert> = {
         xPosition: tableUpdate.xPosition,
         yPosition: tableUpdate.yPosition,
         updatedAt: new Date(),
@@ -91,9 +91,9 @@ export async function PATCH(request: NextRequest) {
       }
 
       return db
-        .update(restaurantTable)
+        .update(table)
         .set(updateData)
-        .where(eq(restaurantTable.id, tableUpdate.id));
+        .where(eq(table.id, tableUpdate.id));
     });
 
     await Promise.all(updatePromises);

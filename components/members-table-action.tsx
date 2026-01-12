@@ -14,7 +14,7 @@ interface MembersTableActionProps {
 }
 
 export default function MembersTableAction({
-  memberId,
+  // memberId,
   organizationId,
   memberEmail
 }: MembersTableActionProps) {

@@ -1,77 +1,14 @@
 import { relations } from "drizzle-orm";
-
 import {
-  pgTable,
-  text,
-  timestamp,
-  integer,
-  boolean,
-  decimal,
-  jsonb,
-  varchar,
-  pgEnum,
-} from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
-import { organization, user } from "./schema";
-
-// QR codes for tables
-export const qrCode = pgTable("qr_code", {
-  id: text("id").primaryKey(),
-  organizationId: text("organization_id")
-    .notNull()
-    .references(() => organization.id, { onDelete: "cascade" }),
-  tableId: text("table_id")
-    .notNull()
-    .references(() => restaurantTable.id, { onDelete: "cascade" }),
-  code: text("code").notNull().unique(), // Unique identifier for the QR code
-  checkoutUrl: text("checkout_url").notNull(), // Pre-generated checkout URL
-  isActive: boolean("is_active").default(true),
-  scanCount: integer("scan_count").default(0),
-  lastScannedAt: timestamp("last_scanned_at"),
-  expiresAt: timestamp("expires_at"), // Optional expiration
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
-
-// Payment configuration per organization
-// export const paymentConfig = pgTable("payment_config", {
-//   id: text("id").primaryKey(),
-//   organizationId: text("organization_id")
-//     .notNull()
-//     .references(() => organization.id, { onDelete: "cascade" })
-//     .unique(),
-
-//   // Active payment processor accounts (references to paymentProcessorAccount)
-//   activeStripeAccountId: text("active_stripe_account_id").references(
-//     () => paymentProcessorAccount.id,
-//     { onDelete: "set null" }
-//   ),
-//   activeSquareAccountId: text("active_square_account_id").references(
-//     () => paymentProcessorAccount.id,
-//     { onDelete: "set null" }
-//   ),
-//   activePaypalAccountId: text("active_paypal_account_id").references(
-//     () => paymentProcessorAccount.id,
-//     { onDelete: "set null" }
-//   ),
-
-//   // General payment settings
-//   testMode: boolean("test_mode").default(true),
-//   tipPercentageOptions: jsonb("tip_percentage_options").default([
-//     15, 18, 20, 25,
-//   ]),
-//   minimumOrderAmount: decimal("minimum_order_amount", {
-//     precision: 10,
-//     scale: 2,
-//   }).default("0.00"),
-//   maxTipPercentage: integer("max_tip_percentage").default(50),
-
-//   // Webhook configurations
-//   webhookSecret: text("webhook_secret"), // For verifying webhook signatures
-
-//   createdAt: timestamp("created_at").notNull().defaultNow(),
-//   updatedAt: timestamp("updated_at").notNull().defaultNow(),
-// });
+  floor,
+  menuCategory,
+  menuItem,
+  order,
+  orderItem,
+  organization,
+  paymentClaim,
+  table,
+} from "./schema";
 
 // Order Relations
 export const orderRelations = relations(order, ({ one, many }) => ({
@@ -81,9 +18,9 @@ export const orderRelations = relations(order, ({ one, many }) => ({
     references: [organization.id],
   }),
   // Each order belongs to one table
-  table: one(restaurantTable, {
+  table: one(table, {
     fields: [order.tableId],
-    references: [restaurantTable.id],
+    references: [table.id],
   }),
   // Each order has many order items
   orderItems: many(orderItem),
@@ -150,29 +87,22 @@ export const floorRelations = relations(floor, ({ one, many }) => ({
     references: [organization.id],
   }),
   // Each floor has many tables
-  tables: many(restaurantTable),
+  tables: many(table),
 }));
 
 // Restaurant Table Relations (extended with floor)
-export const restaurantTableRelations = relations(
-  restaurantTable,
-  ({ one, many }) => ({
-    // Each table belongs to one organization
-    organization: one(organization, {
-      fields: [restaurantTable.organizationId],
-      references: [organization.id],
-    }),
-    // Each table belongs to one floor (optional)
-    floor: one(floor, {
-      fields: [restaurantTable.floorId],
-      references: [floor.id],
-    }),
-    // Each table has one QR code
-    qrCode: one(qrCode, {
-      fields: [restaurantTable.id],
-      references: [qrCode.tableId],
-    }),
-    // Each table has many orders
-    orders: many(order),
-  })
-);
+export const restaurantTableRelations = relations(table, ({ one, many }) => ({
+  // Each table belongs to one organization
+  organization: one(organization, {
+    fields: [table.organizationId],
+    references: [organization.id],
+  }),
+  // Each table belongs to one floor (optional)
+  floor: one(floor, {
+    fields: [table.floorId],
+    references: [floor.id],
+  }),
+
+  // Each table has many orders
+  orders: many(order),
+}));

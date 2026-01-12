@@ -1,19 +1,32 @@
-import { adminClient, organizationClient } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
-import { ac, owner, admin, member } from "@/lib/auth/permissions";
-import { emailOTPClient } from "better-auth/client/plugins";
+import {
+  emailOTPClient,
+  magicLinkClient,
+  phoneNumberClient,
+  adminClient,
+  organizationClient,
+  inferOrgAdditionalFields,
+  inferAdditionalFields,
+} from "better-auth/client/plugins";
+import { ac, administrator, owner, waiter,  } from "@/lib/auth-permissions";
+import type { auth } from "@/lib/auth";
 
 export const authClient = createAuthClient({
-  baseURL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+  baseURL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL,
   plugins: [
+    inferAdditionalFields<typeof auth>(),
+    magicLinkClient(),
     emailOTPClient(),
+    phoneNumberClient(),
     organizationClient({
       ac,
       roles: {
         owner,
-        admin,
-        member,
+        administrator,
+        waiter,
       },
+      // Infer additional fields from the auth object type
+      schema: inferOrgAdditionalFields<typeof auth>(),
     }),
     adminClient(),
   ],
