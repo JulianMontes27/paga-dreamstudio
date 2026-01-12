@@ -103,7 +103,7 @@ export function BillProgressBar({
         <div className="space-y-2">
           <h4 className="text-sm font-medium text-gray-700">Payment Portions</h4>
           <div className="space-y-2">
-            {claims.map((claim, index) => {
+            {claims.map((claim) => {
               const amount = parseFloat(claim.claimedAmount);
               const fee = parseFloat(claim.splitFeePortion);
               const total = parseFloat(claim.totalToPay);

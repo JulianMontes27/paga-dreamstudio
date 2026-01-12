@@ -3,7 +3,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { QrCode, Users, MapPin, ExternalLink } from "lucide-react";
 import { TableActions } from "./table-actions";
-import { QRCodeModal } from "./qr-code-modal";
 import Link from "next/link";
 
 /**
@@ -136,8 +135,6 @@ export function TableCard({
                 </Badge>
               </div>
 
-              {/* QR Code Modal Trigger */}
-              <QRCodeModal table={table} organizationSlug={organizationSlug} />
             </div>
 
             {/* QR Code Stats */}

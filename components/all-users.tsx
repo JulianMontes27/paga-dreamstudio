@@ -22,7 +22,7 @@ export default function AllUsers({ users, organizationId }: AllUsersProps) {
       setIsLoading(true);
       const { error } = await authClient.organization.inviteMember({
         email: user.email,
-        role: "member",
+        role: "waiter",
         organizationId: organizationId,
       });
 

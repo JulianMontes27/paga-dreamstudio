@@ -1,55 +1,36 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { qrCode, restaurantTable, order } from "@/db/schema";
+import { table, order } from "@/db/schema";
 import { eq, and, or, desc } from "drizzle-orm";
-import { parseQRCode, QRCodeSecurity } from "@/lib/qr-code";
 import { getSecurityHeaders } from "@/lib/rate-limit";
-import { sanitizeInput } from "@/lib/validation/table-schemas";
 
 /**
- * GET /api/checkout/[qrCode]/active-order
+ * GET /api/checkout/[tableId]/active-order
  *
  * Checks if the table has an active order (for collaborative ordering)
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ qrCode: string }> }
+  { params }: { params: Promise<{ tableId: string }> }
 ) {
   try {
-    const { qrCode: qrCodeParam } = await params;
+    const { tableId } = await params;
 
-    // Sanitize and validate QR code
-    const sanitizedQrCode = sanitizeInput.qrCode(
-      QRCodeSecurity.sanitizeQRCode(qrCodeParam)
-    );
-
-    const parsedQrCode = parseQRCode(sanitizedQrCode);
-    if (!parsedQrCode) {
-      return NextResponse.json(
-        { error: "Invalid QR code format" },
-        { status: 400, headers: getSecurityHeaders() }
-      );
-    }
-
-    // Get table from QR code
-    const qrCodeData = await db
-      .select({
-        qrCode: qrCode,
-        table: restaurantTable,
-      })
-      .from(qrCode)
-      .innerJoin(restaurantTable, eq(restaurantTable.id, qrCode.tableId))
-      .where(eq(qrCode.code, sanitizedQrCode))
+    // Verify table exists
+    const tableData = await db
+      .select()
+      .from(table)
+      .where(eq(table.id, tableId))
       .limit(1);
 
-    if (!qrCodeData.length) {
+    if (!tableData.length) {
       return NextResponse.json(
-        { error: "QR code not found" },
+        { error: "Table not found" },
         { status: 404, headers: getSecurityHeaders() }
       );
     }
 
-    const { table } = qrCodeData[0];
+    const tableInfo = tableData[0];
 
     // Find active order for this table
     const [activeOrder] = await db
@@ -57,7 +38,7 @@ export async function GET(
       .from(order)
       .where(
         and(
-          eq(order.tableId, table.id),
+          eq(order.tableId, tableInfo.id),
           or(
             eq(order.status, "ordering"),
             eq(order.status, "payment_started"),

@@ -137,7 +137,7 @@ export function SecuritySettingsSection({
           confirmPassword: "",
         });
         setIsChangingPassword(false);
-      } catch (error) {
+      } catch {
         toast.error("Failed to change password");
       }
     });
@@ -149,7 +149,7 @@ export function SecuritySettingsSection({
         toast.success(
           "Account deletion initiated. Check your email for confirmation."
         );
-      } catch (error) {
+      } catch {
         toast.error("Failed to initiate account deletion");
       }
     });

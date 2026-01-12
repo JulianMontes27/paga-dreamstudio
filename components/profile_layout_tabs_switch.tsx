@@ -63,9 +63,9 @@ const ProfileTabs = () => {
 
   const handleTabChange = (value: string) => {
     if (value === "general") {
-      router.push(`/${userId}`);
+      router.push(`/profile/${userId}`);
     } else {
-      router.push(`/${userId}/${value}`);
+      router.push(`/profile/${userId}/${value}`);
     }
   };
 

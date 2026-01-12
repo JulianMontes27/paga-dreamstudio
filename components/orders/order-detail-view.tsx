@@ -3,7 +3,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Clock, CreditCard, Users } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 interface MenuItem {
@@ -72,7 +71,7 @@ const STATUS_COLORS: Record<string, string> = {
   cancelled: "bg-red-500",
 };
 
-export function OrderDetailView({ order, userId, orgId }: OrderDetailViewProps) {
+export function OrderDetailView({ order }: OrderDetailViewProps) {
   const router = useRouter();
 
   const formatCurrency = (amount: string | number | null) => {

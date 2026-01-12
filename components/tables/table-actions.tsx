@@ -20,7 +20,6 @@ import {
   Clock,
   Sparkles,
   Edit,
-  QrCode,
   Trash2,
 } from "lucide-react";
 
@@ -32,7 +31,6 @@ interface TableData {
   tableNumber: string;
   capacity: number;
   section: string | null;
-  isQrEnabled: boolean;
   status: "available" | "occupied" | "reserved" | "cleaning";
 }
 
@@ -149,36 +147,6 @@ export function TableActions({
     });
   };
 
-  /**
-   * Regenerates QR code for the table with enhanced Sonner feedback
-   * Only available to admins and owners
-   */
-  const regenerateQRCode = async () => {
-    setIsLoading(true);
-
-    // Enhanced toast with loading states for better UX
-    toast.promise(
-      fetch(`/api/tables/${table.id}/qr`, {
-        method: "POST",
-      }).then(async (response) => {
-        if (!response.ok) {
-          throw new Error("Failed to regenerate QR code");
-        }
-
-        router.refresh();
-        return `QR code regenerated for Table ${table.tableNumber}`;
-      }),
-      {
-        loading: `Regenerating QR code for Table ${table.tableNumber}...`,
-        success: (message) => message,
-        error: (error) => {
-          console.error("Error regenerating QR code:", error);
-          return "Failed to regenerate QR code";
-        },
-        finally: () => setIsLoading(false),
-      }
-    );
-  };
 
   return (
     <>
@@ -266,11 +234,6 @@ export function TableActions({
               >
                 <Edit className="mr-2 h-4 w-4" />
                 Edit Table
-              </DropdownMenuItem>
-
-              <DropdownMenuItem onClick={regenerateQRCode} disabled={isLoading}>
-                <QrCode className="mr-2 h-4 w-4" />
-                Regenerate QR Code
               </DropdownMenuItem>
 
               <DropdownMenuSeparator />

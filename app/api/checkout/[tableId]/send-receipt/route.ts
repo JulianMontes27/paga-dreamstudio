@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { qrCode, organization } from "@/db/schema";
+import { table, organization } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { Resend } from "resend";
 
@@ -18,10 +18,10 @@ interface SendReceiptRequest {
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ qrCode: string }> }
+  { params }: { params: Promise<{ tableId: string }> }
 ) {
   try {
-    const { qrCode: qrCodeParam } = await params;
+    const { tableId } = await params;
     const body: SendReceiptRequest = await request.json();
 
     const { email, paymentId, orderNumber, amount, currency, organizationName, status } = body;
@@ -34,25 +34,25 @@ export async function POST(
       );
     }
 
-    // Verify QR code exists
-    const qrCodeData = await db
+    // Verify table exists and get organization
+    const tableData = await db
       .select({
-        qrCode: qrCode,
+        table: table,
         organization: organization,
       })
-      .from(qrCode)
-      .innerJoin(organization, eq(organization.id, qrCode.organizationId))
-      .where(eq(qrCode.code, qrCodeParam))
+      .from(table)
+      .innerJoin(organization, eq(organization.id, table.organizationId))
+      .where(eq(table.id, tableId))
       .limit(1);
 
-    if (!qrCodeData.length) {
+    if (!tableData.length) {
       return NextResponse.json(
-        { success: false, message: "Código QR no encontrado" },
+        { success: false, message: "Mesa no encontrada" },
         { status: 404 }
       );
     }
 
-    const { organization: org } = qrCodeData[0];
+    const { organization: org } = tableData[0];
 
     // Generate email content based on status
     const statusText = {

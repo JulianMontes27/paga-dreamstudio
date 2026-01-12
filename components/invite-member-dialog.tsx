@@ -10,52 +10,56 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { UserPlus } from "lucide-react";
-import { SendInvitationForm } from "./forms/send-invitation-form";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { InviteMemberForm } from "./forms/invite-member-form";
+import { Plus, Mail } from "lucide-react";
 
 interface InviteMemberDialogProps {
   organizationId: string;
-  organizationSlug?: string;
+  size?: "default" | "sm" | "lg" | "icon";
+  iconOnly?: boolean;
 }
 
-// Lazy-loaded invite member dialog - reduces initial bundle by ~15-20kb
 export function InviteMemberDialog({
   organizationId,
-  organizationSlug,
+  size = "sm",
+  iconOnly = false,
 }: InviteMemberDialogProps) {
-  const router = useRouter();
-  const [isOpen, setIsOpen] = useState(false);
+  const [open, setOpen] = useState(false);
 
-  // Handle successful invitation - refresh and close dialog
   const handleSuccess = () => {
-    setIsOpen(false);
-    router.refresh();
-    toast.success("Invitation sent successfully");
+    // Close dialog after successful invitation
+    setOpen(false);
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm">
-          <UserPlus className="mr-2 h-4 w-4" />
-          Invite Member
+        <Button
+          size={iconOnly ? "icon" : size}
+          className="rounded-full flex-shrink-0"
+          aria-label={iconOnly ? "Invitar miembro" : undefined}
+        >
+          {iconOnly ? (
+            <Plus className="h-4 w-4" />
+          ) : (
+            <>
+              <Mail className="h-4 w-4 mr-2" />
+              Invitar
+            </>
+          )}
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>
-            Invite Team Member
-            {organizationSlug && (
-              <span className="font-bold"> to {organizationSlug}</span>
-            )}
+      <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-xl max-h-[85vh] overflow-y-auto bg-gray-50 dark:bg-[#1a1a1a] border-gray-200 dark:border-[#2a2a2a]">
+        <DialogHeader className="space-y-2">
+          <DialogTitle className="text-xl font-semibold">
+            Invitar Miembro
           </DialogTitle>
-          <DialogDescription>
-            Send an invitation to a new team member to join your restaurant.
+          <DialogDescription className="text-sm text-gray-600 dark:text-white/60">
+            Envía una invitación por correo electrónico para unirse a la
+            organización
           </DialogDescription>
         </DialogHeader>
-        <SendInvitationForm
+        <InviteMemberForm
           organizationId={organizationId}
           onSuccess={handleSuccess}
         />

@@ -30,7 +30,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Loader2, Save } from "lucide-react";
 
@@ -47,14 +46,12 @@ const editTableSchema = z.object({
     .min(1, "Capacity must be at least 1")
     .max(20, "Capacity cannot exceed 20"),
   section: z.string().optional(),
-  isQrEnabled: z.boolean(),
 });
 
 type EditTableFormData = {
   tableNumber: string;
   capacity: number;
   section?: string;
-  isQrEnabled: boolean;
 };
 
 /**
@@ -65,7 +62,6 @@ interface TableData {
   tableNumber: string;
   capacity: number;
   section: string | null;
-  isQrEnabled: boolean;
   status: "available" | "occupied" | "reserved" | "cleaning";
 }
 
@@ -87,7 +83,6 @@ interface EditTableModalProps {
  * - Pre-populated form fields with current table data
  * - Section assignment
  * - Capacity validation
- * - QR code enable/disable toggle
  * - Real-time form feedback
  * - Better UX than separate edit page
  *
@@ -104,7 +99,6 @@ export function EditTableModal({ table, isOpen, onClose }: EditTableModalProps) 
       tableNumber: table.tableNumber,
       capacity: table.capacity,
       section: table.section === "none" ? "none" : table.section || "none",
-      isQrEnabled: table.isQrEnabled,
     },
   });
 
@@ -267,30 +261,6 @@ export function EditTableModal({ table, isOpen, onClose }: EditTableModalProps) 
                     Group tables by area for better organization
                   </FormDescription>
                   <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* QR Code Enabled Checkbox */}
-            <FormField
-              control={form.control}
-              name="isQrEnabled"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                      disabled={isLoading}
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>QR Code Enabled</FormLabel>
-                    <FormDescription>
-                      Allow customers to access menu and order using QR code.
-                      {!field.value && " (QR code will be hidden when disabled)"}
-                    </FormDescription>
-                  </div>
                 </FormItem>
               )}
             />

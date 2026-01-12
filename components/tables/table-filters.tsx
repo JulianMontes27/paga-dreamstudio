@@ -12,9 +12,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, X, Users, QrCode, ChevronRight } from "lucide-react";
+import { Search, X, Users, ChevronRight } from "lucide-react";
 import { TableActions } from "./table-actions";
-import { QRCodeModal } from "./qr-code-modal";
 import Link from "next/link";
 
 const STATUS_OPTIONS = [
@@ -232,12 +231,6 @@ export function TableFilters({
                       <Users className="h-3 w-3" />
                       {table.capacity}
                     </span>
-                    {table.isNFCEnabled && (
-                      <span className="flex items-center gap-1">
-                        <QrCode className="h-3 w-3" />
-                        {table.nfcScanCount} scans
-                      </span>
-                    )}
                   </div>
                 </div>
 
@@ -251,10 +244,6 @@ export function TableFilters({
 
                 {/* Actions */}
                 <div className="flex items-center gap-1" onClick={(e) => e.preventDefault()}>
-                  {table.isNFCEnabled && (
-                    <QRCodeModal table={table} organizationSlug={organizationSlug || ""} />
-                  )}
-
                   {canManage && (
                     <TableActions
                       table={table}

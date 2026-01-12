@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { CreateOrganizationForm } from "./forms/create-organization-form";
+import { CreateOrganizationForm } from "./create-organization-form";
 import { authClient } from "@/lib/auth-client";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";

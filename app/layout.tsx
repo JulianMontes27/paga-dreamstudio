@@ -4,6 +4,7 @@ import { Geist, Amarante } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "sonner";
 import { ConditionalLayout } from "@/components/conditional-layout";
+import { Header } from "@/components/header";
 // import { Analytics } from "@vercel/analytics/react";
 
 const defaultUrl = process.env.VERCEL_URL

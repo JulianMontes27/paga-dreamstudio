@@ -19,13 +19,11 @@ import Image from "next/image";
  * Dialog component for adding a new payment processor
  */
 export default function AddPaymentProcessorDialog({
-  organizationId,
   mpOauthUrl,
 }: {
-  organizationId: string;
   mpOauthUrl: string;
 }) {
-  const [connecting, setConnecting] = useState<string | null>(null);
+  const [connecting] = useState<string | null>(null);
 
   return (
     <Dialog>

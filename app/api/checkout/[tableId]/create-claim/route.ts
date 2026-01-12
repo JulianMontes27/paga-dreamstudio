@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { qrCode, organization } from "@/db/schema";
+import { table } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { parseQRCode, QRCodeSecurity } from "@/lib/qr-code";
 import { getSecurityHeaders } from "@/lib/rate-limit";
-import { sanitizeInput } from "@/lib/validation/table-schemas";
 import {
   createPaymentClaim,
   getAvailableAmount,
@@ -13,17 +11,17 @@ import {
 import { randomUUID } from "crypto";
 
 /**
- * POST /api/checkout/[qrCode]/create-claim
+ * POST /api/checkout/[tableId]/create-claim
  *
  * Creates a payment claim (reserves an amount from the order total)
  * This is the first step in the split payment flow.
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ qrCode: string }> }
+  { params }: { params: Promise<{ tableId: string }> }
 ) {
   try {
-    const { qrCode: qrCodeParam } = await params;
+    const { tableId } = await params;
     const body = await request.json();
 
     // Validate request body
@@ -43,33 +41,16 @@ export async function POST(
       );
     }
 
-    // Sanitize and validate QR code
-    const sanitizedQrCode = sanitizeInput.qrCode(
-      QRCodeSecurity.sanitizeQRCode(qrCodeParam)
-    );
-
-    const parsedQrCode = parseQRCode(sanitizedQrCode);
-    if (!parsedQrCode) {
-      return NextResponse.json(
-        { error: "Invalid QR code format" },
-        { status: 400, headers: getSecurityHeaders() }
-      );
-    }
-
-    // Verify QR code exists and matches organization
-    const qrCodeData = await db
-      .select({
-        qrCode: qrCode,
-        organization: organization,
-      })
-      .from(qrCode)
-      .innerJoin(organization, eq(organization.id, qrCode.organizationId))
-      .where(eq(qrCode.code, sanitizedQrCode))
+    // Verify table exists
+    const tableData = await db
+      .select()
+      .from(table)
+      .where(eq(table.id, tableId))
       .limit(1);
 
-    if (!qrCodeData.length) {
+    if (!tableData.length) {
       return NextResponse.json(
-        { error: "QR code not found" },
+        { error: "Table not found" },
         { status: 404, headers: getSecurityHeaders() }
       );
     }
@@ -133,14 +114,11 @@ export async function POST(
 }
 
 /**
- * GET /api/checkout/[qrCode]/create-claim?orderId=xxx
+ * GET /api/checkout/[tableId]/create-claim?orderId=xxx
  *
  * Get payment progress for an order
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ qrCode: string }> }
-) {
+export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const orderId = searchParams.get("orderId");

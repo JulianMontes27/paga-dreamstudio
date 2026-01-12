@@ -1,18 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { qrCode, restaurantTable, organization, menuItem, menuCategory } from "@/db/schema";
+import { table, organization, menuItem, menuCategory } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
-import { parseQRCode, isQRCodeExpired, QRCodeSecurity } from "@/lib/qr-code";
 import { checkQrScanRateLimit, getClientIP, getSecurityHeaders, getCorsHeaders } from "@/lib/rate-limit";
-import { sanitizeInput } from "@/lib/validation/table-schemas";
 import { getActivePaymentProcessor } from "@/server/payment-processors";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ qrCode: string }> }
+  { params }: { params: Promise<{ tableId: string }> }
 ) {
   try {
-    const { qrCode: qrCodeParam } = await params;
+    const { tableId } = await params;
 
     // Get client IP for rate limiting
     const clientIP = getClientIP(request);
@@ -22,7 +20,7 @@ export async function GET(
     if (rateLimitResult.limited) {
       return NextResponse.json(
         {
-          error: "Too many QR code scans. Please try again later.",
+          error: "Too many requests. Please try again later.",
           resetTime: rateLimitResult.resetTime,
         },
         {
@@ -37,76 +35,43 @@ export async function GET(
       );
     }
 
-    // Sanitize QR code input using both methods for extra security
-    const sanitizedQrCode = sanitizeInput.qrCode(
-      QRCodeSecurity.sanitizeQRCode(qrCodeParam)
-    );
-
-    // Parse and validate QR code format
-    const parsedQrCode = parseQRCode(sanitizedQrCode);
-
-    if (!parsedQrCode) {
-      return NextResponse.json(
-        { error: "Invalid QR code format" },
-        { status: 400 }
-      );
-    }
-
-    // Get QR code data from database
-    const qrCodeData = await db
+    // Get table data from database
+    const tableData = await db
       .select({
-        qrCode: qrCode,
-        table: restaurantTable,
+        table: table,
         organization: organization
       })
-      .from(qrCode)
-      .innerJoin(restaurantTable, eq(restaurantTable.id, qrCode.tableId))
-      .innerJoin(organization, eq(organization.id, qrCode.organizationId))
-      .where(eq(qrCode.code, sanitizedQrCode))
+      .from(table)
+      .innerJoin(organization, eq(organization.id, table.organizationId))
+      .where(eq(table.id, tableId))
       .limit(1);
 
-    if (!qrCodeData.length) {
+    if (!tableData.length) {
       return NextResponse.json(
-        { error: "QR code not found" },
+        { error: "Table not found" },
         { status: 404 }
       );
     }
 
-    const { qrCode: qrData, table, organization: org } = qrCodeData[0];
+    const { table: tableInfo, organization: org } = tableData[0];
 
-    // Check if QR code is active
-    if (!qrData.isActive) {
+    // Check if table NFC is enabled
+    if (!tableInfo.isNFCEnabled) {
       return NextResponse.json(
-        { error: "QR code is inactive" },
-        { status: 403 }
-      );
-    }
-
-    // Check if QR code is expired
-    if (isQRCodeExpired(qrData.expiresAt)) {
-      return NextResponse.json(
-        { error: "QR code has expired" },
-        { status: 410 }
-      );
-    }
-
-    // Check if table QR is enabled
-    if (!table.isQrEnabled) {
-      return NextResponse.json(
-        { error: "QR ordering is disabled for this table" },
+        { error: "NFC ordering is disabled for this table" },
         { status: 403 }
       );
     }
 
     // Update scan count and last scanned timestamp
     await db
-      .update(qrCode)
+      .update(table)
       .set({
-        scanCount: (qrData.scanCount || 0) + 1,
-        lastScannedAt: new Date(),
+        nfcScanCount: (tableInfo.nfcScanCount || 0) + 1,
+        lastNfcScanAt: new Date(),
         updatedAt: new Date()
       })
-      .where(eq(qrCode.id, qrData.id));
+      .where(eq(table.id, tableId));
 
     // Get menu items for the organization
     const menuItems = await db
@@ -150,15 +115,11 @@ export async function GET(
         slug: org.slug
       },
       table: {
-        id: table.id,
-        tableNumber: table.tableNumber,
-        capacity: table.capacity,
-        section: table.section
-      },
-      qrCode: {
-        id: qrData.id,
-        code: qrData.code,
-        scanCount: (qrData.scanCount || 0) + 1
+        id: tableInfo.id,
+        tableNumber: tableInfo.tableNumber,
+        capacity: tableInfo.capacity,
+        section: tableInfo.section,
+        scanCount: (tableInfo.nfcScanCount || 0) + 1
       },
       menu: Object.values(groupedMenu),
       // Payment processor type - frontend only needs to know which UI to show

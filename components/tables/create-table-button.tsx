@@ -119,7 +119,7 @@ export function CreateTableButton({ organizationId }: CreateTableButtonProps) {
         throw new Error(errorData.error || "Failed to create table");
       }
 
-      const result = await response.json();
+      await response.json();
 
       // Show success message
       toast.success(
