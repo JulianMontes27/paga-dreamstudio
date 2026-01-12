@@ -7,14 +7,20 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 const translateError = (errorMessage: string): string => {
   // Rate limiting error
-  if (errorMessage.includes("For security purposes") || errorMessage.includes("Email rate limit exceeded")) {
+  if (
+    errorMessage.includes("For security purposes") ||
+    errorMessage.includes("Email rate limit exceeded")
+  ) {
     const match = errorMessage.match(/after (\d+) seconds/);
     const seconds = match ? match[1] : "unos";
     return `Por seguridad, puedes solicitar esto después de ${seconds} segundos.`;
   }
 
   // Other common errors
-  if (errorMessage.includes("Invalid login credentials") || errorMessage.includes("Invalid OTP")) {
+  if (
+    errorMessage.includes("Invalid login credentials") ||
+    errorMessage.includes("Invalid OTP")
+  ) {
     return "Código de verificación inválido";
   }
   if (errorMessage.includes("Invalid password")) {
@@ -95,7 +101,9 @@ export const AuthSignIn = () => {
             setError(null);
             return null;
           }
-          setError(`Por seguridad, puedes solicitar esto después de ${prev - 1} segundos.`);
+          setError(
+            `Por seguridad, puedes solicitar esto después de ${prev - 1} segundos.`
+          );
           return prev - 1;
         });
       }, 1000);
@@ -116,15 +124,21 @@ export const AuthSignIn = () => {
       });
       setIsOtpSent(true);
     } catch (error: unknown) {
-      const errorMsg = error instanceof Error ? error.message : "Ocurrió un error";
+      const errorMsg =
+        error instanceof Error ? error.message : "Ocurrió un error";
 
       // Check if it's a rate limiting error
-      if (errorMsg.includes("For security purposes") || errorMsg.includes("Email rate limit exceeded")) {
+      if (
+        errorMsg.includes("For security purposes") ||
+        errorMsg.includes("Email rate limit exceeded")
+      ) {
         const match = errorMsg.match(/after (\d+) seconds/);
         if (match) {
           const seconds = parseInt(match[1], 10);
           setErrorCountdown(seconds);
-          setError(`Por seguridad, puedes solicitar esto después de ${seconds} segundos.`);
+          setError(
+            `Por seguridad, puedes solicitar esto después de ${seconds} segundos.`
+          );
         } else {
           setError(translateError(errorMsg));
         }
@@ -148,14 +162,20 @@ export const AuthSignIn = () => {
       });
       setIsOtpSent(true);
     } catch (error: unknown) {
-      const errorMsg = error instanceof Error ? error.message : "Ocurrió un error";
+      const errorMsg =
+        error instanceof Error ? error.message : "Ocurrió un error";
 
-      if (errorMsg.includes("For security purposes") || errorMsg.includes("rate limit")) {
+      if (
+        errorMsg.includes("For security purposes") ||
+        errorMsg.includes("rate limit")
+      ) {
         const match = errorMsg.match(/after (\d+) seconds/);
         if (match) {
           const seconds = parseInt(match[1], 10);
           setErrorCountdown(seconds);
-          setError(`Por seguridad, puedes solicitar esto después de ${seconds} segundos.`);
+          setError(
+            `Por seguridad, puedes solicitar esto después de ${seconds} segundos.`
+          );
         } else {
           setError(translateError(errorMsg));
         }
@@ -190,7 +210,8 @@ export const AuthSignIn = () => {
         }
       );
     } catch (error: unknown) {
-      const errorMsg = error instanceof Error ? error.message : "Ocurrió un error";
+      const errorMsg =
+        error instanceof Error ? error.message : "Ocurrió un error";
       setError(translateError(errorMsg));
     } finally {
       setIsLoading(false);
@@ -210,15 +231,21 @@ export const AuthSignIn = () => {
             handleRedirect(getRedirectUrl());
           },
           onError: (error: unknown) => {
-            const errorMsg = error instanceof Error ? error.message : "Código inválido";
+            const errorMsg =
+              error instanceof Error ? error.message : "Código inválido";
 
             // Check if it's a rate limiting error
-            if (errorMsg.includes("For security purposes") || errorMsg.includes("Email rate limit exceeded")) {
+            if (
+              errorMsg.includes("For security purposes") ||
+              errorMsg.includes("Email rate limit exceeded")
+            ) {
               const match = errorMsg.match(/after (\d+) seconds/);
               if (match) {
                 const seconds = parseInt(match[1], 10);
                 setErrorCountdown(seconds);
-                setError(`Por seguridad, puedes solicitar esto después de ${seconds} segundos.`);
+                setError(
+                  `Por seguridad, puedes solicitar esto después de ${seconds} segundos.`
+                );
               } else {
                 setError(translateError(errorMsg));
               }
@@ -229,7 +256,8 @@ export const AuthSignIn = () => {
         }
       );
     } catch (error: unknown) {
-      const errorMsg = error instanceof Error ? error.message : "Código inválido";
+      const errorMsg =
+        error instanceof Error ? error.message : "Código inválido";
       setError(translateError(errorMsg));
     } finally {
       setIsLoading(false);
@@ -249,15 +277,21 @@ export const AuthSignIn = () => {
       });
       setMessage("Código reenviado exitosamente");
     } catch (error: unknown) {
-      const errorMsg = error instanceof Error ? error.message : "Ocurrió un error";
+      const errorMsg =
+        error instanceof Error ? error.message : "Ocurrió un error";
 
       // Check if it's a rate limiting error
-      if (errorMsg.includes("For security purposes") || errorMsg.includes("Email rate limit exceeded")) {
+      if (
+        errorMsg.includes("For security purposes") ||
+        errorMsg.includes("Email rate limit exceeded")
+      ) {
         const match = errorMsg.match(/after (\d+) seconds/);
         if (match) {
           const seconds = parseInt(match[1], 10);
           setErrorCountdown(seconds);
-          setError(`Por seguridad, puedes solicitar esto después de ${seconds} segundos.`);
+          setError(
+            `Por seguridad, puedes solicitar esto después de ${seconds} segundos.`
+          );
         } else {
           setError(translateError(errorMsg));
         }
@@ -283,14 +317,20 @@ export const AuthSignIn = () => {
       });
       handleRedirect(getRedirectUrl());
     } catch (error: unknown) {
-      const errorMsg = error instanceof Error ? error.message : "Código inválido";
+      const errorMsg =
+        error instanceof Error ? error.message : "Código inválido";
 
-      if (errorMsg.includes("For security purposes") || errorMsg.includes("rate limit")) {
+      if (
+        errorMsg.includes("For security purposes") ||
+        errorMsg.includes("rate limit")
+      ) {
         const match = errorMsg.match(/after (\d+) seconds/);
         if (match) {
           const seconds = parseInt(match[1], 10);
           setErrorCountdown(seconds);
-          setError(`Por seguridad, puedes solicitar esto después de ${seconds} segundos.`);
+          setError(
+            `Por seguridad, puedes solicitar esto después de ${seconds} segundos.`
+          );
         } else {
           setError(translateError(errorMsg));
         }
@@ -314,14 +354,20 @@ export const AuthSignIn = () => {
       });
       setMessage("Código reenviado exitosamente");
     } catch (error: unknown) {
-      const errorMsg = error instanceof Error ? error.message : "Ocurrió un error";
+      const errorMsg =
+        error instanceof Error ? error.message : "Ocurrió un error";
 
-      if (errorMsg.includes("For security purposes") || errorMsg.includes("rate limit")) {
+      if (
+        errorMsg.includes("For security purposes") ||
+        errorMsg.includes("rate limit")
+      ) {
         const match = errorMsg.match(/after (\d+) seconds/);
         if (match) {
           const seconds = parseInt(match[1], 10);
           setErrorCountdown(seconds);
-          setError(`Por seguridad, puedes solicitar esto después de ${seconds} segundos.`);
+          setError(
+            `Por seguridad, puedes solicitar esto después de ${seconds} segundos.`
+          );
         } else {
           setError(translateError(errorMsg));
         }
@@ -345,11 +391,15 @@ export const AuthSignIn = () => {
         },
         {
           onRequest: () => setIsLoading(true),
-          onError: (ctx) => setError(ctx.error.message || "Error al iniciar sesión con Google"),
+          onError: (ctx) =>
+            setError(ctx.error.message || "Error al iniciar sesión con Google"),
         }
       );
     } catch (error: unknown) {
-      const errorMsg = error instanceof Error ? error.message : "Error al iniciar sesión con Google";
+      const errorMsg =
+        error instanceof Error
+          ? error.message
+          : "Error al iniciar sesión con Google";
       setError(translateError(errorMsg));
     } finally {
       setIsLoading(false);
@@ -368,11 +418,15 @@ export const AuthSignIn = () => {
         },
         {
           onRequest: () => setIsLoading(true),
-          onError: (ctx) => setError(ctx.error.message || "Error al iniciar sesión con Apple"),
+          onError: (ctx) =>
+            setError(ctx.error.message || "Error al iniciar sesión con Apple"),
         }
       );
     } catch (error: unknown) {
-      const errorMsg = error instanceof Error ? error.message : "Error al iniciar sesión con Apple";
+      const errorMsg =
+        error instanceof Error
+          ? error.message
+          : "Error al iniciar sesión con Apple";
       setError(translateError(errorMsg));
     } finally {
       setIsLoading(false);
@@ -395,7 +449,10 @@ export const AuthSignIn = () => {
   return (
     <SignInPage
       title={
-        <span className="font-semibold text-foreground tracking-tight" style={{ fontFamily: 'LOT, sans-serif' }}>
+        <span
+          className="font-semibold text-foreground tracking-tight"
+          style={{ fontFamily: "LOT, sans-serif" }}
+        >
           Time to Hunt
         </span>
       }

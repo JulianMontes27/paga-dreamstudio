@@ -1,40 +1,82 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "@/components/ui/sonner";
-import { NextIntlClientProvider } from 'next-intl';
-import { getMessages } from 'next-intl/server';
+import type { Metadata, Viewport } from "next";
+import { Geist, Amarante } from "next/font/google";
+import { ThemeProvider } from "next-themes";
+import { Toaster } from "sonner";
+import { ConditionalLayout } from "@/components/conditional-layout";
+// import { Analytics } from "@vercel/analytics/react";
+
+const defaultUrl = process.env.VERCEL_URL
+  ? `https://${process.env.VERCEL_URL}`
+  : process.env.APP_URL || "http://localhost:3000";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover", // Support for iPhone notch and dynamic UI
+};
+
+export const metadata: Metadata = {
+  metadataBase: new URL(defaultUrl),
+  title: "Elio",
+  description: "Elevate your day.",
+  icons: {
+    icon: [
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
+};
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+  display: "swap",
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "tip",
-  description: "the modern POS platform for restaurants",
-};
+const amarante = Amarante({
+  variable: "--font-amarante",
+  display: "swap",
+  subsets: ["latin"],
+  weight: "400",
+});
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const messages = await getMessages();
-
   return (
-    <html lang="es" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.className} ${amarante.variable} antialiased`}
       >
-        <NextIntlClientProvider messages={messages}>
-          {children}
-          <Toaster />
-        </NextIntlClientProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Toaster
+            position="bottom-center"
+            expand={false}
+            offset="24px"
+            className="!z-[99999]"
+            toastOptions={{
+              unstyled: true,
+              classNames: {
+                toast: "w-[calc(100%-2rem)] mx-4 sm:w-full sm:max-w-md sm:mx-0",
+                title: "text-sm font-medium",
+                description: "text-sm",
+              },
+            }}
+          />
+          <ConditionalLayout>{children}</ConditionalLayout>
+        </ThemeProvider>
+        {/* <Analytics /> */}
       </body>
     </html>
   );

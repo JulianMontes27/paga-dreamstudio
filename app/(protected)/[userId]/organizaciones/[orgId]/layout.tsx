@@ -1,7 +1,5 @@
 import { notFound } from "next/navigation";
 import RestaurantTabs from "@/components/restaurant-tabs";
-import { getOrganizationBySlug } from "@/server/organizations";
-import { getCurrentUser } from "@/server/users";
 import { Link } from "lucide-react";
 
 export default async function RestaurantLayout({
@@ -12,13 +10,9 @@ export default async function RestaurantLayout({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const { user } = await getCurrentUser();
 
   // Validate that the organization exists
-  const org = await getOrganizationBySlug(slug);
-  if (!org) {
-    notFound();
-  }
+ 
 
   // Fetch member ONCE
   const memberByUserId = org.members.find(

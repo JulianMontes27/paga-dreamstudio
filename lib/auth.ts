@@ -16,6 +16,7 @@ import { schema } from "@/db";
 import OrganizationInvitationEmail from "@/components/email-organization-invitation";
 import { ac, administrator, waiter, owner } from "@/lib/auth-permissions";
 import { and, eq } from "drizzle-orm";
+import bcrypt from "bcrypt";
 // import ForgotPasswordEmail from "@/components/email-reset-password";
 // import { sendMagicLinkEmail } from "./helpers/email";
 
@@ -33,7 +34,7 @@ export const auth = betterAuth({
   }),
 
   trustedOrigins: [
-    process.env.BETTER_AUTH_URL || "http://localhost:3000",
+    process.env.NEXT_PUBLIC_BETTER_AUTH_URL || "http://localhost:3000",
     "http://localhost:3000",
     "http://192.168.0.7:3000",
   ].filter(Boolean),
