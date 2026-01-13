@@ -16,10 +16,8 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
     pathname?.startsWith("/confirm") ||
     pathname?.startsWith("/error") ||
     pathname?.startsWith("/verify-phone") ||
+    pathname?.startsWith("/checkout") ||
     pathname?.startsWith("/sign-up-success");
-
-  // Hide header and footer for admin routes
-  const isAdminRoute = pathname?.includes("/administrador");
 
   // Hide header and footer for organization admin routes
   const isOrgAdminRoute = pathname?.includes("/organizaciones/");
@@ -27,7 +25,7 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
   // // Hide footer for profile routes
   // const isProfileRoute = pathname?.startsWith("/profile");
 
-  if (isAuthRoute || isAdminRoute || isOrgAdminRoute) {
+  if (isAuthRoute || isOrgAdminRoute) {
     return <>{children}</>;
   }
 
