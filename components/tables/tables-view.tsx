@@ -39,8 +39,7 @@ type TableWithCheckout = {
 interface TablesViewProps {
   tables: TableWithCheckout[];
   floors: FloorData[];
-  userRole: "waiter" | "admin" | "owner";
-  organizationSlug?: string;
+  canUpdate: boolean;
   organizationId: string;
   userId: string;
 }
@@ -48,8 +47,7 @@ interface TablesViewProps {
 export function TablesView({
   tables,
   floors,
-  userRole,
-  organizationSlug,
+  canUpdate,
   organizationId,
   userId,
 }: TablesViewProps) {
@@ -101,9 +99,9 @@ export function TablesView({
       {viewMode === "list" && (
         <TableFilters
           tables={tables}
-          userRole={userRole}
           organizationId={organizationId}
           userId={userId}
+          canUpdate={canUpdate}
         />
       )}
 
@@ -112,17 +110,12 @@ export function TablesView({
         <FloorPlanProvider
           initialFloors={floors}
           initialTables={floorPlanTables}
-          organizationSlug={organizationSlug}
           userId={userId}
-          canEdit={userRole === "admin" || userRole === "owner"}
         >
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-4 flex-wrap">
-              <FloorSelector
-                organizationId={organizationId}
-                canEdit={userRole === "admin" || userRole === "owner"}
-              />
-              {(userRole === "admin" || userRole === "owner") && (
+              <FloorSelector organizationId={organizationId} />
+              {canUpdate && (
                 <FloorPlanToolbar organizationId={organizationId} />
               )}
             </div>

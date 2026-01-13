@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Clock, CreditCard, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { AddItemsDialog } from "./add-items-dialog";
 
 interface MenuItem {
   id: string;
@@ -57,10 +58,22 @@ interface Order {
   paymentClaims: PaymentClaim[];
 }
 
+interface MenuItemData {
+  id: string;
+  name: string;
+  description: string | null;
+  price: string;
+  category: {
+    id: string;
+    name: string;
+  } | null;
+}
+
 interface OrderDetailViewProps {
   order: Order;
   userId: string;
   orgId: string;
+  menuItems: MenuItemData[];
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -71,8 +84,17 @@ const STATUS_COLORS: Record<string, string> = {
   cancelled: "bg-red-500",
 };
 
-export function OrderDetailView({ order }: OrderDetailViewProps) {
+export function OrderDetailView({
+  order,
+  userId,
+  orgId,
+  menuItems,
+}: OrderDetailViewProps) {
   const router = useRouter();
+
+  // Only allow adding items if order is in ordering or payment_started status
+  const canAddItems =
+    order.status === "ordering" || order.status === "payment_started";
 
   const formatCurrency = (amount: string | number | null) => {
     if (!amount) return "$0.00";
@@ -116,9 +138,14 @@ export function OrderDetailView({ order }: OrderDetailViewProps) {
             {order.customerName && <span>· {order.customerName}</span>}
           </div>
         </div>
-        <Badge variant="secondary" className="capitalize">
-          {order.status.replace("_", " ")}
-        </Badge>
+        <div className="flex items-center gap-2">
+          {canAddItems && (
+            <AddItemsDialog orderId={order.id} menuItems={menuItems} />
+          )}
+          <Badge variant="secondary" className="capitalize">
+            {order.status.replace("_", " ")}
+          </Badge>
+        </div>
       </div>
 
       {/* Stats */}

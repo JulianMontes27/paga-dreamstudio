@@ -44,6 +44,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if there's already an active order for this table
+    const existingActiveOrder = await db.query.order.findFirst({
+      where: (orders, { eq, and, or, inArray }) =>
+        and(
+          eq(orders.tableId, tableId),
+          inArray(orders.status, ["ordering", "payment_started", "partially_paid"])
+        ),
+    });
+
+    if (existingActiveOrder) {
+      return NextResponse.json(
+        { error: "This table already has an active order" },
+        { status: 400 }
+      );
+    }
+
     // Generate order number
     const orderCount = await db
       .select()

@@ -55,16 +55,16 @@ type TableWithCheckout = {
 
 interface TableFiltersProps {
   tables: TableWithCheckout[];
-  userRole: "waiter" | "admin" | "owner";
   organizationId?: string;
   userId?: string;
+  canUpdate: boolean;
 }
 
 export function TableFilters({
   tables,
-  userRole,
   organizationId = "",
   userId = "",
+  canUpdate,
 }: TableFiltersProps) {
   const searchParams = useSearchParams();
 
@@ -250,7 +250,7 @@ export function TableFilters({
                 >
                   <TableActions
                     table={table}
-                    userRole={userRole}
+                    canUpdate={canUpdate}
                     organizationId={organizationId || ""}
                     userId={userId}
                   />

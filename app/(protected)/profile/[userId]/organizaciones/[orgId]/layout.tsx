@@ -5,7 +5,7 @@ import { Metadata } from "next";
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: "Administrador de Eventos",
+    title: "Administrador de Restaurantes",
   };
 }
 

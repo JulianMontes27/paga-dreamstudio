@@ -1,7 +1,6 @@
 import { db } from "@/db";
-import { floor, table, order, member } from "@/db/schema";
+import { floor, table, order } from "@/db/schema";
 import { eq, asc, and, inArray, isNotNull } from "drizzle-orm";
-import { redirect } from "next/navigation";
 import { TablesView } from "@/components/tables/tables-view";
 import { CreateTableButton } from "@/components/tables/create-table-button";
 import { auth } from "@/lib/auth";
@@ -17,30 +16,17 @@ export default async function TablesPage({
   const { userId, orgId } = await params;
   const reqHeaders = await headers();
 
-  // Get session for auth
-  const session = await auth.api.getSession({
-    headers: reqHeaders,
-  });
-
-  if (!session?.user) {
-    redirect("/sign-in");
-  }
-
   // Check table read permission
-  const canViewTables = await auth.api.hasPermission({
+  const canUpdateTables = await auth.api.hasPermission({
     headers: reqHeaders,
     body: {
-      permission: { table: ["read"] },
+      permission: { table: ["create", "delete", "update"] },
       organizationId: orgId,
     },
   });
 
-  if (!canViewTables?.success) {
-    redirect(`/${userId}/organizaciones`);
-  }
-
   // Fetch all data in parallel for better performance
-  const [tables, floors, activeOrdersData, userMember] = await Promise.all([
+  const [tables, floors, activeOrdersData] = await Promise.all([
     // Fetch tables
     db
       .select()
@@ -73,36 +59,7 @@ export default async function TablesPage({
           ])
         )
       ),
-
-    // Fetch user's member role
-    db
-      .select({
-        id: member.id,
-        role: member.role,
-      })
-      .from(member)
-      .where(
-        and(
-          eq(member.userId, session.user.id),
-          eq(member.organizationId, orgId)
-        )
-      )
-      .limit(1),
   ]);
-
-  // Verify membership
-  if (!userMember || userMember.length === 0) {
-    redirect(`/${userId}/organizaciones`);
-  }
-
-  // Map schema roles to component roles
-  const schemaRole = userMember[0].role as "waiter" | "administrator" | "owner";
-  const userRole: "waiter" | "admin" | "owner" =
-    schemaRole === "administrator"
-      ? "admin"
-      : schemaRole === "waiter"
-        ? "waiter"
-        : "owner";
 
   // Build activity map: tableId -> OrderActivity
   const tableActivityMap = new Map<string, OrderActivity>();
@@ -149,23 +106,21 @@ export default async function TablesPage({
     checkoutUrl: `${process.env.NEXT_PUBLIC_APP_URL || ""}/checkout/${t.id}`,
   }));
 
-  // Check if user can manage tables (create/update/delete)
-  const canManageTables = userRole === "admin" || userRole === "owner";
+  const canUpdate = !!canUpdateTables?.success;
 
   return (
     <div className="space-y-3">
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Mesas</h1>
-        {canManageTables && <CreateTableButton organizationId={orgId} />}
+        {canUpdate && <CreateTableButton organizationId={orgId} />}
       </div>
 
       {/* Tables View */}
       <TablesView
         tables={tablesWithCheckout}
         floors={floors}
-        userRole={userRole}
-        organizationSlug={orgId}
+        canUpdate={canUpdate}
         organizationId={orgId}
         userId={userId}
       />

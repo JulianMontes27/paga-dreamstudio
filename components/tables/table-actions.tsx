@@ -41,23 +41,21 @@ interface TableData {
  */
 interface TableActionsProps {
   table: TableData;
-  userRole: "waiter" | "admin" | "owner";
   organizationId: string;
   userId?: string;
+  canUpdate: boolean;
 }
 
 export function TableActions({
   table,
-  userRole,
   organizationId,
   userId,
+  canUpdate,
 }: TableActionsProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const router = useRouter();
 
-  // Permission checks
-  const canManageTable = userRole === "admin" || userRole === "owner";
   const canAssignCustomers = true; // All roles can assign customers
 
   // Construct checkout URL
@@ -268,7 +266,7 @@ export function TableActions({
           )}
 
           {/* Management Actions - Only for admins and owners */}
-          {canManageTable && (
+          {canUpdate && (
             <>
               <DropdownMenuSeparator />
 
