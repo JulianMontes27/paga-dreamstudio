@@ -87,8 +87,7 @@ export async function updatePaymentClaimPayment(
       paymentId: update.paymentId,
       preferenceId: update.preferenceId,
       paymentMetadata: update.paymentMetadata,
-      updatedAt: sql`CURRENT_TIMESTAMP`,
-    })
+      })
     .where(eq(paymentClaim.id, claimId))
     .returning();
 
@@ -136,8 +135,7 @@ export async function cancelPaymentClaim(claimId: string) {
     .update(paymentClaim)
     .set({
       status: "cancelled",
-      updatedAt: sql`CURRENT_TIMESTAMP`,
-    })
+      })
     .where(eq(paymentClaim.id, claimId))
     .returning();
 

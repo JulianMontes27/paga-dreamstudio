@@ -60,11 +60,11 @@ export const verification = pgTable("verification", {
   id: text().primaryKey().notNull(),
   identifier: text().notNull(),
   value: text().notNull(),
-  expiresAt: timestamp({ withTimezone: true, mode: "string" }).notNull(),
-  createdAt: timestamp({ withTimezone: true, mode: "string" })
+  expiresAt: timestamp({ withTimezone: true }).notNull(),
+  createdAt: timestamp({ withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
-  updatedAt: timestamp({ withTimezone: true, mode: "string" })
+  updatedAt: timestamp({ withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
 });
@@ -77,27 +77,27 @@ export const user = pgTable(
     email: text().notNull(),
     emailVerified: boolean().notNull(),
     image: text(),
-    createdAt: timestamp({ withTimezone: true, mode: "string" })
+    createdAt: timestamp({ withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
-    updatedAt: timestamp({ withTimezone: true, mode: "string" })
+    updatedAt: timestamp({ withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
     role: text(),
     banned: boolean(),
     banReason: text(),
-    banExpires: timestamp({ withTimezone: true, mode: "string" }),
+    banExpires: timestamp({ withTimezone: true }),
     isAnonymous: boolean(),
     phoneNumber: text(),
     phoneNumberVerified: boolean(),
     userMetadata: jsonb(),
     appMetadata: jsonb(),
-    invitedAt: timestamp({ withTimezone: true, mode: "string" }),
-    lastSignInAt: timestamp({ withTimezone: true, mode: "string" }),
+    invitedAt: timestamp({ withTimezone: true }),
+    lastSignInAt: timestamp({ withTimezone: true }),
     documentId: text("document_id"),
     documentTypeId: uuid("document_type_id"),
     gender: genderType(),
-    birthdate: timestamp({ withTimezone: true, mode: "string" }),
+    birthdate: timestamp({ withTimezone: true }),
     tipoPersona: text("tipo_persona"),
     nombres: text(),
     apellidos: text(),
@@ -122,7 +122,7 @@ export const organization = pgTable(
     name: text().notNull(),
     slug: text().notNull(),
     logo: text(),
-    createdAt: timestamp({ withTimezone: true, mode: "string" })
+    createdAt: timestamp({ withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
     metadata: text(),
@@ -158,10 +158,10 @@ export const menuItem = pgTable(
     preparationTime: integer("preparation_time"),
     allergens: jsonb(),
     nutritionalInfo: jsonb("nutritional_info"),
-    createdAt: timestamp("created_at", { mode: "string" })
+    createdAt: timestamp("created_at")
       .defaultNow()
       .notNull(),
-    updatedAt: timestamp("updated_at", { mode: "string" })
+    updatedAt: timestamp("updated_at")
       .defaultNow()
       .notNull(),
   },
@@ -188,10 +188,10 @@ export const menuCategory = pgTable(
     description: text(),
     displayOrder: integer("display_order").default(0),
     isActive: boolean("is_active").default(true),
-    createdAt: timestamp("created_at", { mode: "string" })
+    createdAt: timestamp("created_at")
       .defaultNow()
       .notNull(),
-    updatedAt: timestamp("updated_at", { mode: "string" })
+    updatedAt: timestamp("updated_at")
       .defaultNow()
       .notNull(),
   },
@@ -211,7 +211,7 @@ export const member = pgTable(
     organizationId: text().notNull(),
     userId: text().notNull(),
     role: memberRole().default("waiter").notNull(),
-    createdAt: timestamp({ withTimezone: true, mode: "string" })
+    createdAt: timestamp({ withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
   },
@@ -237,9 +237,9 @@ export const invitation = pgTable(
     email: text().notNull(),
     role: memberRole().default("waiter"),
     status: text().default("pending").notNull(),
-    expiresAt: timestamp({ withTimezone: true, mode: "string" }).notNull(),
+    expiresAt: timestamp({ withTimezone: true }).notNull(),
     inviterId: text().notNull(),
-    createdAt: timestamp({ withTimezone: true, mode: "string" })
+    createdAt: timestamp({ withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
   },
@@ -266,10 +266,10 @@ export const floor = pgTable(
     displayOrder: integer("display_order").default(0),
     canvasWidth: integer("canvas_width").default(800),
     canvasHeight: integer("canvas_height").default(600),
-    createdAt: timestamp("created_at", { mode: "string" })
+    createdAt: timestamp("created_at")
       .defaultNow()
       .notNull(),
-    updatedAt: timestamp("updated_at", { mode: "string" })
+    updatedAt: timestamp("updated_at")
       .defaultNow()
       .notNull(),
   },
@@ -319,14 +319,14 @@ export const account = pgTable(
     accessToken: text(),
     refreshToken: text(),
     idToken: text(),
-    accessTokenExpiresAt: timestamp({ withTimezone: true, mode: "string" }),
-    refreshTokenExpiresAt: timestamp({ withTimezone: true, mode: "string" }),
+    accessTokenExpiresAt: timestamp({ withTimezone: true }),
+    refreshTokenExpiresAt: timestamp({ withTimezone: true }),
     scope: text(),
     password: text(),
-    createdAt: timestamp({ withTimezone: true, mode: "string" })
+    createdAt: timestamp({ withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
-    updatedAt: timestamp({ withTimezone: true, mode: "string" }).notNull(),
+    updatedAt: timestamp({ withTimezone: true }).notNull(),
   },
   (table) => [
     foreignKey({
@@ -357,7 +357,7 @@ export const order = pgTable(
     customerPhone: text("customer_phone"),
     createdBy: text("created_by"),
     servedBy: text("served_by"),
-    paidAt: timestamp("paid_at", { mode: "string" }),
+    paidAt: timestamp("paid_at"),
     paymentProcessor: text("payment_processor"),
     paymentId: text("payment_id"),
     preferenceId: text("preference_id"),
@@ -377,10 +377,10 @@ export const order = pgTable(
       "0.00"
     ),
     isLocked: boolean("is_locked").default(false),
-    createdAt: timestamp("created_at", { mode: "string" })
+    createdAt: timestamp("created_at")
       .defaultNow()
       .notNull(),
-    updatedAt: timestamp("updated_at", { mode: "string" })
+    updatedAt: timestamp("updated_at")
       .defaultNow()
       .notNull(),
   },
@@ -402,12 +402,12 @@ export const session = pgTable(
   "session",
   {
     id: text().primaryKey().notNull(),
-    expiresAt: timestamp({ withTimezone: true, mode: "string" }).notNull(),
+    expiresAt: timestamp({ withTimezone: true }).notNull(),
     token: text().notNull(),
-    createdAt: timestamp({ withTimezone: true, mode: "string" })
+    createdAt: timestamp({ withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
-    updatedAt: timestamp({ withTimezone: true, mode: "string" }).notNull(),
+    updatedAt: timestamp({ withTimezone: true }).notNull(),
     ipAddress: text(),
     userAgent: text(),
     userId: text().notNull(),
@@ -439,15 +439,15 @@ export const paymentClaim = pgTable(
     }).notNull(),
     totalToPay: numeric("total_to_pay", { precision: 10, scale: 2 }).notNull(),
     status: text().default("reserved").notNull(),
-    claimedAt: timestamp("claimed_at", { mode: "string" })
+    claimedAt: timestamp("claimed_at")
       .defaultNow()
       .notNull(),
-    expiresAt: timestamp("expires_at", { mode: "string" }).notNull(),
+    expiresAt: timestamp("expires_at").notNull(),
     paymentProcessor: text("payment_processor"),
     paymentId: text("payment_id"),
     preferenceId: text("preference_id"),
     paymentMetadata: jsonb("payment_metadata"),
-    paidAt: timestamp("paid_at", { mode: "string" }),
+    paidAt: timestamp("paid_at"),
     processorFee: numeric("processor_fee", { precision: 10, scale: 2 }).default(
       "0.00"
     ),
@@ -456,10 +456,10 @@ export const paymentClaim = pgTable(
       scale: 2,
     }).default("0.00"),
     sessionToken: text("session_token").notNull(),
-    createdAt: timestamp("created_at", { mode: "string" })
+    createdAt: timestamp("created_at")
       .defaultNow()
       .notNull(),
-    updatedAt: timestamp("updated_at", { mode: "string" })
+    updatedAt: timestamp("updated_at")
       .defaultNow()
       .notNull(),
   },
@@ -484,10 +484,10 @@ export const orderItem = pgTable(
     totalPrice: numeric("total_price", { precision: 10, scale: 2 }).notNull(),
     specialInstructions: text("special_instructions"),
     status: text().default("pending").notNull(),
-    createdAt: timestamp("created_at", { mode: "string" })
+    createdAt: timestamp("created_at")
       .defaultNow()
       .notNull(),
-    updatedAt: timestamp("updated_at", { mode: "string" })
+    updatedAt: timestamp("updated_at")
       .defaultNow()
       .notNull(),
   },
@@ -521,16 +521,15 @@ export const table = pgTable(
     status: text().default("available").notNull(),
     section: text(),
     isNfcEnabled: boolean("is_nfc_enabled").default(true),
-    createdAt: timestamp("created_at", { mode: "string" })
+    createdAt: timestamp("created_at")
       .defaultNow()
       .notNull(),
-    updatedAt: timestamp("updated_at", { mode: "string" })
+    updatedAt: timestamp("updated_at")
       .defaultNow()
       .notNull(),
     nfcScanCount: integer("nfc_scan_count").default(0),
     lastNfcScanAt: timestamp("last_nfc_scan_at", {
       withTimezone: true,
-      mode: "string",
     }),
   },
   (table) => [

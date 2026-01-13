@@ -2,7 +2,6 @@
 
 import { usePathname } from "next/navigation";
 import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
 
 export function ConditionalLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -25,8 +24,8 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
   // Hide header and footer for organization admin routes
   const isOrgAdminRoute = pathname?.includes("/organizaciones/");
 
-  // Hide footer for profile routes
-  const isProfileRoute = pathname?.startsWith("/profile");
+  // // Hide footer for profile routes
+  // const isProfileRoute = pathname?.startsWith("/profile");
 
   if (isAuthRoute || isAdminRoute || isOrgAdminRoute) {
     return <>{children}</>;
@@ -36,7 +35,6 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
     <>
       <Header />
       {children}
-      {!isProfileRoute && <Footer />}
     </>
   );
 }

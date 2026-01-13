@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { table, organization, menuItem, menuCategory } from "@/db/schema";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { checkQrScanRateLimit, getClientIP, getSecurityHeaders, getCorsHeaders } from "@/lib/rate-limit";
 import { getActivePaymentProcessor } from "@/server/payment-processors";
 
@@ -68,8 +68,7 @@ export async function GET(
       .update(table)
       .set({
         nfcScanCount: (tableInfo.nfcScanCount || 0) + 1,
-        lastNfcScanAt: sql`CURRENT_TIMESTAMP`,
-        updatedAt: sql`CURRENT_TIMESTAMP`
+        lastNfcScanAt: new Date(),
       })
       .where(eq(table.id, tableId));
 

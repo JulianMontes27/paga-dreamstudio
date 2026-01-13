@@ -7,11 +7,6 @@ export const userRelations = relations(user, ({one, many}) => ({
 		references: [documentType.id],
 		relationName: "user_documentTypeId_documentType_id"
 	}),
-	documentType_documentTypeId: one(documentType, {
-		fields: [user.documentTypeId],
-		references: [documentType.id],
-		relationName: "user_documentTypeId_documentType_id"
-	}),
 	members: many(member),
 	invitations: many(invitation),
 	accounts: many(account),
@@ -21,14 +16,6 @@ export const userRelations = relations(user, ({one, many}) => ({
 export const documentTypeRelations = relations(documentType, ({one, many}) => ({
 	users_documentTypeId: many(user, {
 		relationName: "user_documentTypeId_documentType_id"
-	}),
-	users_documentTypeId: many(user, {
-		relationName: "user_documentTypeId_documentType_id"
-	}),
-	country_countryId: one(countries, {
-		fields: [documentType.countryId],
-		references: [countries.id],
-		relationName: "documentType_countryId_countries_id"
 	}),
 	country_countryId: one(countries, {
 		fields: [documentType.countryId],
@@ -98,9 +85,6 @@ export const floorRelations = relations(floor, ({one, many}) => ({
 }));
 
 export const countriesRelations = relations(countries, ({many}) => ({
-	documentTypes_countryId: many(documentType, {
-		relationName: "documentType_countryId_countries_id"
-	}),
 	documentTypes_countryId: many(documentType, {
 		relationName: "documentType_countryId_countries_id"
 	}),

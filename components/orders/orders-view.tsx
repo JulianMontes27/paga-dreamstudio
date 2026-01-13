@@ -134,7 +134,7 @@ export function OrdersView({ orders, userId, orgId }: OrdersViewProps) {
     return `$${parseFloat(amount).toFixed(2)}`;
   };
 
-  const formatDate = (date: Date) => {
+  const formatDate = (date: string | Date) => {
     return new Date(date).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",

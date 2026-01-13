@@ -91,8 +91,7 @@ export async function updateOrderPayment(
       preferenceId: params.preferenceId,
       paymentStatus: params.paymentStatus,
       paymentMetadata: params.paymentMetadata,
-      updatedAt: sql`CURRENT_TIMESTAMP`,
-    })
+      })
     .where(eq(order.id, orderId))
     .returning();
 
@@ -120,8 +119,7 @@ export async function updateOrderStatus(orderId: string, status: string) {
     .update(order)
     .set({
       status,
-      updatedAt: sql`CURRENT_TIMESTAMP`,
-    })
+      })
     .where(eq(order.id, orderId))
     .returning();
 

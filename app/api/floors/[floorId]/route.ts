@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/db";
 import { floor, table } from "@/db/schema";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 
@@ -101,8 +101,7 @@ export async function PATCH(
       .update(floor)
       .set({
         ...validatedData,
-        updatedAt: sql`CURRENT_TIMESTAMP`,
-      })
+        })
       .where(eq(floor.id, floorId))
       .returning();
 
@@ -168,8 +167,7 @@ export async function DELETE(
         floorId: null,
         xPosition: null,
         yPosition: null,
-        updatedAt: sql`CURRENT_TIMESTAMP`,
-      })
+        })
       .where(eq(table.floorId, floorId));
 
     // Delete the floor

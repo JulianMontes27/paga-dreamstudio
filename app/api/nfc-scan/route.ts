@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       .update(table)
       .set({
         nfcScanCount: sql`${table.nfcScanCount} + 1`,
-        lastNfcScanAt: sql`CURRENT_TIMESTAMP`,
+        lastNfcScanAt: new Date(),
       })
       .where(eq(table.id, tableId));
 

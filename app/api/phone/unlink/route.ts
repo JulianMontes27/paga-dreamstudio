@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { db } from "@/db";
 import { schema } from "@/db";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 export async function POST() {
   try {
@@ -23,8 +23,7 @@ export async function POST() {
       .set({
         phoneNumber: null,
         phoneNumberVerified: false,
-        updatedAt: sql`CURRENT_TIMESTAMP`,
-      })
+        })
       .where(eq(schema.user.id, session.user.id));
 
     return NextResponse.json({ success: true });

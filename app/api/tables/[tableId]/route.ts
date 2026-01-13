@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { table } from "@/db/schema";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import * as z from "zod";
@@ -60,9 +60,7 @@ export async function PATCH(
     // TODO: Add permission check for admin/owner role
 
     // Build update object with only provided fields
-    const updateData: Partial<typeof table.$inferInsert> = {
-      updatedAt: sql`CURRENT_TIMESTAMP`,
-    };
+    const updateData: Partial<typeof table.$inferInsert> = {};
 
     if (validatedData.tableNumber !== undefined) {
       updateData.tableNumber = validatedData.tableNumber;

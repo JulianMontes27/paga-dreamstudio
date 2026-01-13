@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { table, organization, order, orderItem } from "@/db/schema";
-import { eq, sql } from "drizzle-orm";
+import { eq, } from "drizzle-orm";
 import { getSecurityHeaders } from "@/lib/rate-limit";
 import { randomUUID } from "crypto";
 
@@ -102,8 +102,7 @@ export async function POST(
         .set({
           totalAmount: newTotal.toString(),
           subtotal: newTotal.toString(), // Simplified, adjust as needed
-          updatedAt: sql`CURRENT_TIMESTAMP`,
-        })
+          })
         .where(eq(order.id, existingOrderId));
 
       resultOrder = { ...existingOrder, totalAmount: newTotal.toString() };

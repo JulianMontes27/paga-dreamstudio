@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { db } from "@/db";
 import { schema } from "@/db";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 // Type definitions for analytics data
@@ -51,7 +51,6 @@ export async function updateProfile(
       .set({
         name,
         phoneNumber: phone || null,
-        updatedAt: sql`CURRENT_TIMESTAMP`,
       })
       .where(eq(schema.user.id, session.user.id));
 
@@ -89,7 +88,6 @@ export async function updateUserName(
       .set({
         nombres: nombres.trim() || null,
         apellidos: apellidos.trim() || null,
-        updatedAt: sql`CURRENT_TIMESTAMP`,
       })
       .where(eq(schema.user.id, session.user.id));
 

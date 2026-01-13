@@ -80,7 +80,7 @@ export function OrderDetailView({ order }: OrderDetailViewProps) {
     return `$${num.toFixed(2)}`;
   };
 
-  const formatDate = (date: Date) => {
+  const formatDate = (date: string | Date) => {
     return new Date(date).toLocaleDateString("en-US", {
       weekday: "short",
       month: "short",
