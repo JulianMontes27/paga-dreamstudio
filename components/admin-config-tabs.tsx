@@ -76,7 +76,6 @@ export function AdminConfigTabs({
   invitations,
   currentUserRole,
   currentUserId,
-  mpOauthUrl,
 }: AdminConfigTabsProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabType>("general");
