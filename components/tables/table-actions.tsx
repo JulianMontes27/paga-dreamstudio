@@ -101,6 +101,36 @@ export function TableActions({
     }
   };
 
+  const updateTableStatus = async (newStatus: string) => {
+    setIsLoading(true);
+
+    toast.promise(
+      fetch(`/api/tables/${table.id}/status`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      }).then(async (response) => {
+        if (!response.ok) {
+          throw new Error(`Failed to update table status`);
+        }
+
+        router.refresh();
+        return `Table ${table.tableNumber} marked as ${newStatus}`;
+      }),
+      {
+        loading: `Updating Table ${table.tableNumber}...`,
+        success: (message) => message,
+        error: (error) => {
+          console.error("Error updating table status:", error);
+          return "Failed to update table status";
+        },
+        finally: () => setIsLoading(false),
+      }
+    );
+  };
+
   /**
    * Handles table deletion with Sonner confirmation
    * Only available to admins and owners
