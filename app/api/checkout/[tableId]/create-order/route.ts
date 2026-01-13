@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { table, organization, order, orderItem } from "@/db/schema";
-import { eq, } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { getSecurityHeaders } from "@/lib/rate-limit";
 import { randomUUID } from "crypto";
 
@@ -80,8 +80,23 @@ export async function POST(
         );
       }
 
-      // Add new items to the existing order
-      const newItems = items.map((item: OrderItemInput) => ({
+      // Calculate new total
+      const currentTotal = parseFloat(existingOrder.totalAmount);
+      const newTotal = currentTotal + total;
+
+      // Update order total
+      const [updatedOrder] = await db
+        .update(order)
+        .set({
+          totalAmount: newTotal.toFixed(2),
+          subtotal: newTotal.toFixed(2),
+          updatedAt: new Date(),
+        })
+        .where(eq(order.id, existingOrderId))
+        .returning();
+
+      // Add new order items
+      const orderItemsData = items.map((item: OrderItemInput) => ({
         id: randomUUID(),
         orderId: existingOrderId,
         menuItemId: item.menuItemId || null,
@@ -93,45 +108,39 @@ export async function POST(
         status: "pending",
       }));
 
-      await db.insert(orderItem).values(newItems);
+      await db.insert(orderItem).values(orderItemsData);
 
-      // Update order total
-      const newTotal = parseFloat(existingOrder.totalAmount) + total;
-      await db
-        .update(order)
-        .set({
-          totalAmount: newTotal.toString(),
-          subtotal: newTotal.toString(), // Simplified, adjust as needed
-          })
-        .where(eq(order.id, existingOrderId));
-
-      resultOrder = { ...existingOrder, totalAmount: newTotal.toString() };
+      resultOrder = updatedOrder;
     } else {
-      // Create new order
-      const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
-      const newOrderId = randomUUID();
+      // Create new order with "ordering" status for collaborative flow
+      const orderId = randomUUID();
+      const orderNumber = `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
       const [newOrder] = await db
         .insert(order)
         .values({
-          id: newOrderId,
+          id: orderId,
           organizationId: org.id,
           tableId: tableInfo.id,
-          orderNumber,
-          orderType: "dine_in",
-          status: "ordering",
+          orderNumber: orderNumber,
+          status: "ordering", // Indicates collaborative ordering mode
+          orderType: "dine-in",
           subtotal: total.toString(),
-          taxAmount: "0.00", // Calculate tax as needed
-          tipAmount: null,
+          taxAmount: "0.00",
+          tipAmount: "0.00",
           totalAmount: total.toString(),
+          totalClaimed: "0.00",
+          totalPaid: "0.00",
           isLocked: false,
+          notes: "Order created via collaborative checkout",
+          paymentStatus: "pending",
         })
         .returning();
 
-      // Insert order items
-      const orderItems = items.map((item: OrderItemInput) => ({
+      // Create order items
+      const orderItemsData = items.map((item: OrderItemInput) => ({
         id: randomUUID(),
-        orderId: newOrderId,
+        orderId: orderId,
         menuItemId: item.menuItemId || null,
         itemName: item.name,
         quantity: item.quantity,
@@ -141,20 +150,26 @@ export async function POST(
         status: "pending",
       }));
 
-      await db.insert(orderItem).values(orderItems);
+      await db.insert(orderItem).values(orderItemsData);
 
       resultOrder = newOrder;
     }
 
     return NextResponse.json(
-      { order: resultOrder },
+      {
+        success: true,
+        order: resultOrder,
+      },
       { headers: getSecurityHeaders() }
     );
   } catch (error) {
     console.error("Error creating order:", error);
 
     return NextResponse.json(
-      { error: "Failed to create order" },
+      {
+        error: "Failed to create order",
+        message: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500, headers: getSecurityHeaders() }
     );
   }

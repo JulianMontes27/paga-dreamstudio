@@ -218,7 +218,7 @@ export function OrdersView({ orders, userId, orgId }: OrdersViewProps) {
             return (
               <Link
                 key={order.id}
-                href={`/${userId}/organizaciones/${orgId}/orders/${order.id}`}
+                href={`/${userId}/organizaciones/${orgId}/pedidos/${order.id}`}
                 className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors"
               >
                 {/* Status indicator */}

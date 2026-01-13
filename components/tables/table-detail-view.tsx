@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
   Users,
-  QrCode,
   ArrowLeft,
   Receipt,
   Clock,
@@ -17,73 +16,14 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Order, Table, OrderItem, MenuItem } from "@/db";
 
-interface MenuItem {
-  id: string;
-  name: string;
-  price: string;
-  description: string | null;
-}
-
-interface OrderItem {
-  id: string;
-  orderId: string;
-  menuItemId: string | null;
-  itemName: string | null;
-  quantity: number;
-  unitPrice: string;
-  totalPrice: string;
-  specialInstructions: string | null;
-  status: string;
-  createdAt: Date;
-  updatedAt: Date;
-  menuItem: MenuItem | null;
-}
-
-interface Order {
-  id: string;
-  organizationId: string;
-  tableId: string | null;
-  orderNumber: string;
-  status: string;
-  orderType: string;
-  subtotal: string;
-  taxAmount: string;
-  tipAmount: string | null;
-  totalAmount: string;
-  totalPaid: string | null;
-  notes: string | null;
-  customerName: string | null;
-  customerPhone: string | null;
-  createdBy: string | null;
-  servedBy: string | null;
-  paidAt: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
-  orderItems: OrderItem[];
-}
-
-interface QRCode {
-  id: string;
-  code: string;
-  checkoutUrl: string;
-  isActive: boolean;
-  scanCount: number;
-  lastScannedAt: Date | null;
-  expiresAt: Date | null;
-}
-
-interface TableData {
-  id: string;
-  tableNumber: string;
-  capacity: number;
-  status: string;
-  section: string | null;
-  isQrEnabled: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  qrCode: QRCode | null;
-}
+// Extended Order type with relations
+type OrderWithItems = Order & {
+  orderItems: (OrderItem & {
+    menuItem?: MenuItem | null;
+  })[];
+};
 
 interface TableStats {
   totalOrders: number;
@@ -92,13 +32,13 @@ interface TableStats {
 }
 
 interface TableDetailViewProps {
-  table: TableData;
-  activeOrder: Order | null;
-  orders: Order[];
+  table: Table;
+  activeOrder: OrderWithItems | null;
+  orders: OrderWithItems[];
   stats: TableStats;
   organizationSlug: string;
   userId: string;
-  userRole?: "member" | "admin" | "owner";
+  userRole?: "waiter" | "admin" | "owner";
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -127,14 +67,16 @@ export function TableDetailView({
   stats,
   organizationSlug,
   userId,
-  userRole = "member",
+  userRole = "waiter",
 }: TableDetailViewProps) {
   const canViewHistory = userRole === "admin" || userRole === "owner";
 
   // For members, only show active unpaid orders
   const displayOrders = canViewHistory
     ? orders
-    : orders.filter(o => !["paid", "cancelled"].includes(o.status.toLowerCase()));
+    : orders.filter(
+        (o) => !["paid", "cancelled"].includes(o.status.toLowerCase())
+      );
   const router = useRouter();
 
   const formatCurrency = (amount: string | number | null) => {
@@ -152,7 +94,8 @@ export function TableDetailView({
     });
   };
 
-  const statusColor = STATUS_COLORS[table.status.toLowerCase()] || "bg-gray-500";
+  const statusColor =
+    STATUS_COLORS[table.status.toLowerCase()] || "bg-gray-500";
 
   return (
     <div className="space-y-6">
@@ -163,7 +106,9 @@ export function TableDetailView({
         </Button>
         <div className="flex-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold">Table {table.tableNumber}</h1>
+            <h1 className="text-2xl font-semibold">
+              Table {table.tableNumber}
+            </h1>
             <div
               className={`h-2.5 w-2.5 rounded-full ${statusColor}`}
               title={table.status}
@@ -175,12 +120,12 @@ export function TableDetailView({
               {table.capacity} seats
             </span>
             {table.section && <span>· {table.section}</span>}
-            {table.qrCode && (
+            {/* {table.qrCode && (
               <span className="flex items-center gap-1">
                 <QrCode className="h-3.5 w-3.5" />
                 {table.qrCode.scanCount} scans
               </span>
-            )}
+            )} */}
           </div>
         </div>
       </div>
@@ -198,7 +143,9 @@ export function TableDetailView({
           <div className="text-sm text-muted-foreground">Revenue</div>
         </div>
         <div className="border rounded-lg p-4">
-          <div className="text-2xl font-semibold">{stats.activeOrdersCount}</div>
+          <div className="text-2xl font-semibold">
+            {stats.activeOrdersCount}
+          </div>
           <div className="text-sm text-muted-foreground">Active</div>
         </div>
       </div>
@@ -214,7 +161,9 @@ export function TableDetailView({
                   <h2 className="text-lg font-semibold">Current Order</h2>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                  <span className="font-medium text-foreground">#{activeOrder.orderNumber}</span>
+                  <span className="font-medium text-foreground">
+                    #{activeOrder.orderNumber}
+                  </span>
                   <span className="flex items-center gap-1">
                     <Clock className="h-3.5 w-3.5" />
                     {formatDate(activeOrder.createdAt)}
@@ -222,11 +171,16 @@ export function TableDetailView({
                 </div>
               </div>
               <Badge
-                variant={activeOrder.status === "paid" ? "default" : "secondary"}
+                variant={
+                  activeOrder.status === "paid" ? "default" : "secondary"
+                }
                 className="capitalize"
               >
-                {activeOrder.status === "paid" && <CheckCircle2 className="h-3 w-3 mr-1" />}
-                {ORDER_STATUS_CONFIG[activeOrder.status]?.label || activeOrder.status.replace("_", " ")}
+                {activeOrder.status === "paid" && (
+                  <CheckCircle2 className="h-3 w-3 mr-1" />
+                )}
+                {ORDER_STATUS_CONFIG[activeOrder.status]?.label ||
+                  activeOrder.status.replace("_", " ")}
               </Badge>
             </div>
           </CardHeader>
@@ -235,7 +189,10 @@ export function TableDetailView({
             {/* Items List */}
             <div className="divide-y">
               {activeOrder.orderItems.map((item) => (
-                <div key={item.id} className="flex items-center gap-4 px-6 py-3">
+                <div
+                  key={item.id}
+                  className="flex items-center gap-4 px-6 py-3"
+                >
                   <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-muted text-sm font-semibold shrink-0">
                     {item.quantity}
                   </div>
@@ -260,18 +217,25 @@ export function TableDetailView({
             <div className="bg-muted/30 px-6 py-4 space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span className="tabular-nums">{formatCurrency(activeOrder.subtotal)}</span>
+                <span className="tabular-nums">
+                  {formatCurrency(activeOrder.subtotal)}
+                </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Tax</span>
-                <span className="tabular-nums">{formatCurrency(activeOrder.taxAmount)}</span>
+                <span className="tabular-nums">
+                  {formatCurrency(activeOrder.taxAmount)}
+                </span>
               </div>
-              {activeOrder.tipAmount && parseFloat(activeOrder.tipAmount) > 0 && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Tip</span>
-                  <span className="tabular-nums">{formatCurrency(activeOrder.tipAmount)}</span>
-                </div>
-              )}
+              {activeOrder.tipAmount &&
+                parseFloat(activeOrder.tipAmount) > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Tip</span>
+                    <span className="tabular-nums">
+                      {formatCurrency(activeOrder.tipAmount)}
+                    </span>
+                  </div>
+                )}
               <Separator />
               <div className="flex justify-between pt-1">
                 <span className="font-semibold">Total</span>
@@ -305,7 +269,9 @@ export function TableDetailView({
 
             {/* View Order Button */}
             <div className="px-6 py-4 border-t">
-              <Link href={`/profile/${userId}/organizaciones/${organizationSlug}/pedidos/${activeOrder.id}`}>
+              <Link
+                href={`/profile/${userId}/organizaciones/${organizationSlug}/pedidos/${activeOrder.id}`}
+              >
                 <Button variant="outline" className="w-full gap-2">
                   <ExternalLink className="h-4 w-4" />
                   View Order Details
@@ -328,7 +294,9 @@ export function TableDetailView({
         {displayOrders.length > 0 ? (
           <div className="border rounded-xl overflow-hidden divide-y">
             {displayOrders.map((order) => {
-              const statusConfig = ORDER_STATUS_CONFIG[order.status.toLowerCase()] || {
+              const statusConfig = ORDER_STATUS_CONFIG[
+                order.status.toLowerCase()
+              ] || {
                 color: "bg-gray-500",
                 label: order.status,
               };
@@ -348,7 +316,8 @@ export function TableDetailView({
                       <span className="font-medium">#{order.orderNumber}</span>
                       <span className="text-muted-foreground">·</span>
                       <span className="text-sm text-muted-foreground">
-                        {order.orderItems.length} {order.orderItems.length === 1 ? "item" : "items"}
+                        {order.orderItems.length}{" "}
+                        {order.orderItems.length === 1 ? "item" : "items"}
                       </span>
                     </div>
                     <p className="text-sm text-muted-foreground">
@@ -359,7 +328,10 @@ export function TableDetailView({
                     <p className="font-semibold tabular-nums">
                       {formatCurrency(order.totalAmount)}
                     </p>
-                    <Badge variant="secondary" className="capitalize text-xs mt-1">
+                    <Badge
+                      variant="secondary"
+                      className="capitalize text-xs mt-1"
+                    >
                       {statusConfig.label}
                     </Badge>
                   </div>
