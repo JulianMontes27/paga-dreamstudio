@@ -55,6 +55,12 @@ export const themeModeType = pgEnum("theme_mode_type", [
   "dark",
   "adaptive",
 ]);
+export const tableStatus = pgEnum("table_status", [
+  "available",
+  "occupied",
+  "reserved",
+  "cleaning",
+]);
 
 export const verification = pgTable("verification", {
   id: text().primaryKey().notNull(),
@@ -384,14 +390,14 @@ export const order = pgTable(
       .defaultNow()
       .notNull(),
   },
-  (table) => [
+  (orderTable) => [
     foreignKey({
-      columns: [table.organizationId],
+      columns: [orderTable.organizationId],
       foreignColumns: [organization.id],
       name: "order_organization_id_organization_id_fk",
     }).onDelete("cascade"),
     foreignKey({
-      columns: [table.tableId],
+      columns: [orderTable.tableId],
       foreignColumns: [table.id],
       name: "order_table_id_table_id_fk",
     }).onDelete("set null"),
@@ -518,7 +524,7 @@ export const table = pgTable(
     shape: text().default("rectangular"),
     tableNumber: text("table_number").notNull(),
     capacity: integer().notNull(),
-    status: text().default("available").notNull(),
+    status: tableStatus().default("available").notNull(),
     section: text(),
     isNfcEnabled: boolean("is_nfc_enabled").default(true),
     createdAt: timestamp("created_at")

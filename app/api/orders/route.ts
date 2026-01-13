@@ -44,6 +44,35 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Fetch the table and validate its status
+    const tableData = await db.query.table.findFirst({
+      where: eq(table.id, tableId),
+    });
+
+    if (!tableData) {
+      return NextResponse.json(
+        { error: "Table not found" },
+        { status: 404 }
+      );
+    }
+
+    // Verify table belongs to the organization
+    if (tableData.organizationId !== organizationId) {
+      return NextResponse.json(
+        { error: "Table does not belong to this organization" },
+        { status: 403 }
+      );
+    }
+
+    // Check table status - cannot create orders for occupied, cleaning, or reserved tables
+    const invalidStatuses = ["occupied", "cleaning", "reserved"];
+    if (invalidStatuses.includes(tableData.status.toLowerCase())) {
+      return NextResponse.json(
+        { error: `Cannot create order. Table is ${tableData.status}` },
+        { status: 400 }
+      );
+    }
+
     // Check if there's already an active order for this table
     const existingActiveOrder = await db.query.order.findFirst({
       where: (orders, { eq, and, inArray }) =>

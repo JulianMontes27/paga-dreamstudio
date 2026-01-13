@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -13,9 +14,11 @@ import {
   CheckCircle2,
   ChevronRight,
   ExternalLink,
+  Plus,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Order, Table, OrderItem, MenuItem } from "@/db";
 
 // Extended Order type with relations
@@ -69,6 +72,8 @@ export function TableDetailView({
   userId,
   userRole = "waiter",
 }: TableDetailViewProps) {
+  const router = useRouter();
+  const [isCreatingOrder, setIsCreatingOrder] = useState(false);
   const canViewHistory = userRole === "admin" || userRole === "owner";
 
   // For members, only show active unpaid orders
@@ -77,7 +82,51 @@ export function TableDetailView({
     : orders.filter(
         (o) => !["paid", "cancelled"].includes(o.status.toLowerCase())
       );
-  const router = useRouter();
+
+  // Check if table can accept new orders
+  const canStartOrder = !["occupied", "cleaning", "reserved"].includes(
+    table.status.toLowerCase()
+  );
+
+  const handleStartOrder = async () => {
+    if (!canStartOrder) {
+      toast.error(`Cannot start order. Table is ${table.status}`);
+      return;
+    }
+
+    setIsCreatingOrder(true);
+
+    try {
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          tableId: table.id,
+          organizationId: organizationSlug,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create order");
+      }
+
+      const { order: newOrder } = await response.json();
+
+      // Navigate to the new order page
+      router.push(
+        `/profile/${userId}/organizaciones/${organizationSlug}/pedidos/${newOrder.id}`
+      );
+
+      toast.success(`Order started for Table ${table.tableNumber}`);
+    } catch (error) {
+      console.error("Error starting order:", error);
+      toast.error("Failed to start order");
+    } finally {
+      setIsCreatingOrder(false);
+    }
+  };
 
   const formatCurrency = (amount: string | number | null) => {
     if (!amount) return "$0.00";
@@ -149,6 +198,33 @@ export function TableDetailView({
           <div className="text-sm text-muted-foreground">Active</div>
         </div>
       </div>
+
+      {/* Start Order Section - when no active order */}
+      {!activeOrder && (
+        <Card className={`border-2 ${canStartOrder ? 'border-dashed border-primary/30 bg-primary/5' : 'border-muted bg-muted/20'}`}>
+          <CardContent className="flex flex-col items-center justify-center py-8 px-6 text-center">
+            <div className={`w-12 h-12 mb-4 rounded-full flex items-center justify-center ${canStartOrder ? 'bg-primary/10' : 'bg-muted'}`}>
+              <Plus className={`h-6 w-6 ${canStartOrder ? 'text-primary' : 'text-muted-foreground'}`} />
+            </div>
+            <h3 className="font-semibold mb-2">No Active Order</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              {canStartOrder
+                ? "Start a new order for this table"
+                : `Cannot start order - table is ${table.status}`
+              }
+            </p>
+            <Button
+              onClick={handleStartOrder}
+              disabled={isCreatingOrder || !canStartOrder}
+              size="lg"
+              className="gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              {isCreatingOrder ? "Creating Order..." : "Start New Order"}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Active Order */}
       {activeOrder && (

@@ -97,7 +97,7 @@ export function TablesView({
         >
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-4 flex-wrap">
-              <FloorSelector organizationId={organizationId} />
+              <FloorSelector organizationId={organizationId} canEdit={canUpdate} />
               {canUpdate && (
                 <FloorPlanToolbar organizationId={organizationId} />
               )}

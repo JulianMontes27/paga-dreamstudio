@@ -29,6 +29,20 @@
       "when": 1768256212591,
       "tag": "0003_pink_harpoon",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1768334764472,
+      "tag": "0004_third_lorna_dane",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1768335770237,
+      "tag": "0005_quiet_sunfire",
+      "breakpoints": true
     }
   ]
 }
