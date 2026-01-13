@@ -41,7 +41,7 @@ interface FloorPlanContextType {
   tables: TableData[];
   selectedFloorId: string | null;
   selectedTableId: string | null;
-  organizationSlug: string | null;
+  organizationId: string | null;
   userId: string | null;
   canEdit: boolean;
 
@@ -79,7 +79,7 @@ interface FloorPlanProviderProps {
   children: ReactNode;
   initialFloors?: FloorData[];
   initialTables?: TableData[];
-  organizationSlug?: string;
+  organizationId?: string;
   userId?: string;
   canEdit?: boolean;
 }
@@ -88,7 +88,7 @@ export function FloorPlanProvider({
   children,
   initialFloors = [],
   initialTables = [],
-  organizationSlug,
+  organizationId,
   userId,
   canEdit = false,
 }: FloorPlanProviderProps) {
@@ -208,7 +208,7 @@ export function FloorPlanProvider({
     tables,
     selectedFloorId,
     selectedTableId,
-    organizationSlug: organizationSlug ?? null,
+    organizationId: organizationId ?? null,
     userId: userId ?? null,
     canEdit,
 

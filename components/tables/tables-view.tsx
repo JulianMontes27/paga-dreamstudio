@@ -92,6 +92,8 @@ export function TablesView({
           initialFloors={floors}
           initialTables={floorPlanTables}
           userId={userId}
+          organizationId={organizationId}
+          canEdit={canUpdate}
         >
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-4 flex-wrap">
