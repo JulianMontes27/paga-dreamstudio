@@ -51,7 +51,7 @@ export async function createOrder(params: CreateOrderParams) {
       organizationId: params.organizationId,
       tableId: params.tableId,
       orderNumber: orderNumber,
-      status: "pending",
+      status: "ordering",
       orderType: "dine-in",
       subtotal: params.subtotal.toString(),
       taxAmount: taxAmount.toString(),
@@ -133,12 +133,12 @@ export async function updateOrderStatus(
 ) {
   const updateData: {
     paymentStatus: string;
-    status: string;
+    status: "ordering" | "payment_started" | "partially_paid" | "paid" | "cancelled";
     paidAt?: Date;
     updatedAt: Date;
   } = {
     paymentStatus: status,
-    status: isPaid ? "paid" : "pending",
+    status: isPaid ? "paid" : "payment_started",
     updatedAt: new Date(),
   };
 
