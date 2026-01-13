@@ -202,7 +202,6 @@ export function TableFilters({
         <div className="border rounded-lg divide-y">
           {filteredTables.map((table) => {
             const statusConfig = getStatusConfig(table.status);
-            const canManage = userRole === "admin" || userRole === "owner";
 
             return (
               <Link
@@ -245,7 +244,10 @@ export function TableFilters({
                 </Badge>
 
                 {/* Actions */}
-                <div className="flex items-center gap-1" onClick={(e) => e.preventDefault()}>
+                <div
+                  className="flex items-center gap-1"
+                  onClick={(e) => e.preventDefault()}
+                >
                   <TableActions
                     table={table}
                     userRole={userRole}
