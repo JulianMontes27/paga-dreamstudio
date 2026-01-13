@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import {
   Sheet,
   SheetContent,
@@ -17,9 +18,16 @@ export function LandingHeader() {
     <nav className="fixed top-0 left-0 right-0 backdrop-blur-md bg-black/40 border-b border-white/5 z-[60]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <div className="flex items-center">
+          <Link href="/" className="flex items-center gap-2">
+            <Image
+              src="/logo.svg"
+              alt="Paga Logo"
+              width={32}
+              height={32}
+              className="w-8 h-8 invert"
+            />
             <span className="text-white text-xl font-semibold">Paga</span>
-          </div>
+          </Link>
           {/* Desktop header */}
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-8">

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { ThemeToggle } from "./ui/theme-toggle";
 import { Menu, X } from "lucide-react";
 import { AuthButton } from "./auth-button";
@@ -65,12 +66,19 @@ export function Header() {
         <div className="container mx-auto flex h-16 max-w-screen-xl items-center justify-between px-4 sm:px-6 lg:px-8">
           {/* Left side - Logo and Navigation */}
           <div className="flex items-center gap-8">
-            <Link href="/" className="flex items-center">
+            <Link href="/" className="flex items-center gap-2">
+              <Image
+                src="/logo.svg"
+                alt="Paga Logo"
+                width={32}
+                height={32}
+                className="w-8 h-8"
+              />
               <span
                 className="text-2xl font-bold tracking-tight transition-all duration-300 ease-out hover:tracking-wide"
                 style={{ fontFamily: "LOT, sans-serif" }}
               >
-                HUNT
+                Paga
               </span>
             </Link>
 

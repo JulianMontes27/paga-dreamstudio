@@ -21,6 +21,7 @@ import {
   Sparkles,
   Edit,
   Trash2,
+  Eye,
 } from "lucide-react";
 
 /**
@@ -55,6 +56,9 @@ export function TableActions({
   // Permission checks
   const canManageTable = userRole === "admin" || userRole === "owner";
   const canAssignCustomers = true; // All roles can assign customers
+
+  // Construct checkout URL
+  const checkoutUrl = `/checkout/${table.id}`;
 
   const updateTableStatus = async (newStatus: string) => {
     setIsLoading(true);
@@ -148,6 +152,15 @@ export function TableActions({
 
         <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuLabel>Table Actions</DropdownMenuLabel>
+
+          {/* View Checkout - Available to all roles */}
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={() => window.open(checkoutUrl, '_blank')}
+          >
+            <Eye className="mr-2 h-4 w-4" />
+            View Checkout
+          </DropdownMenuItem>
 
           {/* Customer Assignment Actions - Available to all roles */}
           {canAssignCustomers && (

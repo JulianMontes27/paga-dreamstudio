@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   ChevronRight,
   Zap,
@@ -28,12 +29,16 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">P</span>
-              </div>
+            <Link href="/" className="flex items-center gap-2">
+              <Image
+                src="/logo.svg"
+                alt="Paga Logo"
+                width={32}
+                height={32}
+                className="w-8 h-8"
+              />
               <span className="font-bold text-xl text-gray-900">Paga</span>
-            </div>
+            </Link>
 
             {/* Desktop Nav */}
             <div className="hidden md:flex items-center gap-8">
@@ -746,9 +751,13 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-4 gap-12 mb-12">
             <div>
               <div className="flex items-center gap-2 mb-6">
-                <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                  <span className="text-gray-900 font-bold text-sm">P</span>
-                </div>
+                <Image
+                  src="/logo.svg"
+                  alt="Paga Logo"
+                  width={32}
+                  height={32}
+                  className="w-8 h-8 invert"
+                />
                 <span className="font-bold text-xl">Paga</span>
               </div>
               <p className="text-gray-400">

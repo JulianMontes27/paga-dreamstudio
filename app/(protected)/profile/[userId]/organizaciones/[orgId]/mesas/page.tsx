@@ -145,8 +145,8 @@ export default async function TablesPage({
     height: t.height,
     shape: t.shape,
     orderActivity: tableActivityMap.get(t.id) || ("idle" as OrderActivity),
-    // Generate checkout URL for NFC tag
-    checkoutUrl: `${process.env.NEXT_PUBLIC_APP_URL || ""}/${orgId}/checkout/${t.id}`,
+    // Generate checkout URL
+    checkoutUrl: `${process.env.NEXT_PUBLIC_APP_URL || ""}/checkout/${t.id}`,
   }));
 
   // Check if user can manage tables (create/update/delete)
