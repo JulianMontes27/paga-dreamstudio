@@ -33,7 +33,7 @@ interface TableData {
   tableNumber: string;
   capacity: number;
   section: string | null;
-  status: "available" | "occupied" | "reserved" | "cleaning";
+  status: string;
 }
 
 /**

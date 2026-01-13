@@ -30,8 +30,6 @@ const CAPACITY_OPTIONS = [
   { value: "7+", label: "7+ seats" },
 ] as const;
 
-type OrderActivity = "idle" | "active" | "payment_made";
-
 type TableWithCheckout = {
   id: string;
   tableNumber: string;

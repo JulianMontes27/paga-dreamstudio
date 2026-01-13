@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
 
     // Check if there's already an active order for this table
     const existingActiveOrder = await db.query.order.findFirst({
-      where: (orders, { eq, and, or, inArray }) =>
+      where: (orders, { eq, and, inArray }) =>
         and(
           eq(orders.tableId, tableId),
           inArray(orders.status, ["ordering", "payment_started", "partially_paid"])
