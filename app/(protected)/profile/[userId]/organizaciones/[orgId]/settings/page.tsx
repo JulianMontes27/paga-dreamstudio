@@ -9,9 +9,8 @@ import { Settings, Bell, Shield, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { redirect, notFound } from "next/navigation";
 import PaymentSettings from "@/components/payment-settings";
-import { db } from "@/db";
-import { organization, member } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 export default async function OrganizationSettings({
   params,
@@ -20,32 +19,29 @@ export default async function OrganizationSettings({
 }) {
   const { userId, orgId } = await params;
 
-  const org = await db
-    .select()
-    .from(organization)
-    .where(eq(organization.id, orgId))
-    .limit(1)
-    .then((rows) => rows[0]);
+  const org = await auth.api.getFullOrganization({
+    query: {
+      organizationId: "org-id",
+      organizationSlug: "org-slug",
+      membersLimit: 100,
+    },
+    // This endpoint requires session cookies.
+    headers: await headers(),
+  });
 
-  if (!org) {
-    notFound();
-  }
+  if (!org) return notFound();
 
   // Fetch current user's membership
-  const userMembership = await db
-    .select()
-    .from(member)
-    .where(
-      and(eq(member.organizationId, org.id), eq(member.userId, userId))
-    )
-    .limit(1)
-    .then((rows) => rows[0]);
+  // Get current user's role in the organization
+  const currentUserMember = org.members?.find(
+    (m: { userId: string }) => m.userId === userId
+  );
 
-  if (!userMembership) {
+  if (!currentUserMember) {
     redirect(`/${userId}/organizaciones`);
   }
 
-  const userRole = userMembership.role;
+  const userRole = currentUserMember.role;
 
   // Check if user has permission to view settings (only owners and admins)
   if (userRole !== "owner" && userRole !== "administrator") {
