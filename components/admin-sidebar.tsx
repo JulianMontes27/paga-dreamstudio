@@ -48,7 +48,7 @@ const primaryMenuItems: MenuItem[] = [
   {
     title: "Configuración",
     icon: Settings,
-    href: "/settings",
+    href: "/configuracion",
     description: "Ajustes del sistema",
     exact: true,
     roles: ["owner", "administrator"], // Sellers cannot access

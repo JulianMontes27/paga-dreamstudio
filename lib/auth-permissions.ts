@@ -23,6 +23,9 @@ const statement = {
 
   // Restaurant settings
   restaurant: ["updateInfo", "updateHours", "updateSettings"],
+
+  // Configuration access (admin panel)
+  configuration: ["view", "manage"],
 } as const;
 
 const ac = createAccessControl(statement);
@@ -48,6 +51,7 @@ const administrator = ac.newRole({
   finance: ["viewReports", "viewRevenue", "managePricing", "procesRefunds"],
   staff: ["viewSchedule"],
   restaurant: ["updateHours"],
+  configuration: ["view", "manage"],
 });
 
 // Restaurant owner role - full access
@@ -62,6 +66,7 @@ const owner = ac.newRole({
   table: ["create", "read", "update", "delete", "assign"],
   finance: ["viewReports", "viewRevenue", "managePricing", "procesRefunds"],
   restaurant: ["updateInfo", "updateHours", "updateSettings"],
+  configuration: ["view", "manage"],
 });
 
 // Export with more descriptive names for restaurant context
