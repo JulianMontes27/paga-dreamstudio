@@ -42,6 +42,7 @@ interface TablesViewProps {
   userRole: "member" | "admin" | "owner";
   organizationSlug?: string;
   organizationId: string;
+  userId: string;
 }
 
 export function TablesView({
@@ -50,6 +51,7 @@ export function TablesView({
   userRole,
   organizationSlug,
   organizationId,
+  userId,
 }: TablesViewProps) {
   const [viewMode, setViewMode] = useState<"list" | "map">("map");
 
@@ -100,7 +102,8 @@ export function TablesView({
         <TableFilters
           tables={tables}
           userRole={userRole}
-          organizationSlug={organizationSlug}
+          organizationId={organizationId}
+          userId={userId}
         />
       )}
 
@@ -110,6 +113,7 @@ export function TablesView({
           initialFloors={floors}
           initialTables={floorPlanTables}
           organizationSlug={organizationSlug}
+          userId={userId}
           canEdit={userRole === "admin" || userRole === "owner"}
         >
           <div className="space-y-2">

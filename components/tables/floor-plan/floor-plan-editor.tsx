@@ -11,6 +11,7 @@ import {
   useSensor,
   useSensors,
   pointerWithin,
+  DragMoveEvent,
 } from "@dnd-kit/core";
 import { useFloorPlan, TableData } from "./floor-plan-context";
 import { FloorPlanCanvasInner } from "./floor-plan-canvas";
@@ -37,6 +38,7 @@ export function FloorPlanEditor({ className }: FloorPlanEditorProps) {
   } = useFloorPlan();
 
   const [draggedTable, setDraggedTable] = useState<TableData | null>(null);
+  const [isOverValidDropZone, setIsOverValidDropZone] = useState(false);
 
   const mouseSensor = useSensor(MouseSensor, {
     activationConstraint: {
@@ -58,13 +60,21 @@ export function FloorPlanEditor({ className }: FloorPlanEditorProps) {
     const table = active.data.current?.table as TableData | undefined;
     if (table) {
       setDraggedTable(table);
+      setIsOverValidDropZone(false);
     }
+  }, []);
+
+  const handleDragMove = useCallback((event: DragMoveEvent) => {
+    const { over } = event;
+    // Check if we're over a valid drop zone
+    setIsOverValidDropZone(over?.id === "floor-canvas" || over?.id === "unplaced-panel");
   }, []);
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
       const { active, delta, over } = event;
       setDraggedTable(null);
+      setIsOverValidDropZone(false);
 
       const tableData = active.data.current?.table as TableData | undefined;
       if (!tableData) return;
@@ -127,6 +137,7 @@ export function FloorPlanEditor({ className }: FloorPlanEditorProps) {
       sensors={sensors}
       collisionDetection={pointerWithin}
       onDragStart={handleDragStart}
+      onDragMove={handleDragMove}
       onDragEnd={handleDragEnd}
     >
       <div className="flex gap-4">
@@ -147,22 +158,28 @@ export function FloorPlanEditor({ className }: FloorPlanEditorProps) {
       {/* Drag overlay */}
       <DragOverlay>
         {draggedTable && (
-          <TableShape
-            shape={
-              (draggedTable.shape as "rectangular" | "circular" | "oval" | "bar") ||
-              "rectangular"
-            }
-            width={draggedTable.width ?? 80}
-            height={draggedTable.height ?? 80}
-            status={
-              (draggedTable.status as "available" | "occupied" | "reserved" | "cleaning") ||
-              "available"
-            }
-            tableNumber={draggedTable.tableNumber}
-            capacity={draggedTable.capacity}
-            isSelected={draggedTable.id === selectedTableId}
-            className="shadow-lg opacity-80"
-          />
+          <div
+            className={`transition-opacity ${
+              isOverValidDropZone ? "opacity-100" : "opacity-40"
+            }`}
+          >
+            <TableShape
+              shape={
+                (draggedTable.shape as "rectangular" | "circular" | "oval" | "bar") ||
+                "rectangular"
+              }
+              width={draggedTable.width ?? 80}
+              height={draggedTable.height ?? 80}
+              status={
+                (draggedTable.status as "available" | "occupied" | "reserved" | "cleaning") ||
+                "available"
+              }
+              tableNumber={draggedTable.tableNumber}
+              capacity={draggedTable.capacity}
+              isSelected={draggedTable.id === selectedTableId}
+              className={`shadow-2xl ${!isOverValidDropZone ? "ring-2 ring-red-500" : ""}`}
+            />
+          </div>
         )}
       </DragOverlay>
     </DndContext>

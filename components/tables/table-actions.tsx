@@ -40,23 +40,13 @@ interface TableData {
 interface TableActionsProps {
   table: TableData;
   userRole: "member" | "admin" | "owner";
-  organizationSlug: string;
+  organizationId: string;
 }
 
-/**
- * Table Actions Component - Client Component
- *
- * Provides interactive dropdown menu for table management actions.
- * Actions are filtered based on user role permissions:
- * - Members/Waiters: Can assign customers and change basic status
- * - Admins/Owners: Full table management including edit and delete
- *
- * This is a Client Component to handle user interactions and API calls.
- */
 export function TableActions({
   table,
   userRole,
-  organizationSlug,
+  // organizationId,
 }: TableActionsProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -66,10 +56,6 @@ export function TableActions({
   const canManageTable = userRole === "admin" || userRole === "owner";
   const canAssignCustomers = true; // All roles can assign customers
 
-  /**
-   * Updates table status via API call with enhanced Sonner feedback
-   * Provides better user experience with detailed success messages
-   */
   const updateTableStatus = async (newStatus: string) => {
     setIsLoading(true);
 
@@ -83,9 +69,7 @@ export function TableActions({
         body: JSON.stringify({ status: newStatus }),
       }).then(async (response) => {
         if (!response.ok) {
-          throw new Error(
-            `Failed to update (${organizationSlug}) table status`
-          );
+          throw new Error(`Failed to update table status`);
         }
 
         // Refresh the page to show updated data
@@ -146,7 +130,6 @@ export function TableActions({
       duration: 10000, // Give user time to decide
     });
   };
-
 
   return (
     <>

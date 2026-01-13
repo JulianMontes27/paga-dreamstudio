@@ -31,7 +31,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Plus, Loader2 } from "lucide-react";
 
@@ -48,14 +47,12 @@ const createTableSchema = z.object({
     .min(1, "Capacity must be at least 1")
     .max(20, "Capacity cannot exceed 20"),
   section: z.string().optional(),
-  generateQr: z.boolean(),
 });
 
 type CreateTableFormData = {
   tableNumber: string;
   capacity: number;
   section?: string;
-  generateQr: boolean;
 };
 
 /**
@@ -77,7 +74,6 @@ export function CreateTableButton({ organizationId }: CreateTableButtonProps) {
       tableNumber: "",
       capacity: 4,
       section: "none",
-      generateQr: true,
     },
   });
 
@@ -109,11 +105,7 @@ export function CreateTableButton({ organizationId }: CreateTableButtonProps) {
       await response.json();
 
       // Show success message
-      toast.success(
-        `Table ${data.tableNumber} created successfully${
-          data.generateQr ? " with QR code" : ""
-        }`
-      );
+      toast.success(`Table ${data.tableNumber} created successfully`);
 
       // Reset form and close dialog
       form.reset();
@@ -266,30 +258,6 @@ export function CreateTableButton({ organizationId }: CreateTableButtonProps) {
                     Group tables by area for better organization
                   </FormDescription>
                   <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Generate QR Code Checkbox */}
-            <FormField
-              control={form.control}
-              name="generateQr"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                      disabled={isLoading}
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>Generate QR Code</FormLabel>
-                    <FormDescription>
-                      Automatically create a QR code for customer menu access
-                      and ordering. Recommended for all tables.
-                    </FormDescription>
-                  </div>
                 </FormItem>
               )}
             />

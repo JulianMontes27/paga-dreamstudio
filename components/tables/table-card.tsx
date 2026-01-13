@@ -56,7 +56,7 @@ interface TableCardProps {
     } | null;
   };
   userRole: "member" | "admin" | "owner";
-  organizationSlug: string;
+  organizationId: string;
 }
 
 /**
@@ -72,7 +72,7 @@ interface TableCardProps {
 export function TableCard({
   table,
   userRole,
-  organizationSlug,
+  organizationId,
 }: TableCardProps) {
   const statusConfig = TABLE_STATUS_CONFIG[table.status];
   const canManageTable = userRole === "admin" || userRole === "owner";
@@ -99,7 +99,7 @@ export function TableCard({
           <TableActions
             table={table}
             userRole={userRole}
-            organizationSlug={organizationSlug}
+            organizationId={organizationId}
           />
         </div>
 
@@ -173,7 +173,7 @@ export function TableCard({
                 Created: {table.createdAt.toLocaleDateString('en-US')}
               </span>
             </div>
-            <Link href={`/dashboard/${organizationSlug}/tables/${table.id}`}>
+            <Link href={`/dashboard/${organizationId}/tables/${table.id}`}>
               <Button variant="outline" size="sm" className="w-full">
                 <ExternalLink className="h-3 w-3 mr-2" />
                 View Details & Orders

@@ -167,6 +167,7 @@ export default async function TablesPage({
         userRole={userRole}
         organizationSlug={orgId}
         organizationId={orgId}
+        userId={userId}
       />
     </div>
   );

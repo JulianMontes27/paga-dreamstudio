@@ -21,9 +21,9 @@ function GridOverlay({
 }) {
   return (
     <svg
-      className="absolute inset-0 pointer-events-none"
-      width={canvasWidth}
-      height={canvasHeight}
+      className="absolute inset-0 pointer-events-none w-full h-full"
+      viewBox={`0 0 ${canvasWidth} ${canvasHeight}`}
+      preserveAspectRatio="none"
     >
       <defs>
         <pattern
@@ -41,7 +41,7 @@ function GridOverlay({
           />
         </pattern>
       </defs>
-      <rect width="100%" height="100%" fill="url(#grid)" />
+      <rect x="0" y="0" width="100%" height="100%" fill="url(#grid)" />
     </svg>
   );
 }
@@ -138,14 +138,15 @@ export function FloorPlanCanvasInner({ className }: FloorPlanCanvasProps) {
   const scaledHeight = canvasHeight * effectiveScale;
 
   return (
-    <div ref={containerRef} className={cn("w-full", className)}>
+    <div ref={containerRef} className={cn("w-full overflow-auto", className)}>
       {/* Wrapper with actual scaled dimensions to prevent overflow */}
       <div
-        className="relative overflow-hidden"
+        className="relative"
         style={{
           width: scaledWidth,
           height: scaledHeight,
           maxWidth: "100%",
+          overflow: "hidden",
         }}
       >
         {/* Scaled canvas */}

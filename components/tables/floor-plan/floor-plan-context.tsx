@@ -42,6 +42,7 @@ interface FloorPlanContextType {
   selectedFloorId: string | null;
   selectedTableId: string | null;
   organizationSlug: string | null;
+  userId: string | null;
   canEdit: boolean;
 
   // UI State
@@ -79,6 +80,7 @@ interface FloorPlanProviderProps {
   initialFloors?: FloorData[];
   initialTables?: TableData[];
   organizationSlug?: string;
+  userId?: string;
   canEdit?: boolean;
 }
 
@@ -87,6 +89,7 @@ export function FloorPlanProvider({
   initialFloors = [],
   initialTables = [],
   organizationSlug,
+  userId,
   canEdit = false,
 }: FloorPlanProviderProps) {
   // Data state
@@ -206,6 +209,7 @@ export function FloorPlanProvider({
     selectedFloorId,
     selectedTableId,
     organizationSlug: organizationSlug ?? null,
+    userId: userId ?? null,
     canEdit,
 
     // UI State

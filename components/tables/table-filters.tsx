@@ -56,13 +56,15 @@ type TableWithCheckout = {
 interface TableFiltersProps {
   tables: TableWithCheckout[];
   userRole: "member" | "admin" | "owner";
-  organizationSlug?: string;
+  organizationId?: string;
+  userId?: string;
 }
 
 export function TableFilters({
   tables,
   userRole,
-  organizationSlug = "",
+  organizationId = "",
+  userId = "",
 }: TableFiltersProps) {
   const searchParams = useSearchParams();
 
@@ -205,7 +207,7 @@ export function TableFilters({
             return (
               <Link
                 key={table.id}
-                href={`/dashboard/${organizationSlug}/tables/${table.id}`}
+                href={`/profile/${userId}/organizaciones/${organizationId}/mesas/${table.id}`}
                 className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors"
               >
                 {/* Status indicator */}
@@ -248,7 +250,7 @@ export function TableFilters({
                     <TableActions
                       table={table}
                       userRole={userRole}
-                      organizationSlug={organizationSlug || ""}
+                      organizationId={organizationId || ""}
                     />
                   )}
                 </div>

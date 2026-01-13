@@ -14,7 +14,7 @@ interface DraggableTableProps {
 }
 
 export function DraggableTable({ table }: DraggableTableProps) {
-  const { selectedTableId, selectTable, removeTableFromFloor, snapToGrid, gridSize, organizationSlug, canEdit } = useFloorPlan();
+  const { selectedTableId, selectTable, removeTableFromFloor, snapToGrid, gridSize, organizationSlug, userId, canEdit } = useFloorPlan();
   const router = useRouter();
 
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
@@ -48,14 +48,14 @@ export function DraggableTable({ table }: DraggableTableProps) {
     top: y,
     transform: CSS.Translate.toString(transform ? { x: 0, y: 0, scaleX: 1, scaleY: 1 } : null),
     zIndex: isDragging ? 1000 : isSelected ? 100 : 1,
-    opacity: isDragging ? 0.8 : 1,
+    opacity: isDragging ? 0 : 1,
   };
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     // For non-editors, single click navigates to table detail
-    if (!canEdit && organizationSlug) {
-      router.push(`/dashboard/${organizationSlug}/tables/${table.id}`);
+    if (!canEdit && organizationSlug && userId) {
+      router.push(`/profile/${userId}/organizaciones/${organizationSlug}/mesas/${table.id}`);
       return;
     }
     // For editors, single click selects the table
@@ -65,8 +65,8 @@ export function DraggableTable({ table }: DraggableTableProps) {
   const handleDoubleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     // Double click navigates to table detail (for editors)
-    if (organizationSlug) {
-      router.push(`/dashboard/${organizationSlug}/tables/${table.id}`);
+    if (organizationSlug && userId) {
+      router.push(`/profile/${userId}/organizaciones/${organizationSlug}/mesas/${table.id}`);
     }
   };
 
