@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/db";
 import { table } from "@/db/schema";
-import { eq, inArray } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 
@@ -74,7 +74,7 @@ export async function PATCH(request: NextRequest) {
       const updateData: Partial<typeof table.$inferInsert> = {
         xPosition: tableUpdate.xPosition,
         yPosition: tableUpdate.yPosition,
-        updatedAt: new Date(),
+        updatedAt: sql`CURRENT_TIMESTAMP`,
       };
 
       if (tableUpdate.floorId !== undefined) {

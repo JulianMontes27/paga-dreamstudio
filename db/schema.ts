@@ -1,18 +1,17 @@
 import {
-  uuid,
   pgTable,
-  unique,
   text,
-  boolean,
   timestamp,
-  jsonb,
   foreignKey,
-  decimal,
+  unique,
+  boolean,
+  jsonb,
+  uuid,
   integer,
-  // index,
+  numeric,
   pgEnum,
 } from "drizzle-orm/pg-core";
-import { sql, type InferSelectModel, type InferInsertModel } from "drizzle-orm";
+import { InferInsertModel, InferSelectModel, sql } from "drizzle-orm";
 
 export const documentTypeEnum = pgEnum("document_type_enum", [
   "CC",
@@ -24,7 +23,19 @@ export const documentTypeEnum = pgEnum("document_type_enum", [
   "PASSPORT",
   "OTHER",
 ]);
+export const genderType = pgEnum("gender_type", [
+  "masculino",
+  "femenino",
+  "otro",
+  "prefiero_no_decir",
+]);
 export const languageType = pgEnum("language_type", ["es", "en", "pt", "fr"]);
+export const memberRole = pgEnum("member_role", [
+  "waiter",
+  "administrator",
+  "owner",
+]);
+export const orderFrom = pgEnum("order_from", ["cash", "web", "app"]);
 export const paymentStatus = pgEnum("payment_status", [
   "pending",
   "processing",
@@ -33,68 +44,31 @@ export const paymentStatus = pgEnum("payment_status", [
   "cancelled",
   "refunded",
 ]);
-export const orderFrom = pgEnum("order_from", ["cash", "web", "app"]);
 export const privacyType = pgEnum("privacy_type", ["public", "private"]);
 export const refundStatus = pgEnum("refund_status", [
   "pending",
   "accepted",
   "rejected",
 ]);
-export const memberRole = pgEnum("member_role", [
-  "waiter",
-  "administrator",
-  "owner",
-]);
 export const themeModeType = pgEnum("theme_mode_type", [
   "light",
   "dark",
   "adaptive",
 ]);
-export const genderType = pgEnum("gender_type", [
-  "masculino",
-  "femenino",
-  "otro",
-  "prefiero_no_decir",
-]);
 
-/**
- * ->>>>>>>>>>>>>>>>>>>>>>>>>>>>
- * ->>>>>>>>>>>>>>>>>>>>>>>>>>>>
- */
+export const verification = pgTable("verification", {
+  id: text().primaryKey().notNull(),
+  identifier: text().notNull(),
+  value: text().notNull(),
+  expiresAt: timestamp({ withTimezone: true, mode: "string" }).notNull(),
+  createdAt: timestamp({ withTimezone: true, mode: "string" })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp({ withTimezone: true, mode: "string" })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+});
 
-// Countries table
-export const countries = pgTable(
-  "countries",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    countryName: text("country_name").notNull(),
-    countryCode: text("country_code"),
-    currency: text("currency").notNull(),
-  },
-  (table) => [unique("countries_country_name_key").on(table.countryName)]
-);
-// Document Type table
-export const documentType = pgTable(
-  "document_type",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    countryId: uuid("country_id")
-      .notNull()
-      .references(() => countries.id),
-    name: text("name").notNull(),
-  },
-  (table) => [
-    foreignKey({
-      columns: [table.countryId],
-      foreignColumns: [countries.id],
-      name: "document_type_country_id_fkey",
-    }),
-  ]
-);
-
-/**
- * Auth
- */
 export const user = pgTable(
   "user",
   {
@@ -103,114 +77,44 @@ export const user = pgTable(
     email: text().notNull(),
     emailVerified: boolean().notNull(),
     image: text(),
-    createdAt: timestamp({ withTimezone: true })
+    createdAt: timestamp({ withTimezone: true, mode: "string" })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
-    updatedAt: timestamp({ withTimezone: true })
+    updatedAt: timestamp({ withTimezone: true, mode: "string" })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
     role: text(),
     banned: boolean(),
     banReason: text(),
-    banExpires: timestamp({ withTimezone: true }),
+    banExpires: timestamp({ withTimezone: true, mode: "string" }),
     isAnonymous: boolean(),
     phoneNumber: text(),
     phoneNumberVerified: boolean(),
     userMetadata: jsonb(),
     appMetadata: jsonb(),
-    invitedAt: timestamp({ withTimezone: true }),
-    lastSignInAt: timestamp({ withTimezone: true }),
-    // New user profile fields
+    invitedAt: timestamp({ withTimezone: true, mode: "string" }),
+    lastSignInAt: timestamp({ withTimezone: true, mode: "string" }),
     documentId: text("document_id"),
-    documentTypeId: uuid("document_type_id").references(() => documentType.id),
-    gender: genderType("gender"),
-    birthdate: timestamp("birthdate", { withTimezone: true }),
-    // New fields from database
+    documentTypeId: uuid("document_type_id"),
+    gender: genderType(),
+    birthdate: timestamp({ withTimezone: true, mode: "string" }),
     tipoPersona: text("tipo_persona"),
-    nombres: text("nombres"),
-    apellidos: text("apellidos"),
+    nombres: text(),
+    apellidos: text(),
     razonSocial: text("razon_social"),
-    nit: text("nit"),
+    nit: text(),
   },
   (table) => [
-    // The UNIQUE constraint ensures that all values in a column are different.
-    unique("user_email_key").on(table.email),
-    unique("user_phoneNumber_key").on(table.phoneNumber),
     foreignKey({
       columns: [table.documentTypeId],
       foreignColumns: [documentType.id],
       name: "user_document_type_id_fkey",
     }),
+    unique("user_email_key").on(table.email),
+    unique("user_phoneNumber_key").on(table.phoneNumber),
   ]
 );
-export const session = pgTable(
-  "session",
-  {
-    id: text().primaryKey().notNull(),
-    expiresAt: timestamp({ withTimezone: true }).notNull(),
-    token: text().notNull(),
-    createdAt: timestamp({ withTimezone: true })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-    updatedAt: timestamp({ withTimezone: true }).notNull(),
-    ipAddress: text(),
-    userAgent: text(),
-    userId: text().notNull(),
-    impersonatedBy: text(),
-    activeOrganizationId: text(),
-  },
-  (table) => [
-    foreignKey({
-      columns: [table.userId],
-      foreignColumns: [user.id],
-      name: "session_userId_fkey",
-    }).onDelete("cascade"),
-    unique("session_token_key").on(table.token),
-  ]
-);
-export const account = pgTable(
-  "account",
-  {
-    id: text().primaryKey().notNull(),
-    accountId: text().notNull(),
-    providerId: text().notNull(),
-    userId: text().notNull(),
-    accessToken: text(),
-    refreshToken: text(),
-    idToken: text(),
-    accessTokenExpiresAt: timestamp({ withTimezone: true }),
-    refreshTokenExpiresAt: timestamp({ withTimezone: true }),
-    scope: text(),
-    password: text(),
-    createdAt: timestamp({ withTimezone: true })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-    updatedAt: timestamp({ withTimezone: true }).notNull(),
-  },
-  (table) => [
-    foreignKey({
-      columns: [table.userId],
-      foreignColumns: [user.id],
-      name: "account_userId_fkey",
-    }).onDelete("cascade"),
-  ]
-);
-export const verification = pgTable("verification", {
-  id: text().primaryKey().notNull(),
-  identifier: text().notNull(),
-  value: text().notNull(),
-  expiresAt: timestamp({ withTimezone: true }).notNull(),
-  createdAt: timestamp({ withTimezone: true })
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
-  updatedAt: timestamp({ withTimezone: true })
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
-});
 
-/**
- * Organization
- */
 export const organization = pgTable(
   "organization",
   {
@@ -218,22 +122,20 @@ export const organization = pgTable(
     name: text().notNull(),
     slug: text().notNull(),
     logo: text(),
-    createdAt: timestamp({ withTimezone: true })
+    createdAt: timestamp({ withTimezone: true, mode: "string" })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
     metadata: text(),
-    openingHours: jsonb("opening_hours"), // JSON object with days and hours
+    openingHours: jsonb("opening_hours"),
     seatingCapacity: integer("seating_capacity"),
     cuisineType: text("cuisine_type"),
-
-    // New fields from database
     tipoOrganizacion: text("tipo_organizacion"),
-    nombres: text("nombres"),
-    apellidos: text("apellidos"),
+    nombres: text(),
+    apellidos: text(),
     tipoDocumento: text("tipo_documento"),
     numeroDocumento: text("numero_documento"),
-    nit: text("nit"),
-    direccion: text("direccion"),
+    nit: text(),
+    direccion: text(),
     numeroTelefono: text("numero_telefono"),
     correoElectronico: text("correo_electronico"),
     rutUrl: text("rut_url"),
@@ -241,14 +143,75 @@ export const organization = pgTable(
   },
   (table) => [unique("organization_slug_key").on(table.slug)]
 );
+
+export const menuItem = pgTable(
+  "menu_item",
+  {
+    id: text().primaryKey().notNull(),
+    organizationId: text("organization_id").notNull(),
+    categoryId: text("category_id"),
+    name: text().notNull(),
+    description: text(),
+    price: numeric({ precision: 10, scale: 2 }).notNull(),
+    imageUrl: text("image_url"),
+    isAvailable: boolean("is_available").default(true),
+    preparationTime: integer("preparation_time"),
+    allergens: jsonb(),
+    nutritionalInfo: jsonb("nutritional_info"),
+    createdAt: timestamp("created_at", { mode: "string" })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { mode: "string" })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.categoryId],
+      foreignColumns: [menuCategory.id],
+      name: "menu_item_category_id_menu_category_id_fk",
+    }).onDelete("set null"),
+    foreignKey({
+      columns: [table.organizationId],
+      foreignColumns: [organization.id],
+      name: "menu_item_organization_id_organization_id_fk",
+    }).onDelete("cascade"),
+  ]
+);
+
+export const menuCategory = pgTable(
+  "menu_category",
+  {
+    id: text().primaryKey().notNull(),
+    organizationId: text("organization_id").notNull(),
+    name: text().notNull(),
+    description: text(),
+    displayOrder: integer("display_order").default(0),
+    isActive: boolean("is_active").default(true),
+    createdAt: timestamp("created_at", { mode: "string" })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { mode: "string" })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.organizationId],
+      foreignColumns: [organization.id],
+      name: "menu_category_organization_id_organization_id_fk",
+    }).onDelete("cascade"),
+  ]
+);
+
 export const member = pgTable(
   "member",
   {
     id: text().primaryKey().notNull(),
     organizationId: text().notNull(),
     userId: text().notNull(),
-    role: memberRole("role").default("waiter").notNull(),
-    createdAt: timestamp({ withTimezone: true })
+    role: memberRole().default("waiter").notNull(),
+    createdAt: timestamp({ withTimezone: true, mode: "string" })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
   },
@@ -265,216 +228,324 @@ export const member = pgTable(
     }).onDelete("cascade"),
   ]
 );
+
 export const invitation = pgTable(
   "invitation",
   {
     id: text().primaryKey().notNull(),
     organizationId: text().notNull(),
     email: text().notNull(),
-    role: memberRole("role").default("waiter"),
+    role: memberRole().default("waiter"),
     status: text().default("pending").notNull(),
-    expiresAt: timestamp({ withTimezone: true }).notNull(),
+    expiresAt: timestamp({ withTimezone: true, mode: "string" }).notNull(),
     inviterId: text().notNull(),
-    createdAt: timestamp({ withTimezone: true })
+    createdAt: timestamp({ withTimezone: true, mode: "string" })
       .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.inviterId],
+      foreignColumns: [user.id],
+      name: "invitation_inviterId_fkey",
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [table.organizationId],
+      foreignColumns: [organization.id],
+      name: "invitation_organizationId_fkey",
+    }).onDelete("cascade"),
+  ]
+);
+
+export const floor = pgTable(
+  "floor",
+  {
+    id: text().primaryKey().notNull(),
+    organizationId: text("organization_id").notNull(),
+    name: text().notNull(),
+    displayOrder: integer("display_order").default(0),
+    canvasWidth: integer("canvas_width").default(800),
+    canvasHeight: integer("canvas_height").default(600),
+    createdAt: timestamp("created_at", { mode: "string" })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { mode: "string" })
+      .defaultNow()
       .notNull(),
   },
   (table) => [
     foreignKey({
       columns: [table.organizationId],
       foreignColumns: [organization.id],
-      name: "invitation_organizationId_fkey",
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [table.inviterId],
-      foreignColumns: [user.id],
-      name: "invitation_inviterId_fkey",
+      name: "floor_organization_id_organization_id_fk",
     }).onDelete("cascade"),
   ]
 );
 
-/**
- * Restaurantes
- */
-// Menu categories
-export const menuCategory = pgTable("menu_category", {
-  id: text("id").primaryKey(),
-  organizationId: text("organization_id")
-    .notNull()
-    .references(() => organization.id, { onDelete: "cascade" }),
-  name: text("name").notNull(),
-  description: text("description"),
-  displayOrder: integer("display_order").default(0),
-  isActive: boolean("is_active").default(true),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+export const documentType = pgTable(
+  "document_type",
+  {
+    id: uuid().defaultRandom().primaryKey().notNull(),
+    countryId: uuid("country_id").notNull(),
+    name: text().notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.countryId],
+      foreignColumns: [countries.id],
+      name: "document_type_country_id_fkey",
+    }),
+  ]
+);
 
-// Menu items
-export const menuItem = pgTable("menu_item", {
-  id: text("id").primaryKey(),
-  organizationId: text("organization_id")
-    .notNull()
-    .references(() => organization.id, { onDelete: "cascade" }),
-  categoryId: text("category_id").references(() => menuCategory.id, {
-    onDelete: "set null",
-  }),
-  name: text("name").notNull(),
-  description: text("description"),
-  price: decimal("price", { precision: 10, scale: 2 }).notNull(),
-  imageUrl: text("image_url"),
-  isAvailable: boolean("is_available").default(true),
-  preparationTime: integer("preparation_time"), // in minutes
-  allergens: jsonb("allergens"), // Array of allergen names
-  nutritionalInfo: jsonb("nutritional_info"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
-export const floor = pgTable("floor", {
-  id: text("id").primaryKey(),
-  organizationId: text("organization_id")
-    .notNull()
-    .references(() => organization.id, { onDelete: "cascade" }),
-  name: text("name").notNull(), // "Main Floor", "Rooftop", etc.
-  displayOrder: integer("display_order").default(0),
-  canvasWidth: integer("canvas_width").default(800),
-  canvasHeight: integer("canvas_height").default(600),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+export const countries = pgTable(
+  "countries",
+  {
+    id: uuid().defaultRandom().primaryKey().notNull(),
+    countryName: text("country_name").notNull(),
+    countryCode: text("country_code"),
+    currency: text().notNull(),
+  },
+  (table) => [unique("countries_country_name_key").on(table.countryName)]
+);
 
-export const table = pgTable("table", {
-  id: text("id").primaryKey(),
-  organizationId: text("organization_id")
-    .notNull()
-    .references(() => organization.id, { onDelete: "cascade" }),
-  floorId: text("floor_id").references(() => floor.id, { onDelete: "cascade" }),
-  xPosition: integer("x_position"), // null = not placed on map
-  yPosition: integer("y_position"),
-  width: integer("width").default(80),
-  height: integer("height").default(80),
-  shape: text("shape").default("rectangular"), // rectangular, circular, oval, bar
-  tableNumber: text("table_number").notNull(),
-  capacity: integer("capacity").notNull(),
-  status: text("status").notNull().default("available"), // available, occupied, reserved, cleaning
-  section: text("section"), // e.g., "Main Floor", "Patio", "Bar"
-  isNFCEnabled: boolean("is_nfc_enabled").default(true),
-  nfcScanCount: integer("nfc_scan_count").default(0), // Track NFC tag scans
-  lastNfcScanAt: timestamp("last_nfc_scan_at", { withTimezone: true }), // Last scan timestamp
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+export const account = pgTable(
+  "account",
+  {
+    id: text().primaryKey().notNull(),
+    accountId: text().notNull(),
+    providerId: text().notNull(),
+    userId: text().notNull(),
+    accessToken: text(),
+    refreshToken: text(),
+    idToken: text(),
+    accessTokenExpiresAt: timestamp({ withTimezone: true, mode: "string" }),
+    refreshTokenExpiresAt: timestamp({ withTimezone: true, mode: "string" }),
+    scope: text(),
+    password: text(),
+    createdAt: timestamp({ withTimezone: true, mode: "string" })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: timestamp({ withTimezone: true, mode: "string" }).notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.userId],
+      foreignColumns: [user.id],
+      name: "account_userId_fkey",
+    }).onDelete("cascade"),
+  ]
+);
 
-// Orders
-export const order = pgTable("order", {
-  id: text("id").primaryKey(),
-  organizationId: text("organization_id")
-    .notNull()
-    .references(() => organization.id, { onDelete: "cascade" }),
-  tableId: text("table_id").references(() => table.id, {
-    onDelete: "set null",
-  }),
-  orderNumber: text("order_number").notNull(),
-  status: text("status").notNull().default("ordering"), // ordering, payment_started, partially_paid, paid, cancelled
-  orderType: text("order_type").notNull().default("dine-in"), // dine-in, takeout, delivery
-  subtotal: decimal("subtotal", { precision: 10, scale: 2 }).notNull(),
-  taxAmount: decimal("tax_amount", { precision: 10, scale: 2 }).notNull(),
-  tipAmount: decimal("tip_amount", { precision: 10, scale: 2 }).default("0.00"),
-  totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
-  notes: text("notes"),
-  customerName: text("customer_name"),
-  customerPhone: text("customer_phone"),
-  createdBy: text("created_by"), // userId of the waiter/staff who created the order
-  servedBy: text("served_by"), // userId of the waiter/staff who served
-  paidAt: timestamp("paid_at"),
-  // Payment tracking fields
-  paymentProcessor: text("payment_processor"), // mercadopago, stripe, etc.
-  paymentId: text("payment_id"), // External payment processor transaction ID
-  preferenceId: text("preference_id"), // Payment preference/intent ID from processor
-  paymentStatus: text("payment_status").default("pending"), // pending, approved, rejected, refunded
-  paymentMetadata: jsonb("payment_metadata"), // Store additional payment info (merchant_order_id, etc.)
-  // Fee tracking from payment processor
-  processorFee: decimal("processor_fee", { precision: 10, scale: 2 }).default(
-    "0.00"
-  ), // MercadoPago fee
-  marketplaceFee: decimal("marketplace_fee", {
-    precision: 10,
-    scale: 2,
-  }).default("0.00"), // Application/platform fee
-  // Collaborative payment tracking
-  totalClaimed: decimal("total_claimed", { precision: 10, scale: 2 }).default(
-    "0.00"
-  ), // Sum of active payment claims
-  totalPaid: decimal("total_paid", { precision: 10, scale: 2 }).default("0.00"), // Sum of completed payments
-  isLocked: boolean("is_locked").default(false), // True when payment has started (no more item changes)
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+export const order = pgTable(
+  "order",
+  {
+    id: text().primaryKey().notNull(),
+    organizationId: text("organization_id").notNull(),
+    tableId: uuid("table_id"),
+    orderNumber: text("order_number").notNull(),
+    status: text().default("ordering").notNull(),
+    orderType: text("order_type").default("dine-in").notNull(),
+    subtotal: numeric({ precision: 10, scale: 2 }).notNull(),
+    taxAmount: numeric("tax_amount", { precision: 10, scale: 2 }).notNull(),
+    tipAmount: numeric("tip_amount", { precision: 10, scale: 2 }).default(
+      "0.00"
+    ),
+    totalAmount: numeric("total_amount", { precision: 10, scale: 2 }).notNull(),
+    notes: text(),
+    customerName: text("customer_name"),
+    customerPhone: text("customer_phone"),
+    createdBy: text("created_by"),
+    servedBy: text("served_by"),
+    paidAt: timestamp("paid_at", { mode: "string" }),
+    paymentProcessor: text("payment_processor"),
+    paymentId: text("payment_id"),
+    preferenceId: text("preference_id"),
+    paymentStatus: text("payment_status").default("pending"),
+    paymentMetadata: jsonb("payment_metadata"),
+    processorFee: numeric("processor_fee", { precision: 10, scale: 2 }).default(
+      "0.00"
+    ),
+    marketplaceFee: numeric("marketplace_fee", {
+      precision: 10,
+      scale: 2,
+    }).default("0.00"),
+    totalClaimed: numeric("total_claimed", { precision: 10, scale: 2 }).default(
+      "0.00"
+    ),
+    totalPaid: numeric("total_paid", { precision: 10, scale: 2 }).default(
+      "0.00"
+    ),
+    isLocked: boolean("is_locked").default(false),
+    createdAt: timestamp("created_at", { mode: "string" })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { mode: "string" })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.organizationId],
+      foreignColumns: [organization.id],
+      name: "order_organization_id_organization_id_fk",
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [table.tableId],
+      foreignColumns: [table.id],
+      name: "order_table_id_table_id_fk",
+    }).onDelete("set null"),
+  ]
+);
 
-// Payment Claims (for collaborative bill splitting)
-export const paymentClaim = pgTable("payment_claim", {
-  id: text("id").primaryKey(),
-  orderId: text("order_id")
-    .notNull()
-    .references(() => order.id, { onDelete: "cascade" }),
+export const session = pgTable(
+  "session",
+  {
+    id: text().primaryKey().notNull(),
+    expiresAt: timestamp({ withTimezone: true, mode: "string" }).notNull(),
+    token: text().notNull(),
+    createdAt: timestamp({ withTimezone: true, mode: "string" })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: timestamp({ withTimezone: true, mode: "string" }).notNull(),
+    ipAddress: text(),
+    userAgent: text(),
+    userId: text().notNull(),
+    impersonatedBy: text(),
+    activeOrganizationId: text(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.userId],
+      foreignColumns: [user.id],
+      name: "session_userId_fkey",
+    }).onDelete("cascade"),
+    unique("session_token_key").on(table.token),
+  ]
+);
 
-  // Amounts
-  claimedAmount: decimal("claimed_amount", {
-    precision: 10,
-    scale: 2,
-  }).notNull(), // Amount they want to pay
-  splitFeePortion: decimal("split_fee_portion", {
-    precision: 10,
-    scale: 2,
-  }).notNull(), // Their share of split fees
-  totalToPay: decimal("total_to_pay", { precision: 10, scale: 2 }).notNull(), // claimedAmount + splitFeePortion
+export const paymentClaim = pgTable(
+  "payment_claim",
+  {
+    id: text().primaryKey().notNull(),
+    orderId: text("order_id").notNull(),
+    claimedAmount: numeric("claimed_amount", {
+      precision: 10,
+      scale: 2,
+    }).notNull(),
+    splitFeePortion: numeric("split_fee_portion", {
+      precision: 10,
+      scale: 2,
+    }).notNull(),
+    totalToPay: numeric("total_to_pay", { precision: 10, scale: 2 }).notNull(),
+    status: text().default("reserved").notNull(),
+    claimedAt: timestamp("claimed_at", { mode: "string" })
+      .defaultNow()
+      .notNull(),
+    expiresAt: timestamp("expires_at", { mode: "string" }).notNull(),
+    paymentProcessor: text("payment_processor"),
+    paymentId: text("payment_id"),
+    preferenceId: text("preference_id"),
+    paymentMetadata: jsonb("payment_metadata"),
+    paidAt: timestamp("paid_at", { mode: "string" }),
+    processorFee: numeric("processor_fee", { precision: 10, scale: 2 }).default(
+      "0.00"
+    ),
+    marketplaceFee: numeric("marketplace_fee", {
+      precision: 10,
+      scale: 2,
+    }).default("0.00"),
+    sessionToken: text("session_token").notNull(),
+    createdAt: timestamp("created_at", { mode: "string" })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { mode: "string" })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.orderId],
+      foreignColumns: [order.id],
+      name: "payment_claim_order_id_order_id_fk",
+    }).onDelete("cascade"),
+  ]
+);
 
-  // Lifecycle
-  status: text("status").notNull().default("reserved"), // reserved, processing, paid, expired, cancelled
-  claimedAt: timestamp("claimed_at").notNull().defaultNow(),
-  expiresAt: timestamp("expires_at").notNull(), // Reservation expires in 5 minutes
+export const orderItem = pgTable(
+  "order_item",
+  {
+    id: text().primaryKey().notNull(),
+    orderId: text("order_id").notNull(),
+    menuItemId: text("menu_item_id"),
+    itemName: text("item_name"),
+    quantity: integer().notNull(),
+    unitPrice: numeric("unit_price", { precision: 10, scale: 2 }).notNull(),
+    totalPrice: numeric("total_price", { precision: 10, scale: 2 }).notNull(),
+    specialInstructions: text("special_instructions"),
+    status: text().default("pending").notNull(),
+    createdAt: timestamp("created_at", { mode: "string" })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { mode: "string" })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.menuItemId],
+      foreignColumns: [menuItem.id],
+      name: "order_item_menu_item_id_menu_item_id_fk",
+    }).onDelete("set null"),
+    foreignKey({
+      columns: [table.orderId],
+      foreignColumns: [order.id],
+      name: "order_item_order_id_order_id_fk",
+    }).onDelete("cascade"),
+  ]
+);
 
-  // Payment tracking
-  paymentProcessor: text("payment_processor"), // mercadopago, stripe, etc.
-  paymentId: text("payment_id"), // MercadoPago payment ID
-  preferenceId: text("preference_id"), // Payment preference ID
-  paymentMetadata: jsonb("payment_metadata"),
-  paidAt: timestamp("paid_at"),
-
-  // Fee tracking from payment processor (per-claim fees)
-  processorFee: decimal("processor_fee", { precision: 10, scale: 2 }).default(
-    "0.00"
-  ), // MercadoPago fee for this claim
-  marketplaceFee: decimal("marketplace_fee", {
-    precision: 10,
-    scale: 2,
-  }).default("0.00"), // Platform fee for this claim
-
-  // Session tracking (to prevent duplicate claims)
-  sessionToken: text("session_token").notNull(),
-
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
-
-// Order items
-export const orderItem = pgTable("order_item", {
-  id: text("id").primaryKey(),
-  orderId: text("order_id")
-    .notNull()
-    .references(() => order.id, { onDelete: "cascade" }),
-  menuItemId: text("menu_item_id").references(() => menuItem.id, {
-    onDelete: "set null",
-  }),
-  itemName: text("item_name"), // Store item name for QR orders (when menuItemId is null)
-  quantity: integer("quantity").notNull(),
-  unitPrice: decimal("unit_price", { precision: 10, scale: 2 }).notNull(),
-  totalPrice: decimal("total_price", { precision: 10, scale: 2 }).notNull(),
-  specialInstructions: text("special_instructions"),
-  status: text("status").notNull().default("pending"), // pending, preparing, ready, served
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+export const table = pgTable(
+  "table",
+  {
+    id: uuid().defaultRandom().primaryKey().notNull(),
+    organizationId: text("organization_id").notNull(),
+    floorId: text("floor_id"),
+    xPosition: integer("x_position"),
+    yPosition: integer("y_position"),
+    width: integer().default(80),
+    height: integer().default(80),
+    shape: text().default("rectangular"),
+    tableNumber: text("table_number").notNull(),
+    capacity: integer().notNull(),
+    status: text().default("available").notNull(),
+    section: text(),
+    isNfcEnabled: boolean("is_nfc_enabled").default(true),
+    createdAt: timestamp("created_at", { mode: "string" })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { mode: "string" })
+      .defaultNow()
+      .notNull(),
+    nfcScanCount: integer("nfc_scan_count").default(0),
+    lastNfcScanAt: timestamp("last_nfc_scan_at", {
+      withTimezone: true,
+      mode: "string",
+    }),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.floorId],
+      foreignColumns: [floor.id],
+      name: "table_floor_id_floor_id_fk",
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [table.organizationId],
+      foreignColumns: [organization.id],
+      name: "table_organization_id_organization_id_fk",
+    }).onDelete("cascade"),
+  ]
+);
 
 /**
  * ->>>>>>>>>>>>>>>>>>>>>>>>>>>>

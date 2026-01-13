@@ -38,7 +38,7 @@ type TableWithCheckout = {
   capacity: number;
   status: "available" | "occupied" | "reserved" | "cleaning";
   section: string | null;
-  isNFCEnabled: boolean;
+  isNfcEnabled: boolean;
   nfcScanCount: number;
   lastNfcScanAt: Date | null;
   createdAt: Date;

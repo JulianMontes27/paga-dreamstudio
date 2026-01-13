@@ -21,7 +21,7 @@ type TableWithCheckout = {
   capacity: number;
   status: "available" | "occupied" | "reserved" | "cleaning";
   section: string | null;
-  isNFCEnabled: boolean;
+  isNfcEnabled: boolean;
   nfcScanCount: number;
   lastNfcScanAt: Date | null;
   createdAt: Date;
@@ -68,11 +68,11 @@ export function TablesView({
     orderActivity: table.orderActivity,
     checkoutUrl: table.checkoutUrl,
     nfcScanCount: table.nfcScanCount,
-    isNFCEnabled: table.isNFCEnabled,
+    isNfcEnabled: table.isNfcEnabled,
   }));
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       {/* View Toggle */}
       <div className="flex gap-1 p-1 bg-muted rounded-lg w-fit">
         <Button
@@ -112,7 +112,7 @@ export function TablesView({
           organizationSlug={organizationSlug}
           canEdit={userRole === "admin" || userRole === "owner"}
         >
-          <div className="space-y-4">
+          <div className="space-y-2">
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <FloorSelector
                 organizationId={organizationId}

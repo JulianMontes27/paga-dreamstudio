@@ -13,7 +13,7 @@ export default function DashboardLayout({
       disableTransitionOnChange
       storageKey="dashboard-theme"
     >
-      <div className="min-h-screen flex flex-col">
+      <div className="flex flex-col">
         <div className="flex-1 flex flex-col p-4">
           <main className="flex-1">{children}</main>
         </div>

@@ -133,7 +133,7 @@ export default async function TablesPage({
     capacity: t.capacity,
     status: t.status as "available" | "occupied" | "reserved" | "cleaning",
     section: t.section,
-    isNFCEnabled: t.isNFCEnabled ?? true,
+    isNfcEnabled: t.isNfcEnabled ?? true,
     nfcScanCount: t.nfcScanCount ?? 0,
     lastNfcScanAt: t.lastNfcScanAt,
     createdAt: t.createdAt,
@@ -153,13 +153,11 @@ export default async function TablesPage({
   const canManageTables = userRole === "admin" || userRole === "owner";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Mesas</h1>
-        {canManageTables && (
-          <CreateTableButton organizationId={orgId} />
-        )}
+        {canManageTables && <CreateTableButton organizationId={orgId} />}
       </div>
 
       {/* Tables View */}

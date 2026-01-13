@@ -65,19 +65,6 @@ interface CreateTableButtonProps {
   organizationId: string;
 }
 
-/**
- * Create Table Button Component - Client Component
- *
- * Provides a dialog for creating new tables with form validation.
- * Features:
- * - Form validation using Zod schema
- * - Automatic QR code generation option
- * - Section assignment
- * - Capacity validation
- * - Real-time form feedback
- *
- * This is a Client Component to handle form interactions and API calls.
- */
 export function CreateTableButton({ organizationId }: CreateTableButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -189,7 +176,8 @@ export function CreateTableButton({ organizationId }: CreateTableButtonProps) {
                     />
                   </FormControl>
                   <FormDescription>
-                    Unique identifier for this table (letters and numbers allowed)
+                    Unique identifier for this table (letters and numbers
+                    allowed)
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -218,7 +206,11 @@ export function CreateTableButton({ organizationId }: CreateTableButtonProps) {
                         } else {
                           const numValue = parseInt(value);
                           // Only set valid numbers
-                          if (!isNaN(numValue) && numValue >= 1 && numValue <= 20) {
+                          if (
+                            !isNaN(numValue) &&
+                            numValue >= 1 &&
+                            numValue <= 20
+                          ) {
                             field.onChange(numValue);
                           }
                         }
@@ -264,7 +256,9 @@ export function CreateTableButton({ organizationId }: CreateTableButtonProps) {
                       <SelectItem value="Main Floor">Main Floor</SelectItem>
                       <SelectItem value="Patio">Patio</SelectItem>
                       <SelectItem value="Bar">Bar</SelectItem>
-                      <SelectItem value="Private Dining">Private Dining</SelectItem>
+                      <SelectItem value="Private Dining">
+                        Private Dining
+                      </SelectItem>
                       <SelectItem value="VIP">VIP</SelectItem>
                     </SelectContent>
                   </Select>

@@ -1,108 +1,170 @@
-import { relations } from "drizzle-orm";
+import { relations } from "drizzle-orm/relations";
 import {
-  floor,
+  documentType,
+  user,
   menuCategory,
   menuItem,
-  order,
-  orderItem,
   organization,
-  paymentClaim,
+  member,
+  invitation,
+  floor,
+  countries,
+  account,
+  order,
   table,
+  session,
+  paymentClaim,
+  orderItem,
 } from "./schema";
 
-// Order Relations
+export const userRelations = relations(user, ({ one, many }) => ({
+  documentType_documentTypeId: one(documentType, {
+    fields: [user.documentTypeId],
+    references: [documentType.id],
+    relationName: "user_documentTypeId_documentType_id",
+  }),
+  members: many(member),
+  invitations: many(invitation),
+  accounts: many(account),
+  sessions: many(session),
+}));
+
+export const documentTypeRelations = relations(
+  documentType,
+  ({ one, many }) => ({
+    users_documentTypeId: many(user, {
+      relationName: "user_documentTypeId_documentType_id",
+    }),
+    country_countryId: one(countries, {
+      fields: [documentType.countryId],
+      references: [countries.id],
+      relationName: "documentType_countryId_countries_id",
+    }),
+  })
+);
+
+export const menuItemRelations = relations(menuItem, ({ one, many }) => ({
+  menuCategory: one(menuCategory, {
+    fields: [menuItem.categoryId],
+    references: [menuCategory.id],
+  }),
+  organization: one(organization, {
+    fields: [menuItem.organizationId],
+    references: [organization.id],
+  }),
+  orderItems: many(orderItem),
+}));
+
+export const menuCategoryRelations = relations(
+  menuCategory,
+  ({ one, many }) => ({
+    menuItems: many(menuItem),
+    organization: one(organization, {
+      fields: [menuCategory.organizationId],
+      references: [organization.id],
+    }),
+  })
+);
+
+export const organizationRelations = relations(organization, ({ many }) => ({
+  menuItems: many(menuItem),
+  menuCategories: many(menuCategory),
+  members: many(member),
+  invitations: many(invitation),
+  floors: many(floor),
+  orders: many(order),
+  tables: many(table),
+}));
+
+export const memberRelations = relations(member, ({ one }) => ({
+  organization: one(organization, {
+    fields: [member.organizationId],
+    references: [organization.id],
+  }),
+  user: one(user, {
+    fields: [member.userId],
+    references: [user.id],
+  }),
+}));
+
+export const invitationRelations = relations(invitation, ({ one }) => ({
+  user: one(user, {
+    fields: [invitation.inviterId],
+    references: [user.id],
+  }),
+  organization: one(organization, {
+    fields: [invitation.organizationId],
+    references: [organization.id],
+  }),
+}));
+
+export const floorRelations = relations(floor, ({ one, many }) => ({
+  organization: one(organization, {
+    fields: [floor.organizationId],
+    references: [organization.id],
+  }),
+  tables: many(table),
+}));
+
+export const countriesRelations = relations(countries, ({ many }) => ({
+  documentTypes_countryId: many(documentType, {
+    relationName: "documentType_countryId_countries_id",
+  }),
+}));
+
+export const accountRelations = relations(account, ({ one }) => ({
+  user: one(user, {
+    fields: [account.userId],
+    references: [user.id],
+  }),
+}));
+
 export const orderRelations = relations(order, ({ one, many }) => ({
-  // Each order belongs to one organization
   organization: one(organization, {
     fields: [order.organizationId],
     references: [organization.id],
   }),
-  // Each order belongs to one table
   table: one(table, {
     fields: [order.tableId],
     references: [table.id],
   }),
-  // Each order has many order items
-  orderItems: many(orderItem),
-  // Each order has many payment claims (for split payments)
   paymentClaims: many(paymentClaim),
+  orderItems: many(orderItem),
 }));
 
-// Order Item Relations
-export const orderItemRelations = relations(orderItem, ({ one }) => ({
-  // Each order item belongs to one order
-  order: one(order, {
-    fields: [orderItem.orderId],
-    references: [order.id],
+export const tableRelations = relations(table, ({ one, many }) => ({
+  orders: many(order),
+  floor: one(floor, {
+    fields: [table.floorId],
+    references: [floor.id],
   }),
-  // Each order item references one menu item
-  menuItem: one(menuItem, {
-    fields: [orderItem.menuItemId],
-    references: [menuItem.id],
+  organization: one(organization, {
+    fields: [table.organizationId],
+    references: [organization.id],
   }),
 }));
 
-// Payment Claim Relations
+export const sessionRelations = relations(session, ({ one }) => ({
+  user: one(user, {
+    fields: [session.userId],
+    references: [user.id],
+  }),
+}));
+
 export const paymentClaimRelations = relations(paymentClaim, ({ one }) => ({
-  // Each payment claim belongs to one order
   order: one(order, {
     fields: [paymentClaim.orderId],
     references: [order.id],
   }),
 }));
 
-// Menu Category Relations
-export const menuCategoryRelations = relations(
-  menuCategory,
-  ({ one, many }) => ({
-    // Each category belongs to one organization
-    organization: one(organization, {
-      fields: [menuCategory.organizationId],
-      references: [organization.id],
-    }),
-    // Each category has many menu items
-    items: many(menuItem),
-  })
-);
-
-// Menu Item Relations
-export const menuItemRelations = relations(menuItem, ({ one }) => ({
-  // Each menu item belongs to one organization
-  organization: one(organization, {
-    fields: [menuItem.organizationId],
-    references: [organization.id],
+export const orderItemRelations = relations(orderItem, ({ one }) => ({
+  menuItem: one(menuItem, {
+    fields: [orderItem.menuItemId],
+    references: [menuItem.id],
   }),
-  // Each menu item belongs to one category
-  category: one(menuCategory, {
-    fields: [menuItem.categoryId],
-    references: [menuCategory.id],
+  order: one(order, {
+    fields: [orderItem.orderId],
+    references: [order.id],
   }),
-}));
-
-// Floor Relations
-export const floorRelations = relations(floor, ({ one, many }) => ({
-  // Each floor belongs to one organization
-  organization: one(organization, {
-    fields: [floor.organizationId],
-    references: [organization.id],
-  }),
-  // Each floor has many tables
-  tables: many(table),
-}));
-
-// Restaurant Table Relations (extended with floor)
-export const restaurantTableRelations = relations(table, ({ one, many }) => ({
-  // Each table belongs to one organization
-  organization: one(organization, {
-    fields: [table.organizationId],
-    references: [organization.id],
-  }),
-  // Each table belongs to one floor (optional)
-  floor: one(floor, {
-    fields: [table.floorId],
-    references: [floor.id],
-  }),
-
-  // Each table has many orders
-  orders: many(order),
 }));

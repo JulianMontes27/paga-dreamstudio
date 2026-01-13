@@ -10,7 +10,7 @@ const createTableSchema = z.object({
   tableNumber: z.string().min(1, "Table number is required"),
   capacity: z.number().min(1, "Capacity must be at least 1"),
   section: z.string().optional(),
-  isNFCEnabled: z.boolean().default(true),
+  isNfcEnabled: z.boolean().default(true),
   organizationId: z.string().min(1, "Organization ID is required"),
 });
 
@@ -65,19 +65,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate unique table ID
-    const tableId = `table_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
     // Create the table
     const newTable = await db
       .insert(table)
       .values({
-        id: tableId,
         organizationId: validatedData.organizationId,
         tableNumber: validatedData.tableNumber,
         capacity: validatedData.capacity,
         section: validatedData.section || null,
-        isNFCEnabled: validatedData.isNFCEnabled,
+        isNfcEnabled: validatedData.isNfcEnabled,
         nfcScanCount: 0,
         status: "available",
       })

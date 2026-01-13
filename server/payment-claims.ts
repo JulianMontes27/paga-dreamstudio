@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { paymentClaim } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 interface CreatePaymentClaimParams {
   orderId: string;
@@ -87,7 +87,7 @@ export async function updatePaymentClaimPayment(
       paymentId: update.paymentId,
       preferenceId: update.preferenceId,
       paymentMetadata: update.paymentMetadata,
-      updatedAt: new Date(),
+      updatedAt: sql`CURRENT_TIMESTAMP`,
     })
     .where(eq(paymentClaim.id, claimId))
     .returning();
@@ -136,7 +136,7 @@ export async function cancelPaymentClaim(claimId: string) {
     .update(paymentClaim)
     .set({
       status: "cancelled",
-      updatedAt: new Date(),
+      updatedAt: sql`CURRENT_TIMESTAMP`,
     })
     .where(eq(paymentClaim.id, claimId))
     .returning();

@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { order, orderItem } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 interface CreateOrderParams {
   organizationId: string;
@@ -91,7 +91,7 @@ export async function updateOrderPayment(
       preferenceId: params.preferenceId,
       paymentStatus: params.paymentStatus,
       paymentMetadata: params.paymentMetadata,
-      updatedAt: new Date(),
+      updatedAt: sql`CURRENT_TIMESTAMP`,
     })
     .where(eq(order.id, orderId))
     .returning();
@@ -120,7 +120,7 @@ export async function updateOrderStatus(orderId: string, status: string) {
     .update(order)
     .set({
       status,
-      updatedAt: new Date(),
+      updatedAt: sql`CURRENT_TIMESTAMP`,
     })
     .where(eq(order.id, orderId))
     .returning();

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { table } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import * as z from "zod";
@@ -21,7 +21,7 @@ const updateTableSchema = z.object({
     .max(20, "Capacity cannot exceed 20")
     .optional(),
   section: z.string().nullable().optional(),
-  isNFCEnabled: z.boolean().optional(),
+  isNfcEnabled: z.boolean().optional(),
   // Floor plan positioning fields
   floorId: z.string().nullable().optional(),
   xPosition: z.number().nullable().optional(),
@@ -61,7 +61,7 @@ export async function PATCH(
 
     // Build update object with only provided fields
     const updateData: Partial<typeof table.$inferInsert> = {
-      updatedAt: new Date(),
+      updatedAt: sql`CURRENT_TIMESTAMP`,
     };
 
     if (validatedData.tableNumber !== undefined) {
@@ -73,8 +73,8 @@ export async function PATCH(
     if (validatedData.section !== undefined) {
       updateData.section = validatedData.section;
     }
-    if (validatedData.isNFCEnabled !== undefined) {
-      updateData.isNFCEnabled = validatedData.isNFCEnabled;
+    if (validatedData.isNfcEnabled !== undefined) {
+      updateData.isNfcEnabled = validatedData.isNfcEnabled;
     }
     // Floor plan positioning fields
     if (validatedData.floorId !== undefined) {

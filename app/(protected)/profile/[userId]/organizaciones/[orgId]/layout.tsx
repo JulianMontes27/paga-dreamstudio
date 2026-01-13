@@ -25,7 +25,7 @@ const AdministradorLayout = async ({
 
   return (
     <AdminLayoutWrapper>
-      <div className="min-h-screen bg-background">
+      <div className="bg-background h-screen overflow-auto">
         {/* Sidebar */}
         <AdminSidebar
           userId={userId}
@@ -33,7 +33,7 @@ const AdministradorLayout = async ({
         />
 
         {/* Main Content - with left margin to accommodate fixed sidebar */}
-        <main className="lg:ml-64 min-h-screen pt-4 px-4 sm:pt-6 sm:px-6 lg:pt-8 lg:px-8">
+        <main className="lg:ml-64 p-3 lg:p-4">
           {children}
         </main>
       </div>

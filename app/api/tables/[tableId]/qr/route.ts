@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/db";
 import { table } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 
 const updateNFCSchema = z.object({
-  isNFCEnabled: z.boolean().optional(),
+  isNfcEnabled: z.boolean().optional(),
 });
 
 /**
@@ -36,7 +36,7 @@ export async function GET(
       .select({
         id: table.id,
         tableNumber: table.tableNumber,
-        isNFCEnabled: table.isNFCEnabled,
+        isNfcEnabled: table.isNfcEnabled,
         nfcScanCount: table.nfcScanCount,
         lastNfcScanAt: table.lastNfcScanAt,
       })
@@ -90,11 +90,11 @@ export async function PATCH(
 
     // Build update object
     const updateData: Partial<typeof table.$inferInsert> = {
-      updatedAt: new Date(),
+      updatedAt: sql`CURRENT_TIMESTAMP`,
     };
 
-    if (validatedData.isNFCEnabled !== undefined) {
-      updateData.isNFCEnabled = validatedData.isNFCEnabled;
+    if (validatedData.isNfcEnabled !== undefined) {
+      updateData.isNfcEnabled = validatedData.isNfcEnabled;
     }
 
     // Update table

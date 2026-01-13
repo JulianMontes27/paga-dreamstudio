@@ -15,6 +15,20 @@
       "when": 1768250675721,
       "tag": "0001_furry_hitman",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1768255983968,
+      "tag": "0002_bored_maggott",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1768256212591,
+      "tag": "0003_pink_harpoon",
+      "breakpoints": true
     }
   ]
 }

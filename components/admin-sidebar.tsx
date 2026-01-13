@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Calendar, Settings, ArrowLeft, UserCircle } from "lucide-react";
+import { Calendar, Settings, ArrowLeft, UserCircle, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./ui/theme-toggle";
 import { useAdminMenu } from "@/contexts/admin-menu-context";
@@ -32,23 +32,23 @@ const primaryMenuItems: MenuItem[] = [
   {
     title: "Mesas",
     icon: Calendar,
-    href: "/administrador/eventos",
-    description: "Crea y gestiona eventos",
+    href: "/mesas",
+    description: "Gestiona las mesas",
     exact: false,
     roles: ["owner", "administrator"], // Only admins and owners
   },
   {
     title: "Pedidos",
     icon: UserCircle,
-    href: "/administrador/usuarios",
-    description: "Listado completo de usuarios",
-    exact: true,
+    href: "/pedidos",
+    description: "Listado completo de pedidos",
+    exact: false,
     roles: ["owner", "administrator"], // Sellers cannot access
   },
   {
     title: "Configuración",
     icon: Settings,
-    href: "/administrador/configuracion",
+    href: "/settings",
     description: "Ajustes del sistema",
     exact: true,
     roles: ["owner", "administrator"], // Sellers cannot access
@@ -129,14 +129,23 @@ export function AdminSidebar({ userId, orgId }: AdminSidebarProps) {
   // Handle organization switch - navigate to the new organization's events page
   const handleOrganizationChange = (newOrgId: string) => {
     if (newOrgId !== orgId) {
-      router.push(
-        `/profile/${userId}/organizaciones/${newOrgId}/administrador/eventos`
-      );
+      router.push(`/profile/${userId}/organizaciones/${newOrgId}`);
     }
   };
 
   return (
     <>
+      {/* Mobile Menu Toggle Button - Fixed floating button (only shows when sidebar is closed) */}
+      {!isMobileMenuOpen && (
+        <button
+          onClick={() => setIsMobileMenuOpen(true)}
+          className="lg:hidden fixed top-4 left-4 z-50 flex items-center justify-center h-10 w-10 rounded-full transition-all duration-300 bg-white dark:bg-[#202020] border border-gray-200 dark:border-[#2a2a2a] shadow-lg hover:scale-105 active:scale-95"
+          aria-label="Abrir menú"
+        >
+          <Menu className="h-5 w-5 text-gray-900 dark:text-white" />
+        </button>
+      )}
+
       {/* Overlay for mobile */}
       {isMobileMenuOpen && (
         <div
@@ -153,6 +162,15 @@ export function AdminSidebar({ userId, orgId }: AdminSidebarProps) {
         )}
       >
         <div className="flex flex-col h-full p-6">
+          {/* Close button inside sidebar for mobile */}
+          <button
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="lg:hidden absolute top-4 right-4 flex items-center justify-center h-8 w-8 rounded-full transition-all duration-200 hover:bg-gray-100 dark:hover:bg-white/10"
+            aria-label="Cerrar menú"
+          >
+            <X className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+          </button>
+
           {/* Logo/Brand with Back Button */}
           <div className="mb-6 px-3">
             <Link
@@ -206,15 +224,7 @@ export function AdminSidebar({ userId, orgId }: AdminSidebarProps) {
                 if (item.exact) {
                   isActive = pathname === fullHref;
                 } else {
-                  // For non-exact matches (like /administrador/eventos which should also match /administrador/event/[id])
-                  if (item.href === "/administrador/eventos") {
-                    isActive =
-                      pathname.includes("/administrador/eventos") ||
-                      (pathname.includes("/administrador/event/") &&
-                        !pathname.includes("/configuracion"));
-                  } else {
-                    isActive = pathname.includes(item.href);
-                  }
+                  isActive = pathname.includes(item.href);
                 }
 
                 return (
