@@ -23,7 +23,7 @@ interface MenuItem {
   name: string;
   description: string | null;
   price: string;
-  category: {
+  menuCategory: {
     id: string;
     name: string;
   } | null;
@@ -54,7 +54,7 @@ export function AddItemsDialog({ orderId, menuItems }: AddItemsDialogProps) {
     return (
       item.name.toLowerCase().includes(query) ||
       item.description?.toLowerCase().includes(query) ||
-      item.category?.name.toLowerCase().includes(query)
+      item.menuCategory?.name.toLowerCase().includes(query)
     );
   });
 
@@ -182,9 +182,9 @@ export function AddItemsDialog({ orderId, menuItems }: AddItemsDialogProps) {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <h4 className="font-medium">{item.name}</h4>
-                          {item.category && (
+                          {item.menuCategory && (
                             <Badge variant="outline" className="text-xs">
-                              {item.category.name}
+                              {item.menuCategory.name}
                             </Badge>
                           )}
                         </div>

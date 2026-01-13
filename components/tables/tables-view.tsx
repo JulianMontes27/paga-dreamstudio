@@ -12,32 +12,10 @@ import {
 } from "./floor-plan";
 import { Button } from "@/components/ui/button";
 import { List, Map } from "lucide-react";
-
-type OrderActivity = "idle" | "active" | "payment_made";
-
-type TableWithCheckout = {
-  id: string;
-  tableNumber: string;
-  capacity: number;
-  status: "available" | "occupied" | "reserved" | "cleaning";
-  section: string | null;
-  isNfcEnabled: boolean;
-  nfcScanCount: number;
-  lastNfcScanAt: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
-  floorId: string | null;
-  xPosition: number | null;
-  yPosition: number | null;
-  width: number | null;
-  height: number | null;
-  shape: string | null;
-  orderActivity?: OrderActivity;
-  checkoutUrl: string;
-};
+import { Table } from "@/db";
 
 interface TablesViewProps {
-  tables: TableWithCheckout[];
+  tables: Table[];
   floors: FloorData[];
   canUpdate: boolean;
   organizationId: string;
@@ -53,6 +31,7 @@ export function TablesView({
 }: TablesViewProps) {
   const [viewMode, setViewMode] = useState<"list" | "map">("map");
 
+  // Transform tables for floor plan view
   const floorPlanTables: TableData[] = tables.map((table) => ({
     id: table.id,
     tableNumber: table.tableNumber,
@@ -65,10 +44,12 @@ export function TablesView({
     width: table.width,
     height: table.height,
     shape: table.shape,
-    orderActivity: table.orderActivity,
-    checkoutUrl: table.checkoutUrl,
-    nfcScanCount: table.nfcScanCount,
-    isNfcEnabled: table.isNfcEnabled,
+  }));
+
+  // Transform tables for list view (with checkout URL)
+  const tablesWithCheckout = tables.map((table) => ({
+    ...table,
+    checkoutUrl: `/checkout/${table.id}`,
   }));
 
   return (
@@ -98,7 +79,7 @@ export function TablesView({
       {/* List View */}
       {viewMode === "list" && (
         <TableFilters
-          tables={tables}
+          tables={tablesWithCheckout}
           organizationId={organizationId}
           userId={userId}
           canUpdate={canUpdate}

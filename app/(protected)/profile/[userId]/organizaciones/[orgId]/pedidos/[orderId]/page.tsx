@@ -1,7 +1,7 @@
 import { db } from "@/db";
-import { organization, order, member, menuItem } from "@/db/schema";
+import { order, menuItem } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { OrderDetailView } from "@/components/orders/order-detail-view";
 
 export default async function OrderDetailPage({
@@ -11,33 +11,9 @@ export default async function OrderDetailPage({
 }) {
   const { userId, orgId, orderId } = await params;
 
-  // Fetch organization by ID
-  const org = await db
-    .select()
-    .from(organization)
-    .where(eq(organization.id, orgId))
-    .limit(1)
-    .then((rows) => rows[0]);
-
-  if (!org) {
-    notFound();
-  }
-
-  // Fetch current user's membership
-  const userMembership = await db
-    .select()
-    .from(member)
-    .where(and(eq(member.organizationId, org.id), eq(member.userId, userId)))
-    .limit(1)
-    .then((rows) => rows[0]);
-
-  if (!userMembership?.role) {
-    return redirect("/");
-  }
-
   // Fetch the order with related data
   const orderData = await db.query.order.findFirst({
-    where: and(eq(order.id, orderId), eq(order.organizationId, org.id)),
+    where: and(eq(order.id, orderId), eq(order.organizationId, orgId)),
     with: {
       table: true,
       orderItems: {
@@ -55,9 +31,9 @@ export default async function OrderDetailPage({
 
   // Fetch menu items for adding to order
   const menuItems = await db.query.menuItem.findMany({
-    where: eq(menuItem.organizationId, org.id),
+    where: eq(menuItem.organizationId, orgId),
     with: {
-      category: true,
+      menuCategory: true,
     },
   });
 

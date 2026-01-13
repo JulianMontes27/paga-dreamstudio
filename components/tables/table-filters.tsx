@@ -36,20 +36,20 @@ type TableWithCheckout = {
   id: string;
   tableNumber: string;
   capacity: number;
-  status: "available" | "occupied" | "reserved" | "cleaning";
+  status: string;
   section: string | null;
-  isNfcEnabled: boolean;
-  nfcScanCount: number;
+  isNfcEnabled: boolean | null;
+  nfcScanCount: number | null;
   lastNfcScanAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
+  organizationId: string;
   floorId: string | null;
   xPosition: number | null;
   yPosition: number | null;
   width: number | null;
   height: number | null;
   shape: string | null;
-  orderActivity?: OrderActivity;
   checkoutUrl: string;
 };
 

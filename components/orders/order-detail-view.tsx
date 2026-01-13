@@ -6,74 +6,59 @@ import { ArrowLeft, Clock, CreditCard, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { AddItemsDialog } from "./add-items-dialog";
 
-interface MenuItem {
-  id: string;
-  name: string;
-  price: string;
-}
-
-interface OrderItem {
-  id: string;
-  quantity: number;
-  unitPrice: string;
-  totalPrice: string;
-  itemName: string | null;
-  specialInstructions: string | null;
-  status: string;
-  menuItem: MenuItem | null;
-}
-
-interface PaymentClaim {
-  id: string;
-  claimedAmount: string;
-  totalToPay: string;
-  status: string;
-  paidAt: Date | null;
-}
-
-interface Order {
-  id: string;
-  orderNumber: string;
-  status: string;
-  orderType: string;
-  subtotal: string;
-  taxAmount: string;
-  tipAmount: string | null;
-  totalAmount: string;
-  totalClaimed: string | null;
-  totalPaid: string | null;
-  processorFee: string | null;
-  marketplaceFee: string | null;
-  notes: string | null;
-  customerName: string | null;
-  customerPhone: string | null;
-  paymentStatus: string | null;
-  createdAt: Date;
-  paidAt: Date | null;
-  table: {
-    id: string;
-    tableNumber: string;
-  } | null;
-  orderItems: OrderItem[];
-  paymentClaims: PaymentClaim[];
-}
-
-interface MenuItemData {
-  id: string;
-  name: string;
-  description: string | null;
-  price: string;
-  category: {
-    id: string;
-    name: string;
-  } | null;
-}
-
 interface OrderDetailViewProps {
-  order: Order;
+  order: {
+    id: string;
+    orderNumber: string;
+    status: string;
+    orderType: string;
+    subtotal: string;
+    taxAmount: string;
+    tipAmount: string | null;
+    totalAmount: string;
+    totalPaid: string | null;
+    processorFee: string | null;
+    marketplaceFee: string | null;
+    notes: string | null;
+    customerName: string | null;
+    customerPhone: string | null;
+    createdAt: Date;
+    paidAt: Date | null;
+    table: {
+      id: string;
+      tableNumber: string;
+    } | null;
+    orderItems: Array<{
+      id: string;
+      quantity: number;
+      unitPrice: string;
+      totalPrice: string;
+      itemName: string | null;
+      specialInstructions: string | null;
+      menuItem: {
+        id: string;
+        name: string;
+      } | null;
+    }>;
+    paymentClaims: Array<{
+      id: string;
+      totalToPay: string;
+      status: string;
+      paidAt: Date | null;
+    }>;
+  };
   userId: string;
   orgId: string;
-  menuItems: MenuItemData[];
+  menuItems: Array<{
+    id: string;
+    name: string;
+    description: string | null;
+    price: string;
+    menuCategory: {
+      id: string;
+      name: string;
+    } | null;
+  }>;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -86,8 +71,8 @@ const STATUS_COLORS: Record<string, string> = {
 
 export function OrderDetailView({
   order,
-  userId,
-  orgId,
+  // userId,
+  // orgId,
   menuItems,
 }: OrderDetailViewProps) {
   const router = useRouter();
@@ -123,7 +108,9 @@ export function OrderDetailView({
         </Button>
         <div className="flex-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold">Order #{order.orderNumber}</h1>
+            <h1 className="text-2xl font-semibold">
+              Order #{order.orderNumber}
+            </h1>
             <div
               className={`h-2.5 w-2.5 rounded-full ${statusColor}`}
               title={order.status}
@@ -157,7 +144,9 @@ export function OrderDetailView({
           <div className="text-sm text-muted-foreground">Total</div>
         </div>
         <div className="border rounded-lg p-4">
-          <div className="text-2xl font-semibold">{order.orderItems.length}</div>
+          <div className="text-2xl font-semibold">
+            {order.orderItems.length}
+          </div>
           <div className="text-sm text-muted-foreground">Items</div>
         </div>
         <div className="border rounded-lg p-4">
@@ -199,7 +188,9 @@ export function OrderDetailView({
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="font-medium">{formatCurrency(item.totalPrice)}</div>
+                  <div className="font-medium">
+                    {formatCurrency(item.totalPrice)}
+                  </div>
                   <div className="text-xs text-muted-foreground">
                     {formatCurrency(item.unitPrice)} each
                   </div>
@@ -251,14 +242,20 @@ export function OrderDetailView({
             </div>
             {order.processorFee && parseFloat(order.processorFee) > 0 && (
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Processor Fee (MercadoPago)</span>
-                <span className="text-red-500">-{formatCurrency(order.processorFee)}</span>
+                <span className="text-muted-foreground">
+                  Processor Fee (MercadoPago)
+                </span>
+                <span className="text-red-500">
+                  -{formatCurrency(order.processorFee)}
+                </span>
               </div>
             )}
             {order.marketplaceFee && parseFloat(order.marketplaceFee) > 0 && (
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Marketplace Fee</span>
-                <span className="text-red-500">-{formatCurrency(order.marketplaceFee)}</span>
+                <span className="text-red-500">
+                  -{formatCurrency(order.marketplaceFee)}
+                </span>
               </div>
             )}
             <div className="flex justify-between font-semibold pt-2 border-t">
@@ -286,7 +283,9 @@ export function OrderDetailView({
               <div key={claim.id} className="flex items-center gap-4 p-4">
                 <CreditCard className="h-4 w-4 text-muted-foreground" />
                 <div className="flex-1">
-                  <div className="font-medium">{formatCurrency(claim.totalToPay)}</div>
+                  <div className="font-medium">
+                    {formatCurrency(claim.totalToPay)}
+                  </div>
                   {claim.paidAt && (
                     <div className="text-sm text-muted-foreground">
                       Paid {formatDate(claim.paidAt)}
