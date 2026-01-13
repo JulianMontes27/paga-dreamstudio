@@ -41,7 +41,7 @@ interface TableData {
  */
 interface TableActionsProps {
   table: TableData;
-  userRole: "member" | "admin" | "owner";
+  userRole: "waiter" | "admin" | "owner";
   organizationId: string;
   userId?: string;
 }
@@ -87,11 +87,10 @@ export function TableActions({
 
       const { order: newOrder } = await response.json();
 
-      // Mark table as occupied
-      await updateTableStatus("occupied");
-
       // Navigate to the new order page
-      router.push(`/profile/${userId}/organizaciones/${organizationId}/pedidos/${newOrder.id}`);
+      router.push(
+        `/profile/${userId}/organizaciones/${organizationId}/pedidos/${newOrder.id}`
+      );
 
       toast.success(`Order started for Table ${table.tableNumber}`);
     } catch (error) {
@@ -100,38 +99,6 @@ export function TableActions({
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const updateTableStatus = async (newStatus: string) => {
-    setIsLoading(true);
-
-    // Show loading toast with promise-based pattern for better UX
-    toast.promise(
-      fetch(`/api/tables/${table.id}/status`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ status: newStatus }),
-      }).then(async (response) => {
-        if (!response.ok) {
-          throw new Error(`Failed to update table status`);
-        }
-
-        // Refresh the page to show updated data
-        router.refresh();
-        return `Table ${table.tableNumber} marked as ${newStatus}`;
-      }),
-      {
-        loading: `Updating Table ${table.tableNumber}...`,
-        success: (message) => message,
-        error: (error) => {
-          console.error("Error updating table status:", error);
-          return "Failed to update table status";
-        },
-        finally: () => setIsLoading(false),
-      }
-    );
   };
 
   /**
@@ -199,10 +166,7 @@ export function TableActions({
           {userId && table.status !== "cleaning" && (
             <>
               <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={handleStartOrder}
-                disabled={isLoading}
-              >
+              <DropdownMenuItem onClick={handleStartOrder} disabled={isLoading}>
                 <Plus className="mr-2 h-4 w-4" />
                 Start Order
               </DropdownMenuItem>
@@ -211,9 +175,7 @@ export function TableActions({
 
           {/* View Checkout - Available to all roles */}
           <DropdownMenuSeparator />
-          <DropdownMenuItem
-            onClick={() => window.open(checkoutUrl, '_blank')}
-          >
+          <DropdownMenuItem onClick={() => window.open(checkoutUrl, "_blank")}>
             <Eye className="mr-2 h-4 w-4" />
             View Checkout
           </DropdownMenuItem>
