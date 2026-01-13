@@ -1,0 +1,82 @@
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/db";
+import { order } from "@/db/schema";
+import { eq } from "drizzle-orm";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+
+export async function POST(request: NextRequest) {
+  try {
+    const reqHeaders = await headers();
+
+    // Check authentication
+    const session = await auth.api.getSession({
+      headers: reqHeaders,
+    });
+
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { tableId, organizationId } = body;
+
+    if (!tableId || !organizationId) {
+      return NextResponse.json(
+        { error: "tableId and organizationId are required" },
+        { status: 400 }
+      );
+    }
+
+    // Check permission to create orders
+    const canCreateOrder = await auth.api.hasPermission({
+      headers: reqHeaders,
+      body: {
+        permission: { order: ["create"] },
+        organizationId,
+      },
+    });
+
+    if (!canCreateOrder?.success) {
+      return NextResponse.json(
+        { error: "You don't have permission to create orders" },
+        { status: 403 }
+      );
+    }
+
+    // Generate order number (you might want a more sophisticated approach)
+    const orderCount = await db
+      .select()
+      .from(order)
+      .where(eq(order.organizationId, organizationId));
+    const orderNumber = `ORD-${String(orderCount.length + 1).padStart(4, "0")}`;
+
+    // Create the order
+    const newOrder = await db
+      .insert(order)
+      .values({
+        id: crypto.randomUUID(),
+        organizationId,
+        tableId,
+        orderNumber,
+        status: "ordering",
+        orderType: "dine-in",
+        subtotal: "0",
+        taxAmount: "0",
+        totalAmount: "0",
+        createdBy: session.user.id,
+      })
+      .returning();
+
+    return NextResponse.json(
+      { order: newOrder[0] },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error("Error creating order:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}

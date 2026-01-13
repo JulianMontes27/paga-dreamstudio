@@ -22,6 +22,7 @@ import {
   Edit,
   Trash2,
   Eye,
+  Plus,
 } from "lucide-react";
 
 /**
@@ -42,12 +43,14 @@ interface TableActionsProps {
   table: TableData;
   userRole: "member" | "admin" | "owner";
   organizationId: string;
+  userId?: string;
 }
 
 export function TableActions({
   table,
   userRole,
-  // organizationId,
+  organizationId,
+  userId,
 }: TableActionsProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -59,6 +62,45 @@ export function TableActions({
 
   // Construct checkout URL
   const checkoutUrl = `/checkout/${table.id}`;
+
+  /**
+   * Creates a new order for the table
+   */
+  const handleStartOrder = async () => {
+    setIsLoading(true);
+
+    try {
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          tableId: table.id,
+          organizationId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create order");
+      }
+
+      const { order: newOrder } = await response.json();
+
+      // Mark table as occupied
+      await updateTableStatus("occupied");
+
+      // Navigate to the new order page
+      router.push(`/profile/${userId}/organizaciones/${organizationId}/pedidos/${newOrder.id}`);
+
+      toast.success(`Order started for Table ${table.tableNumber}`);
+    } catch (error) {
+      console.error("Error starting order:", error);
+      toast.error("Failed to start order");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const updateTableStatus = async (newStatus: string) => {
     setIsLoading(true);
@@ -152,6 +194,20 @@ export function TableActions({
 
         <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuLabel>Table Actions</DropdownMenuLabel>
+
+          {/* Start Order - Available to all roles */}
+          {userId && table.status !== "cleaning" && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={handleStartOrder}
+                disabled={isLoading}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Start Order
+              </DropdownMenuItem>
+            </>
+          )}
 
           {/* View Checkout - Available to all roles */}
           <DropdownMenuSeparator />

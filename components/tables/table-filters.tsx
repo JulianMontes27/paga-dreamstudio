@@ -246,13 +246,12 @@ export function TableFilters({
 
                 {/* Actions */}
                 <div className="flex items-center gap-1" onClick={(e) => e.preventDefault()}>
-                  {canManage && (
-                    <TableActions
-                      table={table}
-                      userRole={userRole}
-                      organizationId={organizationId || ""}
-                    />
-                  )}
+                  <TableActions
+                    table={table}
+                    userRole={userRole}
+                    organizationId={organizationId || ""}
+                    userId={userId}
+                  />
                 </div>
 
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
