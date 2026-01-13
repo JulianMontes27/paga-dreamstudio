@@ -39,7 +39,7 @@ type TableWithCheckout = {
 interface TablesViewProps {
   tables: TableWithCheckout[];
   floors: FloorData[];
-  userRole: "member" | "admin" | "owner";
+  userRole: "waiter" | "admin" | "owner";
   organizationSlug?: string;
   organizationId: string;
   userId: string;

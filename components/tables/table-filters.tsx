@@ -55,7 +55,7 @@ type TableWithCheckout = {
 
 interface TableFiltersProps {
   tables: TableWithCheckout[];
-  userRole: "member" | "admin" | "owner";
+  userRole: "waiter" | "admin" | "owner";
   organizationId?: string;
   userId?: string;
 }

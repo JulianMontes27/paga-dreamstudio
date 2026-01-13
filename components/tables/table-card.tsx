@@ -55,7 +55,7 @@ interface TableCardProps {
       expiresAt: Date | null;
     } | null;
   };
-  userRole: "member" | "admin" | "owner";
+  userRole: "waiter" | "admin" | "owner";
   organizationId: string;
 }
 

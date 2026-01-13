@@ -97,11 +97,11 @@ export default async function TablesPage({
 
   // Map schema roles to component roles
   const schemaRole = userMember[0].role as "waiter" | "administrator" | "owner";
-  const userRole: "member" | "admin" | "owner" =
-    schemaRole === "waiter"
-      ? "member"
-      : schemaRole === "administrator"
-        ? "admin"
+  const userRole: "waiter" | "admin" | "owner" =
+    schemaRole === "administrator"
+      ? "admin"
+      : schemaRole === "waiter"
+        ? "waiter"
         : "owner";
 
   // Build activity map: tableId -> OrderActivity
