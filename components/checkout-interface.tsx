@@ -20,39 +20,43 @@ type PaymentMethod =
 
 interface OrderItem {
   id: string;
-  name: string;
+  itemName: string | null;
   quantity: number;
-  price: number;
-  notes?: string;
+  unitPrice: string;
+  specialInstructions?: string | null;
+  menuItem?: {
+    name: string;
+  } | null;
 }
 
-// Mock data
-const mockItems: OrderItem[] = [
-  {
-    id: "1",
-    name: "Wagyu Ribeye Steak",
-    quantity: 1,
-    price: 189000,
-    notes: "Término medio",
-  },
-  { id: "2", name: "Risotto de Trufa", quantity: 1, price: 68000 },
-  { id: "3", name: "Ensalada César", quantity: 2, price: 32000 },
-  { id: "4", name: "Château Margaux 2015", quantity: 1, price: 1250000 },
-  { id: "5", name: "Crème Brûlée", quantity: 2, price: 28000 },
-];
+interface Order {
+  id: string;
+  orderNumber: string;
+  status: string;
+  subtotal: string;
+  taxAmount: string;
+  tipAmount: string | null;
+  totalAmount: string;
+  orderItems: OrderItem[];
+}
 
-const TABLE_NUMBER = 12;
-const RESTAURANT_NAME = "La Brasserie";
-const ORDER_NUMBER = "0042";
-const COMPANY_NAME = "La Brasserie Gourmet S.A.S.";
-const COMPANY_NIT = "901.234.567-8";
+interface TableData {
+  id: string;
+  tableNumber: string;
+  organizationId: string;
+}
+
 const IMPOCONSUMO_RATE = 0.08;
 const SERVICE_RATE = 0.1; // 10% propina voluntaria
 
 export default function TableCheckoutInterface({
   tableId,
+  tableData,
+  activeOrder,
 }: {
   tableId: string;
+  tableData: TableData;
+  activeOrder: Order | null;
 }) {
   console.log(tableId)
   const [includeService, setIncludeService] = useState(true);
@@ -76,10 +80,19 @@ export default function TableCheckoutInterface({
   const [invoiceName, setInvoiceName] = useState("");
   const [invoiceEmail, setInvoiceEmail] = useState("");
 
+  // Get order items
+  const orderItems = activeOrder?.orderItems || [];
+
   // Calculations
   const subtotal = useMemo(
-    () => mockItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
-    []
+    () =>
+      activeOrder
+        ? parseFloat(activeOrder.subtotal)
+        : orderItems.reduce(
+            (sum, item) => sum + parseFloat(item.unitPrice) * item.quantity,
+            0
+          ),
+    [activeOrder, orderItems]
   );
 
   const impoconsumo = useMemo(() => subtotal * IMPOCONSUMO_RATE, [subtotal]);
@@ -140,10 +153,10 @@ export default function TableCheckoutInterface({
               <div className="flex items-center gap-3 pb-4 border-b border-gray-200">
                 <Sparkles className="w-5 h-5 text-amber-500" />
                 <div>
-                  <p className="font-semibold text-gray-900">
-                    {RESTAURANT_NAME}
+                  <p className="font-semibold text-gray-900">Pago exitoso</p>
+                  <p className="text-sm text-gray-500">
+                    Mesa {tableData.tableNumber}
                   </p>
-                  <p className="text-sm text-gray-500">Mesa {TABLE_NUMBER}</p>
                 </div>
               </div>
 
@@ -209,14 +222,17 @@ export default function TableCheckoutInterface({
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-semibold text-gray-900">
-              {RESTAURANT_NAME}
+              Checkout
             </h1>
             <p className="text-sm text-gray-500">
-              Mesa {TABLE_NUMBER} · Orden #{ORDER_NUMBER}
+              Mesa {tableData.tableNumber}
+              {activeOrder && ` · Orden #${activeOrder.orderNumber}`}
             </p>
           </div>
           <div className="w-10 h-10 bg-gray-900 rounded-full flex items-center justify-center">
-            <span className="text-white font-bold text-sm">{TABLE_NUMBER}</span>
+            <span className="text-white font-bold text-sm">
+              {tableData.tableNumber}
+            </span>
           </div>
         </div>
 
@@ -231,7 +247,7 @@ export default function TableCheckoutInterface({
                 Resumen del pedido
               </span>
               <span className="text-sm text-gray-500">
-                ({mockItems.length} items)
+                ({orderItems.length} items)
               </span>
             </div>
             <ChevronDown
@@ -243,11 +259,11 @@ export default function TableCheckoutInterface({
 
           {isItemsExpanded && (
             <div className="border-t border-gray-100 max-h-[240px] overflow-y-auto">
-              {mockItems.map((item, index) => (
+              {orderItems.map((item, index) => (
                 <div
                   key={item.id}
                   className={`flex items-start justify-between p-4 ${
-                    index !== mockItems.length - 1
+                    index !== orderItems.length - 1
                       ? "border-b border-gray-100"
                       : ""
                   }`}
@@ -258,17 +274,19 @@ export default function TableCheckoutInterface({
                         {item.quantity}×
                       </span>
                       <span className="font-medium text-gray-900">
-                        {item.name}
+                        {item.menuItem?.name || item.itemName || "Item"}
                       </span>
                     </div>
-                    {item.notes && (
+                    {item.specialInstructions && (
                       <p className="text-sm text-gray-500 ml-7 mt-0.5">
-                        {item.notes}
+                        {item.specialInstructions}
                       </p>
                     )}
                   </div>
                   <span className="font-medium tabular-nums text-gray-900">
-                    {formatCurrency(item.price * item.quantity)}
+                    {formatCurrency(
+                      parseFloat(item.unitPrice) * item.quantity
+                    )}
                   </span>
                 </div>
               ))}
@@ -759,11 +777,14 @@ export default function TableCheckoutInterface({
           )}
         </button>
 
-        {/* Company Info */}
-        <div className="text-center text-xs text-gray-400">
-          <p>{COMPANY_NAME}</p>
-          <p>NIT: {COMPANY_NIT}</p>
-        </div>
+        {/* No active order message */}
+        {!activeOrder && (
+          <div className="text-center py-8">
+            <p className="text-gray-500">
+              No hay una orden activa para esta mesa
+            </p>
+          </div>
+        )}
 
         {/* Safe Area */}
         <div className="h-4" />

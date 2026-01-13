@@ -61,6 +61,13 @@ export const tableStatus = pgEnum("table_status", [
   "reserved",
   "cleaning",
 ]);
+export const orderStatus = pgEnum("order_status", [
+  "ordering",
+  "payment_started",
+  "partially_paid",
+  "paid",
+  "cancelled",
+]);
 
 export const verification = pgTable("verification", {
   id: text().primaryKey().notNull(),
@@ -350,7 +357,7 @@ export const order = pgTable(
     organizationId: text("organization_id").notNull(),
     tableId: uuid("table_id"),
     orderNumber: text("order_number").notNull(),
-    status: text().default("ordering").notNull(),
+    status: orderStatus().default("ordering").notNull(),
     orderType: text("order_type").default("dine-in").notNull(),
     subtotal: numeric({ precision: 10, scale: 2 }).notNull(),
     taxAmount: numeric("tax_amount", { precision: 10, scale: 2 }).notNull(),

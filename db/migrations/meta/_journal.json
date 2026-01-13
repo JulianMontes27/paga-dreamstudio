@@ -43,6 +43,13 @@
       "when": 1768335770237,
       "tag": "0005_quiet_sunfire",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1768338037034,
+      "tag": "0006_lean_tyger_tiger",
+      "breakpoints": true
     }
   ]
 }
