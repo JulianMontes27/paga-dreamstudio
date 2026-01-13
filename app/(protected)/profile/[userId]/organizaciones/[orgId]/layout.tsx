@@ -25,7 +25,7 @@ const AdministradorLayout = async ({
 
   return (
     <AdminLayoutWrapper>
-      <div className="bg-background h-screen overflow-auto">
+      <div className="bg-background overflow-auto">
         {/* Sidebar */}
         <AdminSidebar
           userId={userId}
