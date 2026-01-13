@@ -154,6 +154,7 @@ export default async function TableDetailPage({
       orders={mappedOrders}
       stats={stats}
       organizationSlug={organizationSlug}
+      userId={userId}
       userRole={userRole as "member" | "admin" | "owner"}
     />
   );

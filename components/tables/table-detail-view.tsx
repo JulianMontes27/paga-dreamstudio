@@ -97,6 +97,7 @@ interface TableDetailViewProps {
   orders: Order[];
   stats: TableStats;
   organizationSlug: string;
+  userId: string;
   userRole?: "member" | "admin" | "owner";
 }
 
@@ -125,6 +126,7 @@ export function TableDetailView({
   orders,
   stats,
   organizationSlug,
+  userId,
   userRole = "member",
 }: TableDetailViewProps) {
   const canViewHistory = userRole === "admin" || userRole === "owner";
@@ -303,7 +305,7 @@ export function TableDetailView({
 
             {/* View Order Button */}
             <div className="px-6 py-4 border-t">
-              <Link href={`/dashboard/${organizationSlug}/orders/${activeOrder.id}`}>
+              <Link href={`/profile/${userId}/organizaciones/${organizationSlug}/pedidos/${activeOrder.id}`}>
                 <Button variant="outline" className="w-full gap-2">
                   <ExternalLink className="h-4 w-4" />
                   View Order Details
@@ -334,7 +336,7 @@ export function TableDetailView({
               return (
                 <Link
                   key={order.id}
-                  href={`/dashboard/${organizationSlug}/orders/${order.id}`}
+                  href={`/profile/${userId}/organizaciones/${organizationSlug}/pedidos/${order.id}`}
                   className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors group"
                 >
                   <div
