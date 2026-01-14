@@ -1,6 +1,6 @@
 "use client";
 
-import { useDraggable, useDroppable } from "@dnd-kit/core";
+import { useDroppable } from "@dnd-kit/core";
 import { useFloorPlan, TableData } from "./floor-plan-context";
 import { MiniTableShape } from "./table-shape";
 import { Button } from "@/components/ui/button";
@@ -14,35 +14,26 @@ interface DraggableUnplacedTableProps {
 }
 
 function DraggableUnplacedTable({ table }: DraggableUnplacedTableProps) {
-  const { selectedFloorId, updateTableFloor } = useFloorPlan();
+  const { selectedFloorId, updateTableFloor, updateTablePosition } = useFloorPlan();
 
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-    id: `unplaced-${table.id}`,
-    data: {
-      type: "unplaced-table",
-      table: {
-        ...table,
-        xPosition: 50,
-        yPosition: 50,
-      },
-    },
-  });
-
-  const handleQuickPlace = () => {
+  const handlePlace = () => {
     if (selectedFloorId) {
+      // Place table at a default position (50, 50)
       updateTableFloor(table.id, selectedFloorId);
+      updateTablePosition(table.id, 50, 50);
     }
   };
 
   return (
     <div
-      ref={setNodeRef}
-      {...listeners}
-      {...attributes}
+      onClick={handlePlace}
       className={cn(
-        "flex items-center gap-3 p-2 rounded-md border bg-card hover:bg-accent cursor-grab transition-colors",
-        isDragging && "opacity-50 cursor-grabbing"
+        "flex items-center gap-3 p-2 rounded-md border bg-card transition-colors",
+        selectedFloorId
+          ? "hover:bg-accent cursor-pointer hover:border-primary"
+          : "opacity-50 cursor-not-allowed"
       )}
+      title={selectedFloorId ? "Click to place on floor" : "Select a floor first"}
     >
       <MiniTableShape
         shape={(table.shape as "rectangular" | "circular" | "oval" | "bar") || "rectangular"}
@@ -54,15 +45,7 @@ function DraggableUnplacedTable({ table }: DraggableUnplacedTableProps) {
         <p className="text-xs text-muted-foreground">{table.capacity} seats</p>
       </div>
       {selectedFloorId && (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          onClick={handleQuickPlace}
-          title="Place on current floor"
-        >
-          <MapPin className="h-4 w-4" />
-        </Button>
+        <MapPin className="h-4 w-4 text-muted-foreground" />
       )}
     </div>
   );
@@ -73,7 +56,7 @@ interface UnplacedTablesPanelProps {
 }
 
 export function UnplacedTablesPanel({ className }: UnplacedTablesPanelProps) {
-  const { unplacedTables, selectedFloorId, updateTableFloor } = useFloorPlan();
+  const { unplacedTables, selectedFloorId, updateTableFloor, updateTablePosition } = useFloorPlan();
 
   const { setNodeRef, isOver } = useDroppable({
     id: "unplaced-panel",
@@ -81,8 +64,11 @@ export function UnplacedTablesPanel({ className }: UnplacedTablesPanelProps) {
 
   const handlePlaceAll = () => {
     if (!selectedFloorId) return;
-    unplacedTables.forEach((table) => {
+    unplacedTables.forEach((table, index) => {
       updateTableFloor(table.id, selectedFloorId);
+      // Offset each table slightly so they don't all stack
+      const offset = index * 20;
+      updateTablePosition(table.id, 50 + offset, 50 + offset);
     });
   };
 

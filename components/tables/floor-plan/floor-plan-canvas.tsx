@@ -126,9 +126,10 @@ export function FloorPlanCanvasInner({ className }: FloorPlanCanvasProps) {
     );
   }
 
-  // Calculate scale to fit container (with some padding)
-  const availableWidth = Math.max(containerWidth - 16, 100);
-  const fitScale = Math.min(1, availableWidth / canvasWidth);
+  // Calculate scale to fill container (with some padding)
+  const availableWidth = Math.max(containerWidth - 32, 100);
+  // Allow scaling up to fill the container, not just down
+  const fitScale = availableWidth / canvasWidth;
 
   // Apply both fit scale and manual zoom
   const effectiveScale = fitScale * zoom;
@@ -138,15 +139,13 @@ export function FloorPlanCanvasInner({ className }: FloorPlanCanvasProps) {
   const scaledHeight = canvasHeight * effectiveScale;
 
   return (
-    <div ref={containerRef} className={cn("w-full overflow-auto", className)}>
+    <div ref={containerRef} className={cn("w-full overflow-hidden", className)}>
       {/* Wrapper with actual scaled dimensions to prevent overflow */}
       <div
-        className="relative"
+        className="relative mx-auto"
         style={{
           width: scaledWidth,
           height: scaledHeight,
-          maxWidth: "100%",
-          overflow: "hidden",
         }}
       >
         {/* Scaled canvas */}

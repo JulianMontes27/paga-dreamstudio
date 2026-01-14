@@ -93,7 +93,7 @@ export function AdminConfigTabs({
     const roleMap: { [key: string]: string } = {
       owner: "Propietario",
       administrator: "Administrador",
-      seller: "Vendedor",
+      waiter: "Mesero",
     };
     return roleMap[role] || role;
   };
@@ -399,7 +399,7 @@ export function AdminConfigTabs({
                                 <Shield className="h-3 w-3 mr-1" />
                                 {formatRole(role)}
                               </Badge>
-                            ) : role === "seller" ? (
+                            ) : role === "waiter" ? (
                               <Badge
                                 variant="outline"
                                 className="bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 text-xs"
@@ -582,7 +582,7 @@ export function AdminConfigTabs({
                                     <Shield className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1" />
                                     {formatRole(role)}
                                   </Badge>
-                                ) : role === "seller" ? (
+                                ) : role === "waiter" ? (
                                   <Badge
                                     variant="outline"
                                     className="bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 text-xs"
@@ -632,7 +632,7 @@ export function AdminConfigTabs({
                                             <span>Cambiar rol</span>
                                           </DropdownMenuSubTrigger>
                                           <DropdownMenuSubContent>
-                                            {["administrator", "seller"]
+                                            {["administrator", "waiter"]
                                               .filter((r) => r !== role)
                                               .map((newRole) => (
                                                 <DropdownMenuItem

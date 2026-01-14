@@ -97,12 +97,15 @@ export function TablesView({
         >
           <div className="space-y-3">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <FloorSelector organizationId={organizationId} canEdit={canUpdate} />
+              <FloorSelector
+                organizationId={organizationId}
+                canEdit={canUpdate}
+              />
               {canUpdate && (
                 <FloorPlanToolbar organizationId={organizationId} />
               )}
             </div>
-            <FloorPlanEditor className="min-h-[400px] sm:min-h-[500px] lg:min-h-[600px] border rounded-lg bg-muted/20" />
+            <FloorPlanEditor className="border rounded-lg bg-muted/20" />
           </div>
         </FloorPlanProvider>
       )}
