@@ -49,6 +49,10 @@ type TableWithCheckout = {
   height: number | null;
   shape: string | null;
   checkoutUrl: string;
+  floor?: {
+    id: string;
+    name: string;
+  } | null;
 };
 
 interface TableFiltersProps {
@@ -219,9 +223,9 @@ export function TableFilters({
                     <span className="font-medium text-sm sm:text-base">
                       Table {table.tableNumber}
                     </span>
-                    {table.section && (
+                    {(table.floor?.name || table.section) && (
                       <span className="text-xs sm:text-sm text-muted-foreground">
-                        · {table.section}
+                        · {table.floor?.name || table.section}
                       </span>
                     )}
                     {/* Show status badge on mobile only */}

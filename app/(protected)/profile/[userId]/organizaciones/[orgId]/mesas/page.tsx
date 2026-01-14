@@ -25,9 +25,12 @@ export default async function TablesPage({
 
   const canUpdate = !!canUpdateTable?.success;
 
-  // Fetch all tables for the organization
+  // Fetch all tables for the organization with floor relation
   const tables = await db.query.table.findMany({
     where: eq(table.organizationId, orgId),
+    with: {
+      floor: true,
+    },
   });
 
   // Fetch all floors for the organization (including those without tables)
