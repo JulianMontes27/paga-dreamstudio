@@ -15,11 +15,25 @@ import {
   ChevronRight,
   ExternalLink,
   Plus,
+  Eye,
+  Trash2,
+  MoreVertical,
+  UserPlus,
+  UserMinus,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Order, Table, OrderItem, MenuItem } from "@/db";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 // Extended Order type with relations
 type OrderWithItems = Order & {
@@ -74,7 +88,9 @@ export function TableDetailView({
 }: TableDetailViewProps) {
   const router = useRouter();
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const canViewHistory = userRole === "admin" || userRole === "owner";
+  const canUpdate = userRole === "admin" || userRole === "owner";
 
   // For members, only show active unpaid orders
   const displayOrders = canViewHistory
@@ -143,39 +159,200 @@ export function TableDetailView({
     });
   };
 
+  const updateTableStatus = async (newStatus: string) => {
+    setIsLoading(true);
+
+    toast.promise(
+      fetch(`/api/tables/${table.id}/status`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      }).then(async (response) => {
+        if (!response.ok) {
+          throw new Error("Failed to update table status");
+        }
+
+        router.refresh();
+        return `Table ${table.tableNumber} marked as ${newStatus}`;
+      }),
+      {
+        loading: `Updating Table ${table.tableNumber}...`,
+        success: (message) => message,
+        error: (error) => {
+          console.error("Error updating table status:", error);
+          return "Failed to update table status";
+        },
+        finally: () => setIsLoading(false),
+      }
+    );
+  };
+
+  const handleDeleteTable = async () => {
+    toast(`Delete Table ${table.tableNumber}?`, {
+      description: "This action cannot be undone.",
+      action: {
+        label: "Delete",
+        onClick: async () => {
+          setIsLoading(true);
+
+          try {
+            const response = await fetch(`/api/tables/${table.id}`, {
+              method: "DELETE",
+            });
+
+            if (!response.ok) {
+              throw new Error("Failed to delete table");
+            }
+
+            toast.success(`Table ${table.tableNumber} deleted successfully`);
+            router.push(`/profile/${userId}/organizaciones/${organizationSlug}/mesas`);
+          } catch (error) {
+            console.error("Error deleting table:", error);
+            toast.error("Failed to delete table");
+          } finally {
+            setIsLoading(false);
+          }
+        },
+      },
+      cancel: {
+        label: "Cancel",
+        onClick: () => {
+          toast.info("Deletion cancelled");
+        },
+      },
+      duration: 10000,
+    });
+  };
+
   const statusColor =
     STATUS_COLORS[table.status.toLowerCase()] || "bg-gray-500";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => router.back()}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold">
-              Table {table.tableNumber}
-            </h1>
-            <div
-              className={`h-2.5 w-2.5 rounded-full ${statusColor}`}
-              title={table.status}
-            />
-          </div>
-          <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
-            <span className="flex items-center gap-1">
-              <Users className="h-3.5 w-3.5" />
-              {table.capacity} seats
-            </span>
-            {table.section && <span>· {table.section}</span>}
-            {/* {table.qrCode && (
+      <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
+        <div className="flex items-center gap-3 sm:gap-4 flex-1">
+          <Button variant="ghost" size="icon" onClick={() => router.back()} className="shrink-0">
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <h1 className="text-xl sm:text-2xl font-semibold">
+                Table {table.tableNumber}
+              </h1>
+              <div
+                className={`h-2.5 w-2.5 rounded-full shrink-0 ${statusColor}`}
+                title={table.status}
+              />
+            </div>
+            <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground mt-1 flex-wrap">
               <span className="flex items-center gap-1">
-                <QrCode className="h-3.5 w-3.5" />
-                {table.qrCode.scanCount} scans
+                <Users className="h-3.5 w-3.5" />
+                {table.capacity} seats
               </span>
-            )} */}
+              {table.section && (
+                <>
+                  <span className="hidden xs:inline">·</span>
+                  <span>{table.section}</span>
+                </>
+              )}
+            </div>
           </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          {/* View Checkout */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.open(`/checkout/${table.id}`, "_blank")}
+            className="gap-1.5 flex-1 sm:flex-initial"
+          >
+            <Eye className="h-4 w-4" />
+            <span className="hidden xs:inline">View Checkout</span>
+            <span className="xs:hidden">Checkout</span>
+          </Button>
+
+          {/* Status Actions Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" disabled={isLoading} className="gap-1.5 flex-1 sm:flex-initial">
+                <span className="capitalize">{table.status}</span>
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>Change Status</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+
+              {table.status === "available" && (
+                <DropdownMenuItem
+                  onClick={() => updateTableStatus("occupied")}
+                  disabled={isLoading}
+                >
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Mark as Occupied
+                </DropdownMenuItem>
+              )}
+
+              {table.status === "occupied" && (
+                <DropdownMenuItem
+                  onClick={() => updateTableStatus("available")}
+                  disabled={isLoading}
+                >
+                  <UserMinus className="mr-2 h-4 w-4" />
+                  Mark as Available
+                </DropdownMenuItem>
+              )}
+
+              {table.status !== "reserved" && (
+                <DropdownMenuItem
+                  onClick={() => updateTableStatus("reserved")}
+                  disabled={isLoading}
+                >
+                  <Clock className="mr-2 h-4 w-4" />
+                  Mark as Reserved
+                </DropdownMenuItem>
+              )}
+
+              {table.status !== "cleaning" && (
+                <DropdownMenuItem
+                  onClick={() => updateTableStatus("cleaning")}
+                  disabled={isLoading}
+                >
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Mark for Cleaning
+                </DropdownMenuItem>
+              )}
+
+              {(table.status === "reserved" || table.status === "cleaning") && (
+                <DropdownMenuItem
+                  onClick={() => updateTableStatus("available")}
+                  disabled={isLoading}
+                >
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Mark as Available
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Delete Button - Only for admins/owners */}
+          {canUpdate && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDeleteTable}
+              disabled={isLoading}
+              className="gap-1.5 text-destructive hover:text-destructive"
+            >
+              <Trash2 className="h-4 w-4" />
+              <span className="hidden sm:inline">Delete</span>
+            </Button>
+          )}
         </div>
       </div>
 
