@@ -8,34 +8,6 @@ import { nanoid } from "nanoid";
 import { revalidatePath } from "next/cache";
 
 /**
- * Menu Management Server Actions
- *
- * Handles CRUD operations for menu categories and menu items
- */
-
-// ============================================================================
-// MENU CATEGORIES
-// ============================================================================
-
-/**
- * Get all menu categories for an organization
- */
-export const getMenuCategories = cache(async (organizationId: string) => {
-  try {
-    const categories = await db
-      .select()
-      .from(menuCategory)
-      .where(eq(menuCategory.organizationId, organizationId))
-      .orderBy(menuCategory.displayOrder, menuCategory.name);
-
-    return categories;
-  } catch (error) {
-    console.error("Error fetching menu categories:", error);
-    return [];
-  }
-});
-
-/**
  * Get all menu items for an organization, optionally filtered by category
  */
 export const getMenuItems = cache(
@@ -61,53 +33,6 @@ export const getMenuItems = cache(
   }
 );
 
-/**
- * Get menu with categories and items (for display)
- */
-export const getFullMenu = cache(async (organizationId: string) => {
-  try {
-    // Get all categories
-    const categories = await db
-      .select()
-      .from(menuCategory)
-      .where(eq(menuCategory.organizationId, organizationId))
-      .orderBy(menuCategory.displayOrder, menuCategory.name);
-
-    // Get all menu items
-    const items = await db
-      .select()
-      .from(menuItem)
-      .where(eq(menuItem.organizationId, organizationId))
-      .orderBy(menuItem.name);
-
-    // Group items by category
-    const menuWithItems = categories.map((category) => ({
-      ...category,
-      items: items.filter((item) => item.categoryId === category.id),
-    }));
-
-    // Add uncategorized items
-    const uncategorizedItems = items.filter((item) => !item.categoryId);
-    if (uncategorizedItems.length > 0) {
-      menuWithItems.push({
-        id: "uncategorized",
-        organizationId,
-        name: "Uncategorized",
-        description: null,
-        displayOrder: 999,
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        items: uncategorizedItems,
-      });
-    }
-
-    return menuWithItems;
-  } catch (error) {
-    console.error("Error fetching full menu:", error);
-    return [];
-  }
-});
 /**
  * Create a new menu category
  */

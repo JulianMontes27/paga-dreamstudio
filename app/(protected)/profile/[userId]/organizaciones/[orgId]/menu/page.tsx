@@ -1,40 +1,19 @@
-import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { MenuView } from "@/components/menu-view";
 import { CreateCategoryDialog } from "@/components/create-category-dialog";
 import { CreateMenuItemDialog } from "@/components/create-menu-item-dialog";
-import { getFullMenu, getMenuCategories } from "@/server/menu";
+import { db } from "@/db/drizzle";
+import { eq } from "drizzle-orm";
+import { menuCategory } from "@/db";
 
 export default async function MenuPage({
   params,
 }: {
   params: Promise<{ userId: string; orgId: string }>;
 }) {
-  const { userId, orgId } = await params;
+  const { orgId } = await params;
   const reqHeaders = await headers();
-
-  // Auth check
-  const session = await auth.api.getSession({
-    headers: reqHeaders,
-  });
-
-  if (!session?.user || session.user.id !== userId) {
-    redirect("/sign-in");
-  }
-
-  // Check menu read permission
-  const canViewMenu = await auth.api.hasPermission({
-    headers: reqHeaders,
-    body: {
-      permission: { menu: ["read"] },
-      organizationId: orgId,
-    },
-  });
-
-  if (!canViewMenu?.success) {
-    redirect(`/profile/${userId}/organizaciones`);
-  }
 
   // Check menu edit permissions (create, update, delete)
   const canEditMenu = await auth.api.hasPermission({
@@ -47,9 +26,21 @@ export default async function MenuPage({
 
   const canEdit = !!canEditMenu?.success;
 
-  // Fetch menu data
-  const menu = await getFullMenu(orgId);
-  const categories = await getMenuCategories(orgId);
+  // Fetch categories with nested items in a single query
+  const menu = await db.query.menuCategory.findMany({
+    where: eq(menuCategory.organizationId, orgId),
+    orderBy: (menuCategory, { asc }) => [
+      asc(menuCategory.displayOrder),
+      asc(menuCategory.name),
+    ],
+    with: {
+      menuItems: {
+        orderBy: (menuItem, { asc }) => [asc(menuItem.name)],
+      },
+    },
+  });
+
+  const categories = menu.map((c) => ({ id: c.id, name: c.name }));
 
   return (
     <div className="space-y-6">
@@ -61,7 +52,7 @@ export default async function MenuPage({
             <CreateCategoryDialog organizationId={orgId} />
             <CreateMenuItemDialog
               organizationId={orgId}
-              categories={categories.map((c) => ({ id: c.id, name: c.name }))}
+              categories={categories}
             />
           </div>
         )}
@@ -70,7 +61,7 @@ export default async function MenuPage({
       {/* Menu View */}
       <MenuView
         menu={menu}
-        categories={categories.map((c) => ({ id: c.id, name: c.name }))}
+        categories={categories}
         organizationId={orgId}
         canEdit={canEdit}
       />

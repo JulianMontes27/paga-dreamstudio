@@ -48,29 +48,10 @@ import {
   deleteMenuCategoryAction,
 } from "@/server/menu";
 import { EditMenuItemDialog } from "./edit-menu-item-dialog";
-
-interface MenuItem {
-  id: string;
-  name: string;
-  description: string | null;
-  price: string;
-  imageUrl: string | null;
-  isAvailable: boolean | null;
-  preparationTime: number | null;
-  categoryId: string | null;
-}
-
-interface Category {
-  id: string;
-  name: string;
-  description: string | null;
-  displayOrder: number | null;
-  isActive: boolean | null;
-  items: MenuItem[];
-}
+import { MenuCategory, MenuItem } from "@/db";
 
 interface MenuViewProps {
-  menu: Category[];
+  menu: (MenuCategory & { menuItems: MenuItem[] })[];
   categories: Array<{ id: string; name: string }>;
   organizationId: string;
   canEdit?: boolean;
@@ -97,7 +78,7 @@ export function MenuView({ menu, categories, canEdit = false }: MenuViewProps) {
   // Flatten all items for the items view
   const allItems = useMemo(() => {
     return menu.flatMap((cat) =>
-      cat.items.map((item) => ({
+      cat.menuItems.map((item) => ({
         ...item,
         categoryName: cat.name,
         categoryId: cat.id,
@@ -464,8 +445,8 @@ export function MenuView({ menu, categories, canEdit = false }: MenuViewProps) {
 
                   {/* Items count */}
                   <Badge variant="secondary">
-                    {category.items.length} item
-                    {category.items.length !== 1 && "s"}
+                    {category.menuItems.length} item
+                    {category.menuItems.length !== 1 && "s"}
                   </Badge>
 
                   {/* Actions (only for editors) */}
@@ -489,7 +470,7 @@ export function MenuView({ menu, categories, canEdit = false }: MenuViewProps) {
                         <DropdownMenuItem
                           className="text-destructive"
                           onSelect={() => setDeleteCategoryId(category.id)}
-                          disabled={category.items.length > 0}
+                          disabled={category.menuItems.length > 0}
                         >
                           <Trash2 className="h-4 w-4 mr-2" />
                           Delete
