@@ -34,6 +34,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 // Extended Order type with relations
 type OrderWithItems = Order & {
@@ -89,6 +97,8 @@ export function TableDetailView({
   const router = useRouter();
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const canViewHistory = userRole === "admin" || userRole === "owner";
   const canUpdate = userRole === "admin" || userRole === "owner";
 
@@ -190,40 +200,26 @@ export function TableDetailView({
   };
 
   const handleDeleteTable = async () => {
-    toast(`Delete Table ${table.tableNumber}?`, {
-      description: "This action cannot be undone.",
-      action: {
-        label: "Delete",
-        onClick: async () => {
-          setIsLoading(true);
+    setIsDeleting(true);
 
-          try {
-            const response = await fetch(`/api/tables/${table.id}`, {
-              method: "DELETE",
-            });
+    try {
+      const response = await fetch(`/api/tables/${table.id}`, {
+        method: "DELETE",
+      });
 
-            if (!response.ok) {
-              throw new Error("Failed to delete table");
-            }
+      if (!response.ok) {
+        throw new Error("Failed to delete table");
+      }
 
-            toast.success(`Table ${table.tableNumber} deleted successfully`);
-            router.push(`/profile/${userId}/organizaciones/${organizationSlug}/mesas`);
-          } catch (error) {
-            console.error("Error deleting table:", error);
-            toast.error("Failed to delete table");
-          } finally {
-            setIsLoading(false);
-          }
-        },
-      },
-      cancel: {
-        label: "Cancel",
-        onClick: () => {
-          toast.info("Deletion cancelled");
-        },
-      },
-      duration: 10000,
-    });
+      toast.success(`Table ${table.tableNumber} deleted successfully`);
+      setDeleteDialogOpen(false);
+      router.push(`/profile/${userId}/organizaciones/${organizationSlug}/mesas`);
+    } catch (error) {
+      console.error("Error deleting table:", error);
+      toast.error("Failed to delete table");
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const statusColor =
@@ -345,7 +341,7 @@ export function TableDetailView({
             <Button
               variant="outline"
               size="sm"
-              onClick={handleDeleteTable}
+              onClick={() => setDeleteDialogOpen(true)}
               disabled={isLoading}
               className="gap-1.5 text-destructive hover:text-destructive"
             >
@@ -355,6 +351,34 @@ export function TableDetailView({
           )}
         </div>
       </div>
+
+      {/* Delete Table Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Table</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete &quot;Table {table.tableNumber}&quot;? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteTable}
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Deleting..." : "Delete Table"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
