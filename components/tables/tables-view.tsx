@@ -53,26 +53,26 @@ export function TablesView({
   }));
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {/* View Toggle */}
-      <div className="flex gap-1 p-1 bg-muted rounded-lg w-fit">
+      <div className="flex gap-1 p-1 bg-muted rounded-lg w-full sm:w-fit">
         <Button
           variant={viewMode === "list" ? "secondary" : "ghost"}
           size="sm"
           onClick={() => setViewMode("list")}
-          className="gap-2"
+          className="gap-2 flex-1 sm:flex-initial"
         >
           <List className="h-4 w-4" />
-          Lista
+          <span className="hidden xs:inline">Lista</span>
         </Button>
         <Button
           variant={viewMode === "map" ? "secondary" : "ghost"}
           size="sm"
           onClick={() => setViewMode("map")}
-          className="gap-2"
+          className="gap-2 flex-1 sm:flex-initial"
         >
           <Map className="h-4 w-4" />
-          Plano
+          <span className="hidden xs:inline">Plano</span>
         </Button>
       </div>
 
@@ -95,14 +95,14 @@ export function TablesView({
           organizationId={organizationId}
           canEdit={canUpdate}
         >
-          <div className="space-y-2">
-            <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="space-y-3">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <FloorSelector organizationId={organizationId} canEdit={canUpdate} />
               {canUpdate && (
                 <FloorPlanToolbar organizationId={organizationId} />
               )}
             </div>
-            <FloorPlanEditor className="min-h-[500px] border rounded-lg bg-muted/20" />
+            <FloorPlanEditor className="min-h-[400px] sm:min-h-[500px] lg:min-h-[600px] border rounded-lg bg-muted/20" />
           </div>
         </FloorPlanProvider>
       )}

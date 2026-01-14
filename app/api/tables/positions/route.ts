@@ -105,6 +105,13 @@ export async function PATCH(request: NextRequest) {
   } catch (error) {
     console.error("Error updating table positions:", error);
 
+    // Log the full error details
+    if (error instanceof Error) {
+      console.error("Error name:", error.name);
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
+    }
+
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: "Invalid input data", details: error.issues },
@@ -113,7 +120,10 @@ export async function PATCH(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { error: "Internal server error" },
+      {
+        error: "Internal server error",
+        message: error instanceof Error ? error.message : "Unknown error"
+      },
       { status: 500 }
     );
   }

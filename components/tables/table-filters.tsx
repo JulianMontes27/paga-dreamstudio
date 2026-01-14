@@ -132,7 +132,7 @@ export function TableFilters({
   return (
     <div className="space-y-4">
       {/* Search and Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div className="flex flex-col gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -143,12 +143,12 @@ export function TableFilters({
           />
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Select
             value={statusFilter || "all"}
             onValueChange={(v) => setStatusFilter(v === "all" ? "" : v)}
           >
-            <SelectTrigger className="w-[130px]">
+            <SelectTrigger className="w-full sm:w-[140px] flex-1 min-w-0">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -168,7 +168,7 @@ export function TableFilters({
             value={capacityFilter || "all"}
             onValueChange={(v) => setCapacityFilter(v === "all" ? "" : v)}
           >
-            <SelectTrigger className="w-[130px]">
+            <SelectTrigger className="w-full sm:w-[140px] flex-1 min-w-0">
               <SelectValue placeholder="Capacity" />
             </SelectTrigger>
             <SelectContent>
@@ -182,7 +182,7 @@ export function TableFilters({
           </Select>
 
           {hasActiveFilters && (
-            <Button variant="ghost" size="icon" onClick={clearAllFilters}>
+            <Button variant="ghost" size="icon" onClick={clearAllFilters} className="shrink-0">
               <X className="h-4 w-4" />
             </Button>
           )}
@@ -205,7 +205,7 @@ export function TableFilters({
               <Link
                 key={table.id}
                 href={`/profile/${userId}/organizaciones/${organizationId}/mesas/${table.id}`}
-                className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors"
+                className="flex items-center gap-3 p-3 sm:gap-4 sm:p-4 hover:bg-muted/50 transition-colors"
               >
                 {/* Status indicator */}
                 <div
@@ -215,17 +215,24 @@ export function TableFilters({
 
                 {/* Table info */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-medium text-sm sm:text-base">
                       Table {table.tableNumber}
                     </span>
                     {table.section && (
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-xs sm:text-sm text-muted-foreground">
                         · {table.section}
                       </span>
                     )}
+                    {/* Show status badge on mobile only */}
+                    <Badge
+                      variant="secondary"
+                      className="sm:hidden capitalize text-xs"
+                    >
+                      {table.status}
+                    </Badge>
                   </div>
-                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-3 text-xs sm:text-sm text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <Users className="h-3 w-3" />
                       {table.capacity}
@@ -233,7 +240,7 @@ export function TableFilters({
                   </div>
                 </div>
 
-                {/* Status badge */}
+                {/* Status badge - desktop only */}
                 <Badge
                   variant="secondary"
                   className="hidden sm:inline-flex capitalize"
@@ -243,7 +250,7 @@ export function TableFilters({
 
                 {/* Actions */}
                 <div
-                  className="flex items-center gap-1"
+                  className="flex items-center gap-1 shrink-0"
                   onClick={(e) => e.preventDefault()}
                 >
                   <TableActions
@@ -254,7 +261,7 @@ export function TableFilters({
                   />
                 </div>
 
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
               </Link>
             );
           })}

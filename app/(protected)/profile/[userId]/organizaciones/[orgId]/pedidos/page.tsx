@@ -25,9 +25,9 @@ export default async function OrdersPage({
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Orders</h1>
+        <h1 className="text-xl sm:text-2xl font-semibold">Orders</h1>
       </div>
 
       <OrdersView orders={orders} userId={userId} orgId={orgId} />

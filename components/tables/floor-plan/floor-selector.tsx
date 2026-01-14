@@ -114,10 +114,10 @@ export function FloorSelector({
   const currentFloor = floors.find((f) => f.id === selectedFloorId);
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 w-full sm:w-auto">
       {floors.length > 0 ? (
         <Select value={selectedFloorId ?? ""} onValueChange={selectFloor}>
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger className="w-full sm:w-[200px] min-w-0">
             <SelectValue placeholder="Select floor" />
           </SelectTrigger>
           <SelectContent>

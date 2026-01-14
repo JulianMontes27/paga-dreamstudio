@@ -64,17 +64,16 @@ export function FloorPlanToolbar({
 
     try {
       // Prepare table positions for bulk update
-      const tableUpdates = tables
-        .filter((t) => t.floorId !== null)
-        .map((t) => ({
-          id: t.id,
-          floorId: t.floorId,
-          xPosition: t.xPosition,
-          yPosition: t.yPosition,
-          width: t.width,
-          height: t.height,
-          shape: t.shape,
-        }));
+      // Include ALL tables, even those with floorId === null (removed from floor)
+      const tableUpdates = tables.map((t) => ({
+        id: t.id,
+        floorId: t.floorId, // Can be null if table was removed from floor
+        xPosition: t.xPosition,
+        yPosition: t.yPosition,
+        width: t.width,
+        height: t.height,
+        shape: t.shape,
+      }));
 
       const response = await fetch("/api/tables/positions", {
         method: "PATCH",
@@ -104,7 +103,7 @@ export function FloorPlanToolbar({
     <TooltipProvider>
       <div
         className={cn(
-          "flex items-center gap-1 p-2 bg-card border rounded-lg",
+          "flex items-center gap-1 p-1.5 sm:p-2 bg-card border rounded-lg flex-wrap",
           className
         )}
       >
@@ -113,17 +112,18 @@ export function FloorPlanToolbar({
           <TooltipTrigger asChild>
             <Button
               variant="ghost"
-              size="icon"
+              size="sm"
+              className="h-8 w-8 p-0"
               onClick={handleZoomOut}
               disabled={zoom <= 0.5}
             >
-              <ZoomOut className="h-4 w-4" />
+              <ZoomOut className="h-3.5 w-3.5" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>Zoom Out</TooltipContent>
         </Tooltip>
 
-        <span className="text-sm text-muted-foreground w-12 text-center">
+        <span className="text-xs sm:text-sm text-muted-foreground w-10 sm:w-12 text-center">
           {Math.round(zoom * 100)}%
         </span>
 
@@ -131,11 +131,12 @@ export function FloorPlanToolbar({
           <TooltipTrigger asChild>
             <Button
               variant="ghost"
-              size="icon"
+              size="sm"
+              className="h-8 w-8 p-0"
               onClick={handleZoomIn}
               disabled={zoom >= 2}
             >
-              <ZoomIn className="h-4 w-4" />
+              <ZoomIn className="h-3.5 w-3.5" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>Zoom In</TooltipContent>
@@ -143,14 +144,14 @@ export function FloorPlanToolbar({
 
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" onClick={handleFitToScreen}>
-              <Maximize className="h-4 w-4" />
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={handleFitToScreen}>
+              <Maximize className="h-3.5 w-3.5" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>Reset Zoom</TooltipContent>
         </Tooltip>
 
-        <Separator orientation="vertical" className="h-6 mx-1" />
+        <Separator orientation="vertical" className="h-5 sm:h-6 mx-0.5 sm:mx-1" />
 
         {/* Grid controls */}
         <Tooltip>
@@ -159,8 +160,10 @@ export function FloorPlanToolbar({
               pressed={showGrid}
               onPressedChange={setShowGrid}
               aria-label="Toggle grid"
+              className="h-8 w-8 p-0"
+              size="sm"
             >
-              <Grid3X3 className="h-4 w-4" />
+              <Grid3X3 className="h-3.5 w-3.5" />
             </Toggle>
           </TooltipTrigger>
           <TooltipContent>
@@ -174,8 +177,10 @@ export function FloorPlanToolbar({
               pressed={snapToGrid}
               onPressedChange={setSnapToGrid}
               aria-label="Toggle snap to grid"
+              className="h-8 w-8 p-0"
+              size="sm"
             >
-              <Magnet className="h-4 w-4" />
+              <Magnet className="h-3.5 w-3.5" />
             </Toggle>
           </TooltipTrigger>
           <TooltipContent>
@@ -183,7 +188,7 @@ export function FloorPlanToolbar({
           </TooltipContent>
         </Tooltip>
 
-        <Separator orientation="vertical" className="h-6 mx-1" />
+        <Separator orientation="vertical" className="h-5 sm:h-6 mx-0.5 sm:mx-1" />
 
         {/* Save button */}
         <Tooltip>
@@ -193,14 +198,16 @@ export function FloorPlanToolbar({
               size="sm"
               onClick={handleSave}
               disabled={isSaving || !hasUnsavedChanges}
-              className="gap-2"
+              className="gap-1.5 h-8 px-2 sm:px-3"
             >
               {isSaving ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
               ) : (
-                <Save className="h-4 w-4" />
+                <Save className="h-3.5 w-3.5" />
               )}
-              {hasUnsavedChanges ? "Save" : "Saved"}
+              <span className="hidden xs:inline text-xs sm:text-sm">
+                {hasUnsavedChanges ? "Save" : "Saved"}
+              </span>
             </Button>
           </TooltipTrigger>
           <TooltipContent>

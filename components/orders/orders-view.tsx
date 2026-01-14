@@ -150,7 +150,7 @@ export function OrdersView({ orders, userId, orgId }: OrdersViewProps) {
   return (
     <div className="space-y-4">
       {/* Search and Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div className="flex flex-col gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -161,12 +161,12 @@ export function OrdersView({ orders, userId, orgId }: OrdersViewProps) {
           />
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Select
             value={statusFilter || "all"}
             onValueChange={(v) => setStatusFilter(v === "all" ? "" : v)}
           >
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-full sm:w-[140px] flex-1 min-w-0">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -183,7 +183,7 @@ export function OrdersView({ orders, userId, orgId }: OrdersViewProps) {
           </Select>
 
           <Select value={dateFilter} onValueChange={setDateFilter}>
-            <SelectTrigger className="w-[130px]">
+            <SelectTrigger className="w-full sm:w-[130px] flex-1 min-w-0">
               <SelectValue placeholder="Date" />
             </SelectTrigger>
             <SelectContent>
@@ -196,7 +196,7 @@ export function OrdersView({ orders, userId, orgId }: OrdersViewProps) {
           </Select>
 
           {hasActiveFilters && (
-            <Button variant="ghost" size="icon" onClick={clearAllFilters}>
+            <Button variant="ghost" size="icon" onClick={clearAllFilters} className="shrink-0">
               <X className="h-4 w-4" />
             </Button>
           )}
@@ -219,38 +219,49 @@ export function OrdersView({ orders, userId, orgId }: OrdersViewProps) {
               <Link
                 key={order.id}
                 href={`/${userId}/organizaciones/${orgId}/pedidos/${order.id}`}
-                className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors"
+                className="flex items-start sm:items-center gap-3 p-3 sm:gap-4 sm:p-4 hover:bg-muted/50 transition-colors"
               >
                 {/* Status indicator */}
                 <div
-                  className={`h-3 w-3 rounded-full shrink-0 ${statusConfig.color}`}
+                  className={`h-3 w-3 rounded-full shrink-0 mt-0.5 sm:mt-0 ${statusConfig.color}`}
                   title={statusConfig.label}
                 />
 
                 {/* Order info */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">#{order.orderNumber}</span>
-                    {order.table && (
-                      <span className="text-sm text-muted-foreground">
-                        · Table {order.table.tableNumber}
-                      </span>
-                    )}
-                    {order.customerName && (
-                      <span className="text-sm text-muted-foreground">
-                        · {order.customerName}
-                      </span>
-                    )}
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                    <span className="font-medium text-sm sm:text-base">#{order.orderNumber}</span>
+                    <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground flex-wrap">
+                      {order.table && (
+                        <span>Table {order.table.tableNumber}</span>
+                      )}
+                      {order.customerName && (
+                        <>
+                          {order.table && <span>·</span>}
+                          <span className="truncate max-w-[150px]">{order.customerName}</span>
+                        </>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground mt-1">
                     <span>{order.orderItems.length} items</span>
                     <span>·</span>
-                    <span>{formatDate(order.createdAt)}</span>
+                    <span className="hidden xs:inline">{formatDate(order.createdAt)}</span>
+                    <span className="xs:hidden">{new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                  </div>
+                  {/* Mobile: Show amount and status below order info */}
+                  <div className="flex items-center gap-2 mt-2 sm:hidden">
+                    <span className="font-medium text-sm">
+                      {formatCurrency(order.totalAmount)}
+                    </span>
+                    <Badge variant="secondary" className="capitalize text-xs">
+                      {order.status.replace("_", " ")}
+                    </Badge>
                   </div>
                 </div>
 
-                {/* Amount and status */}
-                <div className="text-right">
+                {/* Desktop: Amount and status on the right */}
+                <div className="hidden sm:block text-right shrink-0">
                   <div className="font-medium">
                     {formatCurrency(order.totalAmount)}
                   </div>
@@ -259,7 +270,7 @@ export function OrdersView({ orders, userId, orgId }: OrdersViewProps) {
                   </Badge>
                 </div>
 
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5 sm:mt-0" />
               </Link>
             );
           })}

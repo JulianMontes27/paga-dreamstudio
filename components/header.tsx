@@ -85,18 +85,7 @@ export function Header() {
             {/* Desktop Navigation - Hide in profile route */}
             {!isProfileRoute && (
               <nav className="hidden md:flex items-center gap-1">
-                <Link
-                  href="/eventos"
-                  className="px-4 py-2 text-sm font-medium text-foreground/80 transition-all duration-200 hover:bg-muted hover:text-foreground dark:hover:bg-accent/50 dark:hover:text-accent-foreground rounded-full"
-                >
-                  Eventos
-                </Link>
-                <Link
-                  href="/productor"
-                  className="px-4 py-2 text-sm font-medium text-foreground/80 transition-all duration-200 hover:bg-muted hover:text-foreground dark:hover:bg-accent/50 dark:hover:text-accent-foreground rounded-full"
-                >
-                  Productor
-                </Link>
+                {/* TODO: Add navigation links when routes are implemented */}
               </nav>
             )}
           </div>
@@ -143,20 +132,7 @@ export function Header() {
         >
           {/* Menu Content - no blur here, blur is on the overlay behind */}
           <nav className="flex flex-col items-center gap-4 px-6 py-6 max-w-sm mx-auto">
-            <Link
-              href="/eventos"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="w-full text-center px-6 py-3 text-lg font-semibold text-foreground/80 transition-all duration-200 hover:text-foreground hover:scale-105 rounded-xl hover:bg-white/10 dark:hover:bg-white/10"
-            >
-              Eventos
-            </Link>
-            <Link
-              href="/productor"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="w-full text-center px-6 py-3 text-lg font-semibold text-foreground/80 transition-all duration-200 hover:text-foreground hover:scale-105 rounded-xl hover:bg-white/10 dark:hover:bg-white/10"
-            >
-              Productor
-            </Link>
+            {/* TODO: Add navigation links when routes are implemented */}
 
             <div className="mt-4 w-full flex justify-center border-t border-foreground/10 pt-6">
               <AuthButton />

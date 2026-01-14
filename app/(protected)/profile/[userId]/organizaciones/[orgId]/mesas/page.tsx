@@ -37,10 +37,10 @@ export default async function TablesPage({
   });
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Mesas</h1>
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-xl sm:text-2xl font-semibold">Mesas</h1>
         {canUpdateTable && <CreateTableButton organizationId={orgId} />}
       </div>
 

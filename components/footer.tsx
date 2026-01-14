@@ -34,14 +34,6 @@ const Footer = () => {
             <ul className="space-y-3">
               <li>
                 <Link
-                  href="/eventos"
-                  className="text-sm text-gray-600 dark:text-[#B0B0B0] hover:text-foreground transition-colors"
-                >
-                  Eventos
-                </Link>
-              </li>
-              <li>
-                <Link
                   href="https://wa.me/573228597640"
                   target="_blank"
                   rel="noopener noreferrer"
