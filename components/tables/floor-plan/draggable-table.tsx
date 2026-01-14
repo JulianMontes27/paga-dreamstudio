@@ -14,7 +14,7 @@ interface DraggableTableProps {
 }
 
 export function DraggableTable({ table }: DraggableTableProps) {
-  const { selectedTableId, selectTable, removeTableFromFloor, snapToGrid, gridSize, organizationId, userId, canEdit } = useFloorPlan();
+  const { selectedTableId, selectTable, removeTableFromFloor, snapToGrid, gridSize, organizationId, userId, canEdit, canvasScale } = useFloorPlan();
   const router = useRouter();
 
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
@@ -33,8 +33,13 @@ export function DraggableTable({ table }: DraggableTableProps) {
   let y = table.yPosition ?? 0;
 
   if (transform) {
-    x += transform.x;
-    y += transform.y;
+    // Adjust transform delta by canvas scale
+    // When canvas is scaled 2x, a 10px mouse movement should only move table 5px in canvas coords
+    const scaledDeltaX = transform.x / canvasScale;
+    const scaledDeltaY = transform.y / canvasScale;
+
+    x += scaledDeltaX;
+    y += scaledDeltaY;
 
     if (snapToGrid) {
       x = Math.round(x / gridSize) * gridSize;

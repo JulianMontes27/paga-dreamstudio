@@ -52,6 +52,7 @@ interface FloorPlanContextType {
   gridSize: number;
   hasUnsavedChanges: boolean;
   isSaving: boolean;
+  canvasScale: number;
 
   // Actions
   setFloors: (floors: FloorData[]) => void;
@@ -64,6 +65,7 @@ interface FloorPlanContextType {
   setZoom: (zoom: number) => void;
   setShowGrid: (show: boolean) => void;
   setSnapToGrid: (snap: boolean) => void;
+  setCanvasScale: (scale: number) => void;
   markAsSaved: () => void;
   setIsSaving: (saving: boolean) => void;
 
@@ -119,6 +121,7 @@ export function FloorPlanProvider({
   const [gridSize] = useState(20);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [canvasScale, setCanvasScale] = useState(1);
 
   // Setters
   const setFloors = useCallback((newFloors: FloorData[]) => {
@@ -219,6 +222,7 @@ export function FloorPlanProvider({
     gridSize,
     hasUnsavedChanges,
     isSaving,
+    canvasScale,
 
     // Actions
     setFloors,
@@ -231,6 +235,7 @@ export function FloorPlanProvider({
     setZoom,
     setShowGrid,
     setSnapToGrid,
+    setCanvasScale,
     markAsSaved,
     setIsSaving,
 

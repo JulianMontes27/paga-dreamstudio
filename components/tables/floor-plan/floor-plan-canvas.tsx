@@ -87,6 +87,7 @@ export function FloorPlanCanvasInner({ className }: FloorPlanCanvasProps) {
     zoom,
     showGrid,
     gridSize,
+    setCanvasScale,
   } = useFloorPlan();
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -118,14 +119,6 @@ export function FloorPlanCanvasInner({ className }: FloorPlanCanvasProps) {
     selectTable(null);
   }, [selectTable]);
 
-  if (!currentFloor) {
-    return (
-      <div className={cn("flex items-center justify-center h-96 text-muted-foreground", className)}>
-        <p>Create a floor first using the + button above</p>
-      </div>
-    );
-  }
-
   // Calculate scale to fill container (with some padding)
   const availableWidth = Math.max(containerWidth - 32, 100);
   // Allow scaling up to fill the container, not just down
@@ -133,6 +126,19 @@ export function FloorPlanCanvasInner({ className }: FloorPlanCanvasProps) {
 
   // Apply both fit scale and manual zoom
   const effectiveScale = fitScale * zoom;
+
+  // Update the canvas scale in context so draggable tables can use it
+  useEffect(() => {
+    setCanvasScale(effectiveScale);
+  }, [effectiveScale, setCanvasScale]);
+
+  if (!currentFloor) {
+    return (
+      <div className={cn("flex items-center justify-center h-96 text-muted-foreground", className)}>
+        <p>Create a floor first using the + button above</p>
+      </div>
+    );
+  }
 
   // Calculate the scaled dimensions for the wrapper
   const scaledWidth = canvasWidth * effectiveScale;

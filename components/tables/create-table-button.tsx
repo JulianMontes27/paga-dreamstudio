@@ -23,13 +23,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Plus, Loader2 } from "lucide-react";
@@ -46,29 +39,21 @@ const createTableSchema = z.object({
     .number()
     .min(1, "Capacity must be at least 1")
     .max(20, "Capacity cannot exceed 20"),
-  floorId: z.string().optional(),
 });
 
 type CreateTableFormData = {
   tableNumber: string;
   capacity: number;
-  floorId?: string;
 };
-
-interface Floor {
-  id: string;
-  name: string;
-}
 
 /**
  * Create Table Button Props Interface
  */
 interface CreateTableButtonProps {
   organizationId: string;
-  floors?: Floor[];
 }
 
-export function CreateTableButton({ organizationId, floors = [] }: CreateTableButtonProps) {
+export function CreateTableButton({ organizationId }: CreateTableButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -79,7 +64,6 @@ export function CreateTableButton({ organizationId, floors = [] }: CreateTableBu
     defaultValues: {
       tableNumber: "",
       capacity: 4,
-      floorId: "",
     },
   });
 
@@ -99,7 +83,7 @@ export function CreateTableButton({ organizationId, floors = [] }: CreateTableBu
         body: JSON.stringify({
           tableNumber: data.tableNumber,
           capacity: data.capacity,
-          floorId: data.floorId || null,
+          floorId: null,
           organizationId,
         }),
       });
@@ -153,8 +137,8 @@ export function CreateTableButton({ organizationId, floors = [] }: CreateTableBu
         <DialogHeader>
           <DialogTitle>Create New Table</DialogTitle>
           <DialogDescription>
-            Add a new table to your restaurant layout. A unique QR code will be
-            generated automatically for customer orders.
+            Add a new table to your restaurant. A unique QR code will be
+            generated automatically. You can assign it to a floor from the Plano view.
           </DialogDescription>
         </DialogHeader>
 
@@ -232,42 +216,6 @@ export function CreateTableButton({ organizationId, floors = [] }: CreateTableBu
                 </FormItem>
               )}
             />
-
-            {/* Floor Field */}
-            {floors.length > 0 && (
-              <FormField
-                control={form.control}
-                name="floorId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Floor (Optional)</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value}
-                      disabled={isLoading}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a floor" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="">Unplaced</SelectItem>
-                        {floors.map((floor) => (
-                          <SelectItem key={floor.id} value={floor.id}>
-                            {floor.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormDescription>
-                      Assign table to a floor or leave unplaced
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
 
             {/* Form Actions */}
             <div className="flex justify-end space-x-2 pt-4">

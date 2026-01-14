@@ -35,6 +35,7 @@ export function FloorPlanEditor({ className }: FloorPlanEditorProps) {
     removeTableFromFloor,
     snapToGrid,
     gridSize,
+    canvasScale,
   } = useFloorPlan();
 
   const [draggedTable, setDraggedTable] = useState<TableData | null>(null);
@@ -149,8 +150,12 @@ export function FloorPlanEditor({ className }: FloorPlanEditorProps) {
         tableData.xPosition !== null &&
         tableData.yPosition !== null
       ) {
-        let newX = tableData.xPosition + delta.x;
-        let newY = tableData.yPosition + delta.y;
+        // Adjust delta by canvas scale
+        const scaledDeltaX = delta.x / canvasScale;
+        const scaledDeltaY = delta.y / canvasScale;
+
+        let newX = tableData.xPosition + scaledDeltaX;
+        let newY = tableData.yPosition + scaledDeltaY;
 
         // Snap to grid if enabled
         if (snapToGrid) {
@@ -174,6 +179,7 @@ export function FloorPlanEditor({ className }: FloorPlanEditorProps) {
       currentFloor,
       snapToGrid,
       gridSize,
+      canvasScale,
       updateTablePosition,
       updateTableFloor,
       removeTableFromFloor,
