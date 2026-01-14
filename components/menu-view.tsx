@@ -185,10 +185,10 @@ export function MenuView({ menu, categories, canEdit = false }: MenuViewProps) {
   return (
     <div className="space-y-4">
       {/* Tabs */}
-      <div className="flex gap-1 border-b">
+      <div className="flex gap-1 border-b overflow-x-auto">
         <button
           onClick={() => setActiveTab("items")}
-          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+          className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
             activeTab === "items"
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -198,7 +198,7 @@ export function MenuView({ menu, categories, canEdit = false }: MenuViewProps) {
         </button>
         <button
           onClick={() => setActiveTab("categories")}
-          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+          className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
             activeTab === "categories"
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -211,7 +211,7 @@ export function MenuView({ menu, categories, canEdit = false }: MenuViewProps) {
       {activeTab === "items" && (
         <>
           {/* Search and Filters */}
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -222,12 +222,12 @@ export function MenuView({ menu, categories, canEdit = false }: MenuViewProps) {
               />
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <Select
                 value={categoryFilter || "all"}
                 onValueChange={(v) => setCategoryFilter(v === "all" ? "" : v)}
               >
-                <SelectTrigger className="w-[150px]">
+                <SelectTrigger className="w-full sm:w-[150px] flex-1 min-w-0">
                   <SelectValue placeholder="Category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -246,7 +246,7 @@ export function MenuView({ menu, categories, canEdit = false }: MenuViewProps) {
                   setAvailabilityFilter(v === "all" ? "" : v)
                 }
               >
-                <SelectTrigger className="w-[140px]">
+                <SelectTrigger className="w-full sm:w-[140px] flex-1 min-w-0">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -267,7 +267,7 @@ export function MenuView({ menu, categories, canEdit = false }: MenuViewProps) {
               </Select>
 
               {hasActiveFilters && (
-                <Button variant="ghost" size="icon" onClick={clearAllFilters}>
+                <Button variant="ghost" size="icon" onClick={clearAllFilters} className="shrink-0">
                   <X className="h-4 w-4" />
                 </Button>
               )}
@@ -275,7 +275,7 @@ export function MenuView({ menu, categories, canEdit = false }: MenuViewProps) {
           </div>
 
           {/* Results count */}
-          <div className="text-sm text-muted-foreground">
+          <div className="text-xs sm:text-sm text-muted-foreground">
             {filteredItems.length} item{filteredItems.length !== 1 && "s"}
             {hasActiveFilters && " found"}
           </div>
@@ -286,16 +286,16 @@ export function MenuView({ menu, categories, canEdit = false }: MenuViewProps) {
               {filteredItems.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center gap-4 p-4 hover:bg-muted/30 transition-colors"
+                  className="flex items-start sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 hover:bg-muted/30 transition-colors"
                 >
                   {/* Drag handle (visual only for now, only for editors) */}
                   {canEdit && (
-                    <GripVertical className="h-4 w-4 text-muted-foreground/50 hidden sm:block" />
+                    <GripVertical className="h-4 w-4 text-muted-foreground/50 hidden sm:block shrink-0" />
                   )}
 
                   {/* Image */}
                   {item.imageUrl ? (
-                    <div className="w-12 h-12 rounded-md overflow-hidden bg-muted shrink-0">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-md overflow-hidden bg-muted shrink-0">
                       <Image
                         src={item.imageUrl}
                         alt={item.name}
@@ -305,15 +305,15 @@ export function MenuView({ menu, categories, canEdit = false }: MenuViewProps) {
                       />
                     </div>
                   ) : (
-                    <div className="w-12 h-12 rounded-md bg-muted flex items-center justify-center shrink-0">
-                      <UtensilsCrossed className="h-5 w-5 text-muted-foreground" />
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-md bg-muted flex items-center justify-center shrink-0">
+                      <UtensilsCrossed className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                     </div>
                   )}
 
                   {/* Item info */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium truncate">{item.name}</span>
+                    <div className="flex flex-col xs:flex-row xs:items-center gap-1 xs:gap-2">
+                      <span className="font-medium text-sm sm:text-base break-words">{item.name}</span>
                       {item.preparationTime && (
                         <span className="text-xs text-muted-foreground flex items-center gap-1">
                           <Clock className="h-3 w-3" />
@@ -321,23 +321,40 @@ export function MenuView({ menu, categories, canEdit = false }: MenuViewProps) {
                         </span>
                       )}
                     </div>
-                    <div className="text-sm text-muted-foreground truncate">
+                    <div className="text-xs sm:text-sm text-muted-foreground break-words">
                       {item.categoryName}
                       {item.description && ` · ${item.description}`}
                     </div>
+                    {/* Mobile: Show price and availability below */}
+                    <div className="sm:hidden flex items-center gap-2 mt-2">
+                      <span className="font-medium text-sm">
+                        {formatPrice(item.price)}
+                      </span>
+                      {!canEdit && (
+                        <Badge
+                          variant={
+                            item.isAvailable !== false ? "default" : "secondary"
+                          }
+                          className="text-xs"
+                        >
+                          {item.isAvailable !== false ? "Available" : "Unavailable"}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Price */}
-                  <div className="font-medium text-right shrink-0">
+                  {/* Desktop: Price */}
+                  <div className="hidden sm:block font-medium text-right shrink-0">
                     {formatPrice(item.price)}
                   </div>
 
-                  {/* Availability indicator (read-only for non-editors) */}
+                  {/* Desktop: Availability indicator (read-only for non-editors) */}
                   {!canEdit && (
                     <Badge
                       variant={
                         item.isAvailable !== false ? "default" : "secondary"
                       }
+                      className="hidden sm:inline-flex text-xs"
                     >
                       {item.isAvailable !== false ? "Available" : "Unavailable"}
                     </Badge>
@@ -367,6 +384,7 @@ export function MenuView({ menu, categories, canEdit = false }: MenuViewProps) {
                           variant="ghost"
                           size="icon"
                           disabled={isPending}
+                          className="shrink-0"
                         >
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
@@ -421,30 +439,30 @@ export function MenuView({ menu, categories, canEdit = false }: MenuViewProps) {
               {menu.map((category) => (
                 <div
                   key={category.id}
-                  className="flex items-center gap-4 p-4 hover:bg-muted/30 transition-colors"
+                  className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 hover:bg-muted/30 transition-colors"
                 >
                   {/* Drag handle (only for editors) */}
                   {canEdit && (
-                    <GripVertical className="h-4 w-4 text-muted-foreground/50 hidden sm:block" />
+                    <GripVertical className="h-4 w-4 text-muted-foreground/50 hidden sm:block shrink-0" />
                   )}
 
                   {/* Icon */}
-                  <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center shrink-0">
-                    <FolderOpen className="h-5 w-5 text-muted-foreground" />
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-md bg-muted flex items-center justify-center shrink-0">
+                    <FolderOpen className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                   </div>
 
                   {/* Category info */}
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium">{category.name}</div>
+                    <div className="font-medium text-sm sm:text-base break-words">{category.name}</div>
                     {category.description && (
-                      <div className="text-sm text-muted-foreground truncate">
+                      <div className="text-xs sm:text-sm text-muted-foreground break-words">
                         {category.description}
                       </div>
                     )}
                   </div>
 
                   {/* Items count */}
-                  <Badge variant="secondary">
+                  <Badge variant="secondary" className="text-xs shrink-0">
                     {category.menuItems.length} item
                     {category.menuItems.length !== 1 && "s"}
                   </Badge>
@@ -457,6 +475,7 @@ export function MenuView({ menu, categories, canEdit = false }: MenuViewProps) {
                           variant="ghost"
                           size="icon"
                           disabled={isPending}
+                          className="shrink-0"
                         >
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>

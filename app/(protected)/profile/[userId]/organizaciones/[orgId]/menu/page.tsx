@@ -43,12 +43,12 @@ export default async function MenuPage({
   const categories = menu.map((c) => ({ id: c.id, name: c.name }));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Menu</h1>
+      <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-3">
+        <h1 className="text-xl sm:text-2xl font-semibold">Menu</h1>
         {canEdit && (
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <CreateCategoryDialog organizationId={orgId} />
             <CreateMenuItemDialog
               organizationId={orgId}

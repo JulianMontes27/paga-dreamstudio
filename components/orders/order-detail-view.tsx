@@ -100,94 +100,123 @@ export function OrderDetailView({
   const statusColor = STATUS_COLORS[order.status] || "bg-gray-500";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => router.back()}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <Button variant="ghost" size="icon" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <h1 className="text-lg sm:text-2xl font-semibold">
               Order #{order.orderNumber}
             </h1>
             <div
-              className={`h-2.5 w-2.5 rounded-full ${statusColor}`}
+              className={`h-2.5 w-2.5 rounded-full shrink-0 ${statusColor}`}
               title={order.status}
             />
           </div>
-          <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
-            <span className="flex items-center gap-1">
-              <Clock className="h-3.5 w-3.5" />
-              {formatDate(order.createdAt)}
-            </span>
-            {order.table && <span>· Table {order.table.tableNumber}</span>}
-            {order.customerName && <span>· {order.customerName}</span>}
-          </div>
         </div>
-        <div className="flex items-center gap-2">
+
+        <div className="flex items-center justify-between sm:justify-start gap-2 sm:ml-auto">
           {canAddItems && (
             <AddItemsDialog orderId={order.id} menuItems={menuItems} />
           )}
-          <Badge variant="secondary" className="capitalize">
+          <Badge variant="secondary" className="capitalize text-xs sm:text-sm">
             {order.status.replace("_", " ")}
           </Badge>
         </div>
       </div>
 
+      {/* Metadata */}
+      <div className="flex flex-col xs:flex-row xs:items-center gap-2 xs:gap-3 text-xs sm:text-sm text-muted-foreground -mt-2 sm:-mt-3">
+        <span className="flex items-center gap-1">
+          <Clock className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">{formatDate(order.createdAt)}</span>
+          <span className="sm:hidden">
+            {new Date(order.createdAt).toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          </span>
+        </span>
+        {order.table && (
+          <>
+            <span className="hidden xs:inline">·</span>
+            <span>Table {order.table.tableNumber}</span>
+          </>
+        )}
+        {order.customerName && (
+          <>
+            <span className="hidden xs:inline">·</span>
+            <span className="truncate max-w-[200px]">{order.customerName}</span>
+          </>
+        )}
+      </div>
+
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="border rounded-lg p-4">
-          <div className="text-2xl font-semibold">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+        <div className="border rounded-lg p-3 sm:p-4">
+          <div className="text-lg sm:text-2xl font-semibold">
             {formatCurrency(order.totalAmount)}
           </div>
-          <div className="text-sm text-muted-foreground">Total</div>
+          <div className="text-xs sm:text-sm text-muted-foreground">Total</div>
         </div>
-        <div className="border rounded-lg p-4">
-          <div className="text-2xl font-semibold">
+        <div className="border rounded-lg p-3 sm:p-4">
+          <div className="text-lg sm:text-2xl font-semibold">
             {order.orderItems.length}
           </div>
-          <div className="text-sm text-muted-foreground">Items</div>
+          <div className="text-xs sm:text-sm text-muted-foreground">Items</div>
         </div>
-        <div className="border rounded-lg p-4">
-          <div className="text-2xl font-semibold">
+        <div className="border rounded-lg p-3 sm:p-4">
+          <div className="text-lg sm:text-2xl font-semibold">
             {formatCurrency(order.totalPaid)}
           </div>
-          <div className="text-sm text-muted-foreground">Paid</div>
+          <div className="text-xs sm:text-sm text-muted-foreground">Paid</div>
         </div>
-        <div className="border rounded-lg p-4">
-          <div className="text-2xl font-semibold capitalize">
+        <div className="border rounded-lg p-3 sm:p-4">
+          <div className="text-lg sm:text-2xl font-semibold capitalize">
             {order.orderType.replace("-", " ")}
           </div>
-          <div className="text-sm text-muted-foreground">Type</div>
+          <div className="text-xs sm:text-sm text-muted-foreground">Type</div>
         </div>
       </div>
 
       {/* Order Items */}
       <div className="space-y-3">
-        <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+        <h2 className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wide">
           Items
         </h2>
         <div className="border rounded-lg divide-y">
           {order.orderItems.map((item) => {
             return (
-              <div key={item.id} className="flex items-center gap-4 p-4">
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <span className="text-sm font-medium bg-muted rounded px-2 py-0.5">
+              <div key={item.id} className="flex items-start sm:items-center gap-3 sm:gap-4 p-3 sm:p-4">
+                <div className="flex items-start sm:items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                  <span className="text-xs sm:text-sm font-medium bg-muted rounded px-2 py-0.5 shrink-0">
                     {item.quantity}x
                   </span>
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium truncate">
+                    <div className="font-medium text-sm sm:text-base break-words">
                       {item.menuItem?.name || item.itemName || "Unknown item"}
                     </div>
                     {item.specialInstructions && (
-                      <div className="text-sm text-muted-foreground truncate">
+                      <div className="text-xs sm:text-sm text-muted-foreground break-words mt-0.5">
                         {item.specialInstructions}
                       </div>
                     )}
+                    {/* Mobile: Show price below item name */}
+                    <div className="sm:hidden mt-1 text-sm font-medium">
+                      {formatCurrency(item.totalPrice)}
+                      <span className="text-xs text-muted-foreground ml-1">
+                        ({formatCurrency(item.unitPrice)} each)
+                      </span>
+                    </div>
                   </div>
                 </div>
-                <div className="text-right">
+                {/* Desktop: Show price on right */}
+                <div className="hidden sm:block text-right shrink-0">
                   <div className="font-medium">
                     {formatCurrency(item.totalPrice)}
                   </div>
@@ -203,25 +232,25 @@ export function OrderDetailView({
 
       {/* Order Summary */}
       <div className="space-y-3">
-        <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+        <h2 className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wide">
           Summary
         </h2>
-        <div className="border rounded-lg p-4 space-y-2">
-          <div className="flex justify-between text-sm">
+        <div className="border rounded-lg p-3 sm:p-4 space-y-2">
+          <div className="flex justify-between text-xs sm:text-sm">
             <span className="text-muted-foreground">Subtotal</span>
-            <span>{formatCurrency(order.subtotal)}</span>
+            <span className="font-medium">{formatCurrency(order.subtotal)}</span>
           </div>
-          <div className="flex justify-between text-sm">
+          <div className="flex justify-between text-xs sm:text-sm">
             <span className="text-muted-foreground">Tax</span>
-            <span>{formatCurrency(order.taxAmount)}</span>
+            <span className="font-medium">{formatCurrency(order.taxAmount)}</span>
           </div>
           {order.tipAmount && parseFloat(order.tipAmount) > 0 && (
-            <div className="flex justify-between text-sm">
+            <div className="flex justify-between text-xs sm:text-sm">
               <span className="text-muted-foreground">Tip</span>
-              <span>{formatCurrency(order.tipAmount)}</span>
+              <span className="font-medium">{formatCurrency(order.tipAmount)}</span>
             </div>
           )}
-          <div className="flex justify-between font-semibold pt-2 border-t">
+          <div className="flex justify-between font-semibold text-sm sm:text-base pt-2 border-t">
             <span>Total</span>
             <span>{formatCurrency(order.totalAmount)}</span>
           </div>
@@ -232,33 +261,34 @@ export function OrderDetailView({
       {((order.processorFee && parseFloat(order.processorFee) > 0) ||
         (order.marketplaceFee && parseFloat(order.marketplaceFee) > 0)) && (
         <div className="space-y-3">
-          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+          <h2 className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wide">
             Fees
           </h2>
-          <div className="border rounded-lg p-4 space-y-2">
-            <div className="flex justify-between text-sm">
+          <div className="border rounded-lg p-3 sm:p-4 space-y-2">
+            <div className="flex justify-between text-xs sm:text-sm">
               <span className="text-muted-foreground">Amount Paid</span>
-              <span>{formatCurrency(order.totalPaid)}</span>
+              <span className="font-medium">{formatCurrency(order.totalPaid)}</span>
             </div>
             {order.processorFee && parseFloat(order.processorFee) > 0 && (
-              <div className="flex justify-between text-sm">
+              <div className="flex justify-between text-xs sm:text-sm gap-2">
                 <span className="text-muted-foreground">
-                  Processor Fee (MercadoPago)
+                  <span className="hidden sm:inline">Processor Fee (MercadoPago)</span>
+                  <span className="sm:hidden">Processor Fee</span>
                 </span>
-                <span className="text-red-500">
+                <span className="text-red-500 font-medium">
                   -{formatCurrency(order.processorFee)}
                 </span>
               </div>
             )}
             {order.marketplaceFee && parseFloat(order.marketplaceFee) > 0 && (
-              <div className="flex justify-between text-sm">
+              <div className="flex justify-between text-xs sm:text-sm">
                 <span className="text-muted-foreground">Marketplace Fee</span>
-                <span className="text-red-500">
+                <span className="text-red-500 font-medium">
                   -{formatCurrency(order.marketplaceFee)}
                 </span>
               </div>
             )}
-            <div className="flex justify-between font-semibold pt-2 border-t">
+            <div className="flex justify-between font-semibold text-sm sm:text-base pt-2 border-t">
               <span>Net Amount</span>
               <span>
                 {formatCurrency(
@@ -275,26 +305,34 @@ export function OrderDetailView({
       {/* Payment Claims */}
       {order.paymentClaims.length > 0 && (
         <div className="space-y-3">
-          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+          <h2 className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wide">
             Payments
           </h2>
           <div className="border rounded-lg divide-y">
             {order.paymentClaims.map((claim) => (
-              <div key={claim.id} className="flex items-center gap-4 p-4">
-                <CreditCard className="h-4 w-4 text-muted-foreground" />
-                <div className="flex-1">
-                  <div className="font-medium">
+              <div key={claim.id} className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4">
+                <CreditCard className="h-4 w-4 text-muted-foreground shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-sm sm:text-base">
                     {formatCurrency(claim.totalToPay)}
                   </div>
                   {claim.paidAt && (
-                    <div className="text-sm text-muted-foreground">
-                      Paid {formatDate(claim.paidAt)}
+                    <div className="text-xs sm:text-sm text-muted-foreground">
+                      <span className="hidden sm:inline">Paid {formatDate(claim.paidAt)}</span>
+                      <span className="sm:hidden">
+                        Paid {new Date(claim.paidAt).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </span>
                     </div>
                   )}
                 </div>
                 <Badge
                   variant={claim.status === "paid" ? "default" : "secondary"}
-                  className="capitalize"
+                  className="capitalize text-xs shrink-0"
                 >
                   {claim.status}
                 </Badge>
@@ -307,11 +345,11 @@ export function OrderDetailView({
       {/* Notes */}
       {order.notes && (
         <div className="space-y-3">
-          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+          <h2 className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wide">
             Notes
           </h2>
-          <div className="border rounded-lg p-4">
-            <p className="text-sm">{order.notes}</p>
+          <div className="border rounded-lg p-3 sm:p-4">
+            <p className="text-xs sm:text-sm break-words">{order.notes}</p>
           </div>
         </div>
       )}
@@ -319,18 +357,18 @@ export function OrderDetailView({
       {/* Customer Info */}
       {(order.customerName || order.customerPhone) && (
         <div className="space-y-3">
-          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+          <h2 className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wide">
             Customer
           </h2>
-          <div className="border rounded-lg p-4">
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-muted-foreground" />
-              <div>
+          <div className="border rounded-lg p-3 sm:p-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Users className="h-4 w-4 text-muted-foreground shrink-0" />
+              <div className="min-w-0">
                 {order.customerName && (
-                  <div className="font-medium">{order.customerName}</div>
+                  <div className="font-medium text-sm sm:text-base break-words">{order.customerName}</div>
                 )}
                 {order.customerPhone && (
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-xs sm:text-sm text-muted-foreground">
                     {order.customerPhone}
                   </div>
                 )}
