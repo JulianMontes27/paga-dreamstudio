@@ -37,7 +37,6 @@ export function TablesView({
     tableNumber: table.tableNumber,
     capacity: table.capacity,
     status: table.status,
-    section: table.section,
     floorId: table.floorId,
     xPosition: table.xPosition,
     yPosition: table.yPosition,
@@ -83,6 +82,7 @@ export function TablesView({
           organizationId={organizationId}
           userId={userId}
           canUpdate={canUpdate}
+          floors={floors}
         />
       )}
 

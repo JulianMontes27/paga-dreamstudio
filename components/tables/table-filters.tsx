@@ -35,7 +35,7 @@ type TableWithCheckout = {
   tableNumber: string;
   capacity: number;
   status: string;
-  section: string | null;
+  section?: string | null;
   isNfcEnabled: boolean | null;
   nfcScanCount: number | null;
   lastNfcScanAt: Date | null;
@@ -55,11 +55,17 @@ type TableWithCheckout = {
   } | null;
 };
 
+interface Floor {
+  id: string;
+  name: string;
+}
+
 interface TableFiltersProps {
   tables: TableWithCheckout[];
   organizationId?: string;
   userId?: string;
   canUpdate: boolean;
+  floors?: Floor[];
 }
 
 export function TableFilters({
@@ -67,6 +73,7 @@ export function TableFilters({
   organizationId = "",
   userId = "",
   canUpdate,
+  floors = [],
 }: TableFiltersProps) {
   const searchParams = useSearchParams();
 
@@ -223,9 +230,9 @@ export function TableFilters({
                     <span className="font-medium text-sm sm:text-base">
                       Table {table.tableNumber}
                     </span>
-                    {(table.floor?.name || table.section) && (
+                    {table.floor?.name && (
                       <span className="text-xs sm:text-sm text-muted-foreground">
-                        · {table.floor?.name || table.section}
+                        · {table.floor.name}
                       </span>
                     )}
                     {/* Show status badge on mobile only */}
@@ -262,6 +269,7 @@ export function TableFilters({
                     canUpdate={canUpdate}
                     organizationId={organizationId || ""}
                     userId={userId}
+                    floors={floors}
                   />
                 </div>
 

@@ -9,7 +9,7 @@ import { headers } from "next/headers";
 const createTableSchema = z.object({
   tableNumber: z.string().min(1, "Table number is required"),
   capacity: z.number().min(1, "Capacity must be at least 1"),
-  section: z.string().optional(),
+  floorId: z.string().nullable().optional(),
   isNfcEnabled: z.boolean().default(true),
   organizationId: z.string().min(1, "Organization ID is required"),
 });
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
         organizationId: validatedData.organizationId,
         tableNumber: validatedData.tableNumber,
         capacity: validatedData.capacity,
-        section: validatedData.section || null,
+        floorId: validatedData.floorId || null,
         isNfcEnabled: validatedData.isNfcEnabled,
         nfcScanCount: 0,
         status: "available",

@@ -532,7 +532,6 @@ export const table = pgTable(
     tableNumber: text("table_number").notNull(),
     capacity: integer().notNull(),
     status: tableStatus().default("available").notNull(),
-    section: text(),
     isNfcEnabled: boolean("is_nfc_enabled").default(true),
     createdAt: timestamp("created_at")
       .defaultNow()

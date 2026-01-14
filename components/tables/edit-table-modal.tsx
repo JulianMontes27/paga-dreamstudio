@@ -45,14 +45,19 @@ const editTableSchema = z.object({
     .number()
     .min(1, "Capacity must be at least 1")
     .max(20, "Capacity cannot exceed 20"),
-  section: z.string().optional(),
+  floorId: z.string().optional(),
 });
 
 type EditTableFormData = {
   tableNumber: string;
   capacity: number;
-  section?: string;
+  floorId?: string;
 };
+
+interface Floor {
+  id: string;
+  name: string;
+}
 
 /**
  * Table data interface
@@ -61,8 +66,9 @@ interface TableData {
   id: string;
   tableNumber: string;
   capacity: number;
-  section: string | null;
+  section?: string | null;
   status: string;
+  floorId?: string | null;
 }
 
 /**
@@ -72,6 +78,7 @@ interface EditTableModalProps {
   table: TableData;
   isOpen: boolean;
   onClose: () => void;
+  floors?: Floor[];
 }
 
 /**
@@ -88,7 +95,7 @@ interface EditTableModalProps {
  *
  * This is a Client Component to handle form interactions and API calls.
  */
-export function EditTableModal({ table, isOpen, onClose }: EditTableModalProps) {
+export function EditTableModal({ table, isOpen, onClose, floors = [] }: EditTableModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
@@ -98,7 +105,7 @@ export function EditTableModal({ table, isOpen, onClose }: EditTableModalProps) 
     defaultValues: {
       tableNumber: table.tableNumber,
       capacity: table.capacity,
-      section: table.section === "none" ? "none" : table.section || "none",
+      floorId: table.floorId || "",
     },
   });
 
@@ -117,8 +124,9 @@ export function EditTableModal({ table, isOpen, onClose }: EditTableModalProps) 
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ...data,
-          section: data.section === "none" ? null : data.section,
+          tableNumber: data.tableNumber,
+          capacity: data.capacity,
+          floorId: data.floorId || null,
         }),
       }).then(async (response) => {
         if (!response.ok) {
@@ -231,39 +239,41 @@ export function EditTableModal({ table, isOpen, onClose }: EditTableModalProps) 
               )}
             />
 
-            {/* Section Field */}
-            <FormField
-              control={form.control}
-              name="section"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Section (Optional)</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    disabled={isLoading}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a section" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="none">No section</SelectItem>
-                      <SelectItem value="Main Floor">Main Floor</SelectItem>
-                      <SelectItem value="Patio">Patio</SelectItem>
-                      <SelectItem value="Bar">Bar</SelectItem>
-                      <SelectItem value="Private Dining">Private Dining</SelectItem>
-                      <SelectItem value="VIP">VIP</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>
-                    Group tables by area for better organization
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* Floor Field */}
+            {floors.length > 0 && (
+              <FormField
+                control={form.control}
+                name="floorId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Floor (Optional)</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      disabled={isLoading}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a floor" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="">Unplaced</SelectItem>
+                        {floors.map((floor) => (
+                          <SelectItem key={floor.id} value={floor.id}>
+                            {floor.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>
+                      Assign table to a floor or leave unplaced
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             {/* Form Actions */}
             <div className="flex justify-end space-x-2 pt-4">

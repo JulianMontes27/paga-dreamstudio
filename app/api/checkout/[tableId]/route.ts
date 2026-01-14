@@ -117,7 +117,6 @@ export async function GET(
         id: tableInfo.id,
         tableNumber: tableInfo.tableNumber,
         capacity: tableInfo.capacity,
-        section: tableInfo.section,
         scanCount: (tableInfo.nfcScanCount || 0) + 1
       },
       menu: Object.values(groupedMenu),

@@ -213,7 +213,9 @@ export function TableDetailView({
 
       toast.success(`Table ${table.tableNumber} deleted successfully`);
       setDeleteDialogOpen(false);
-      router.push(`/profile/${userId}/organizaciones/${organizationSlug}/mesas`);
+      router.push(
+        `/profile/${userId}/organizaciones/${organizationSlug}/mesas`
+      );
     } catch (error) {
       console.error("Error deleting table:", error);
       toast.error("Failed to delete table");
@@ -230,7 +232,12 @@ export function TableDetailView({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
         <div className="flex items-center gap-3 sm:gap-4 flex-1">
-          <Button variant="ghost" size="icon" onClick={() => router.back()} className="shrink-0">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.back()}
+            className="shrink-0"
+          >
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="flex-1 min-w-0">
@@ -248,12 +255,6 @@ export function TableDetailView({
                 <Users className="h-3.5 w-3.5" />
                 {table.capacity} seats
               </span>
-              {table.section && (
-                <>
-                  <span className="hidden xs:inline">·</span>
-                  <span>{table.section}</span>
-                </>
-              )}
             </div>
           </div>
         </div>
@@ -275,7 +276,12 @@ export function TableDetailView({
           {/* Status Actions Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" disabled={isLoading} className="gap-1.5 flex-1 sm:flex-initial">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={isLoading}
+                className="gap-1.5 flex-1 sm:flex-initial"
+              >
                 <span className="capitalize">{table.status}</span>
                 <MoreVertical className="h-4 w-4" />
               </Button>
@@ -358,7 +364,8 @@ export function TableDetailView({
           <DialogHeader>
             <DialogTitle>Delete Table</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete &quot;Table {table.tableNumber}&quot;? This action cannot be undone.
+              Are you sure you want to delete &quot;Table {table.tableNumber}
+              &quot;? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -402,17 +409,22 @@ export function TableDetailView({
 
       {/* Start Order Section - when no active order */}
       {!activeOrder && (
-        <Card className={`border-2 ${canStartOrder ? 'border-dashed border-primary/30 bg-primary/5' : 'border-muted bg-muted/20'}`}>
+        <Card
+          className={`border-2 ${canStartOrder ? "border-dashed border-primary/30 bg-primary/5" : "border-muted bg-muted/20"}`}
+        >
           <CardContent className="flex flex-col items-center justify-center py-8 px-6 text-center">
-            <div className={`w-12 h-12 mb-4 rounded-full flex items-center justify-center ${canStartOrder ? 'bg-primary/10' : 'bg-muted'}`}>
-              <Plus className={`h-6 w-6 ${canStartOrder ? 'text-primary' : 'text-muted-foreground'}`} />
+            <div
+              className={`w-12 h-12 mb-4 rounded-full flex items-center justify-center ${canStartOrder ? "bg-primary/10" : "bg-muted"}`}
+            >
+              <Plus
+                className={`h-6 w-6 ${canStartOrder ? "text-primary" : "text-muted-foreground"}`}
+              />
             </div>
             <h3 className="font-semibold mb-2">No Active Order</h3>
             <p className="text-sm text-muted-foreground mb-4">
               {canStartOrder
                 ? "Start a new order for this table"
-                : `Cannot start order - table is ${table.status}`
-              }
+                : `Cannot start order - table is ${table.status}`}
             </p>
             <Button
               onClick={handleStartOrder}

@@ -32,8 +32,14 @@ interface TableData {
   id: string;
   tableNumber: string;
   capacity: number;
-  section: string | null;
+  section?: string | null;
   status: string;
+  floorId?: string | null;
+}
+
+interface Floor {
+  id: string;
+  name: string;
 }
 
 /**
@@ -44,6 +50,7 @@ interface TableActionsProps {
   organizationId: string;
   userId?: string;
   canUpdate: boolean;
+  floors?: Floor[];
 }
 
 export function TableActions({
@@ -51,6 +58,7 @@ export function TableActions({
   organizationId,
   userId,
   canUpdate,
+  floors = [],
 }: TableActionsProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -298,6 +306,7 @@ export function TableActions({
         table={table}
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
+        floors={floors}
       />
     </>
   );

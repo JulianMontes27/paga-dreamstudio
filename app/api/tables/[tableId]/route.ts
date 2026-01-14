@@ -20,7 +20,6 @@ const updateTableSchema = z.object({
     .min(1, "Capacity must be at least 1")
     .max(20, "Capacity cannot exceed 20")
     .optional(),
-  section: z.string().nullable().optional(),
   isNfcEnabled: z.boolean().optional(),
   // Floor plan positioning fields
   floorId: z.string().nullable().optional(),
@@ -67,9 +66,6 @@ export async function PATCH(
     }
     if (validatedData.capacity !== undefined) {
       updateData.capacity = validatedData.capacity;
-    }
-    if (validatedData.section !== undefined) {
-      updateData.section = validatedData.section;
     }
     if (validatedData.isNfcEnabled !== undefined) {
       updateData.isNfcEnabled = validatedData.isNfcEnabled;

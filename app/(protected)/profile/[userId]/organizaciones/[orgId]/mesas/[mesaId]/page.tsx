@@ -26,6 +26,7 @@ export default async function TableDetailPage({
   const tableData = await db.query.table.findFirst({
     where: and(eq(table.id, mesaId), eq(table.organizationId, orgId)),
     with: {
+      floor: true,
       orders: {
         orderBy: (orders, { desc }) => [desc(orders.createdAt)],
         with: {

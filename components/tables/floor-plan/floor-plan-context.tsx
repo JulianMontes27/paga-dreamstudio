@@ -19,7 +19,7 @@ export interface TableData {
   tableNumber: string;
   capacity: number;
   status: string;
-  section: string | null;
+  section?: string | null;
   floorId: string | null;
   xPosition: number | null;
   yPosition: number | null;
