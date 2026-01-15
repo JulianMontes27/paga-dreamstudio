@@ -29,7 +29,6 @@ interface FloorPlanEditorProps {
 export function FloorPlanEditor({ className }: FloorPlanEditorProps) {
   const {
     currentFloor,
-    selectedTableId,
     updateTablePosition,
     updateTableFloor,
     removeTableFromFloor,
@@ -236,7 +235,7 @@ export function FloorPlanEditor({ className }: FloorPlanEditorProps) {
               }
               tableNumber={draggedTable.tableNumber}
               capacity={draggedTable.capacity}
-              isSelected={draggedTable.id === selectedTableId}
+              isSelected={false}
               className={`shadow-2xl cursor-grabbing !m-0 ${!isOverValidDropZone ? "ring-2 ring-red-500" : ""}`}
             />
           </div>

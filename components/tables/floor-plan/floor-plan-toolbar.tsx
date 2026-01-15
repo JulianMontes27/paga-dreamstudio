@@ -12,8 +12,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
-  ZoomIn,
-  ZoomOut,
   Maximize,
   Grid3X3,
   Magnet,
@@ -34,7 +32,6 @@ export function FloorPlanToolbar({
 }: FloorPlanToolbarProps) {
   const router = useRouter();
   const {
-    zoom,
     setZoom,
     showGrid,
     setShowGrid,
@@ -46,14 +43,6 @@ export function FloorPlanToolbar({
     markAsSaved,
     tables,
   } = useFloorPlan();
-
-  const handleZoomIn = () => {
-    setZoom(Math.min(zoom + 0.25, 2));
-  };
-
-  const handleZoomOut = () => {
-    setZoom(Math.max(zoom - 0.25, 0.5));
-  };
 
   const handleFitToScreen = () => {
     setZoom(1);
@@ -108,40 +97,6 @@ export function FloorPlanToolbar({
         )}
       >
         {/* Zoom controls */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0"
-              onClick={handleZoomOut}
-              disabled={zoom <= 0.5}
-            >
-              <ZoomOut className="h-3.5 w-3.5" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Zoom Out</TooltipContent>
-        </Tooltip>
-
-        <span className="text-xs sm:text-sm text-muted-foreground w-10 sm:w-12 text-center">
-          {Math.round(zoom * 100)}%
-        </span>
-
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0"
-              onClick={handleZoomIn}
-              disabled={zoom >= 2}
-            >
-              <ZoomIn className="h-3.5 w-3.5" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Zoom In</TooltipContent>
-        </Tooltip>
-
         <Tooltip>
           <TooltipTrigger asChild>
             <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={handleFitToScreen}>
