@@ -42,9 +42,13 @@ export function DeleteOrderButton({
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive" size="sm">
-          <Trash2 className="h-4 w-4 sm:mr-2" />
-          <span className="hidden sm:inline">Delete Order</span>
+        <Button
+          variant="ghost"
+          size="sm"
+          disabled={isDeleting}
+          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+        >
+          <Trash2 className="h-3 w-3" />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>

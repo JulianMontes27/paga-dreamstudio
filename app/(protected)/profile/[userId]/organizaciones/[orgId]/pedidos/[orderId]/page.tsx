@@ -9,7 +9,7 @@ export default async function OrderDetailPage({
 }: {
   params: Promise<{ userId: string; orgId: string; orderId: string }>;
 }) {
-  const { userId, orgId, orderId } = await params;
+  const { orgId, orderId } = await params;
 
   // Fetch the order with related data
   const orderData = await db.query.order.findFirst({
@@ -38,11 +38,6 @@ export default async function OrderDetailPage({
   });
 
   return (
-    <OrderDetailView
-      order={orderData}
-      userId={userId}
-      orgId={orgId}
-      menuItems={menuItems}
-    />
+    <OrderDetailView order={orderData} orgId={orgId} menuItems={menuItems} />
   );
 }

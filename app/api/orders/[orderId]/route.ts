@@ -31,6 +31,18 @@ export async function DELETE(
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
+    // Validate order status - only orders with status "ordering" can be deleted
+    if (existingOrder.status !== "ordering") {
+      return NextResponse.json(
+        {
+          error: "Cannot delete order",
+          message:
+            "Only orders with status 'ordering' can be deleted. Orders with payments cannot be deleted.",
+        },
+        { status: 400 }
+      );
+    }
+
     // Check permission to delete orders
     const canDeleteOrder = await auth.api.hasPermission({
       headers: reqHeaders,
@@ -47,12 +59,10 @@ export async function DELETE(
       );
     }
 
-    // Delete the order and its items in a transaction
+    // Delete the order in a transaction
+    // Order items will be automatically deleted due to CASCADE delete in schema
     await db.transaction(async (tx) => {
-      // Delete all order items
-      await tx.delete(orderItem).where(eq(orderItem.orderId, orderId));
-
-      // Delete the order
+      // Delete the order (order items cascade automatically)
       await tx.delete(order).where(eq(order.id, orderId));
 
       // If order had a table, update table status to available

@@ -6,6 +6,8 @@ import { ArrowLeft, Clock, CreditCard, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { AddItemsDialog } from "./add-items-dialog";
 import { DeleteOrderButton } from "./delete-order-button";
+import { Order } from "@/db";
+import { toast } from "sonner";
 
 interface OrderDetailViewProps {
   order: {
@@ -47,7 +49,6 @@ interface OrderDetailViewProps {
       paidAt: Date | null;
     }>;
   };
-  userId: string;
   orgId: string;
   menuItems: Array<{
     id: string;
@@ -72,12 +73,11 @@ const STATUS_COLORS: Record<string, string> = {
 
 export function OrderDetailView({
   order,
-  // userId,
-  // orgId,
+  orgId,
   menuItems,
-  onDeleteOrder,
 }: OrderDetailViewProps) {
   const router = useRouter();
+  if (!orgId) return null;
 
   // Only allow adding items if order is in ordering or payment_started status
   const canAddItems =
@@ -97,6 +97,27 @@ export function OrderDetailView({
       hour: "2-digit",
       minute: "2-digit",
     });
+  };
+
+  const onDeleteOrder = async (orderId: string) => {
+    try {
+      const response = await fetch(`/api/orders/${orderId}`, {
+        method: "DELETE",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.message || data.error || "Failed to delete order");
+        return;
+      }
+
+      toast.success("Order deleted successfully");
+      router.back();
+    } catch (error) {
+      console.error("Error deleting order:", error);
+      toast.error("Failed to delete order. Please try again.");
+    }
   };
 
   const statusColor = STATUS_COLORS[order.status] || "bg-gray-500";
@@ -124,11 +145,14 @@ export function OrderDetailView({
           {canAddItems && (
             <AddItemsDialog orderId={order.id} menuItems={menuItems} />
           )}
-          <DeleteOrderButton
-            orderId={order.id}
-            orderNumber={order.orderNumber}
-            onDelete={onDeleteOrder}
-          />
+          {order.status === "ordering" && (
+            <DeleteOrderButton
+              orderId={order.id}
+              orderNumber={order.orderNumber}
+              onDelete={onDeleteOrder}
+            />
+          )}
+
           <Badge variant="secondary" className="capitalize text-xs sm:text-sm">
             {order.status.replace("_", " ")}
           </Badge>
@@ -139,13 +163,15 @@ export function OrderDetailView({
       <div className="flex flex-col xs:flex-row xs:items-center gap-2 xs:gap-3 text-xs sm:text-sm text-muted-foreground -mt-2 sm:-mt-3">
         <span className="flex items-center gap-1">
           <Clock className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">{formatDate(order.createdAt)}</span>
+          <span className="hidden sm:inline">
+            {formatDate(order.createdAt)}
+          </span>
           <span className="sm:hidden">
-            {new Date(order.createdAt).toLocaleDateString('en-US', {
-              month: 'short',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
+            {new Date(order.createdAt).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
             })}
           </span>
         </span>
@@ -199,7 +225,10 @@ export function OrderDetailView({
         <div className="border rounded-lg divide-y">
           {order.orderItems.map((item) => {
             return (
-              <div key={item.id} className="flex items-start sm:items-center gap-3 sm:gap-4 p-3 sm:p-4">
+              <div
+                key={item.id}
+                className="flex items-start sm:items-center gap-3 sm:gap-4 p-3 sm:p-4"
+              >
                 <div className="flex items-start sm:items-center gap-2 sm:gap-3 flex-1 min-w-0">
                   <span className="text-xs sm:text-sm font-medium bg-muted rounded px-2 py-0.5 shrink-0">
                     {item.quantity}x
@@ -245,12 +274,16 @@ export function OrderDetailView({
         <div className="border rounded-lg p-3 sm:p-4 space-y-2">
           <div className="flex justify-between text-xs sm:text-sm">
             <span className="text-muted-foreground">Subtotal</span>
-            <span className="font-medium">{formatCurrency(order.subtotal)}</span>
+            <span className="font-medium">
+              {formatCurrency(order.subtotal)}
+            </span>
           </div>
           {order.tipAmount && parseFloat(order.tipAmount) > 0 && (
             <div className="flex justify-between text-xs sm:text-sm">
               <span className="text-muted-foreground">Tip</span>
-              <span className="font-medium">{formatCurrency(order.tipAmount)}</span>
+              <span className="font-medium">
+                {formatCurrency(order.tipAmount)}
+              </span>
             </div>
           )}
           <div className="flex justify-between font-semibold text-sm sm:text-base pt-2 border-t">
@@ -270,12 +303,16 @@ export function OrderDetailView({
           <div className="border rounded-lg p-3 sm:p-4 space-y-2">
             <div className="flex justify-between text-xs sm:text-sm">
               <span className="text-muted-foreground">Amount Paid</span>
-              <span className="font-medium">{formatCurrency(order.totalPaid)}</span>
+              <span className="font-medium">
+                {formatCurrency(order.totalPaid)}
+              </span>
             </div>
             {order.processorFee && parseFloat(order.processorFee) > 0 && (
               <div className="flex justify-between text-xs sm:text-sm gap-2">
                 <span className="text-muted-foreground">
-                  <span className="hidden sm:inline">Processor Fee (MercadoPago)</span>
+                  <span className="hidden sm:inline">
+                    Processor Fee (MercadoPago)
+                  </span>
                   <span className="sm:hidden">Processor Fee</span>
                 </span>
                 <span className="text-red-500 font-medium">
@@ -313,7 +350,10 @@ export function OrderDetailView({
           </h2>
           <div className="border rounded-lg divide-y">
             {order.paymentClaims.map((claim) => (
-              <div key={claim.id} className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4">
+              <div
+                key={claim.id}
+                className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4"
+              >
                 <CreditCard className="h-4 w-4 text-muted-foreground shrink-0" />
                 <div className="flex-1 min-w-0">
                   <div className="font-medium text-sm sm:text-base">
@@ -321,13 +361,16 @@ export function OrderDetailView({
                   </div>
                   {claim.paidAt && (
                     <div className="text-xs sm:text-sm text-muted-foreground">
-                      <span className="hidden sm:inline">Paid {formatDate(claim.paidAt)}</span>
+                      <span className="hidden sm:inline">
+                        Paid {formatDate(claim.paidAt)}
+                      </span>
                       <span className="sm:hidden">
-                        Paid {new Date(claim.paidAt).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
+                        Paid{" "}
+                        {new Date(claim.paidAt).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
                         })}
                       </span>
                     </div>
@@ -368,7 +411,9 @@ export function OrderDetailView({
               <Users className="h-4 w-4 text-muted-foreground shrink-0" />
               <div className="min-w-0">
                 {order.customerName && (
-                  <div className="font-medium text-sm sm:text-base break-words">{order.customerName}</div>
+                  <div className="font-medium text-sm sm:text-base break-words">
+                    {order.customerName}
+                  </div>
                 )}
                 {order.customerPhone && (
                   <div className="text-xs sm:text-sm text-muted-foreground">

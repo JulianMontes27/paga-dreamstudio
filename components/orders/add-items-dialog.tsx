@@ -100,6 +100,7 @@ export function AddItemsDialog({ orderId, menuItems }: AddItemsDialogProps) {
       toast.error("Please select at least one item");
       return;
     }
+    
 
     setIsLoading(true);
 
