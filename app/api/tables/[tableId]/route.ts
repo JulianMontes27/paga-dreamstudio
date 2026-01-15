@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { table } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { table, order } from "@/db/schema";
+import { eq, and, inArray } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import * as z from "zod";
@@ -98,10 +98,7 @@ export async function PATCH(
       .returning();
 
     if (!updatedTable.length) {
-      return NextResponse.json(
-        { error: "Table not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Table not found" }, { status: 404 });
     }
 
     return NextResponse.json({
@@ -149,18 +146,26 @@ export async function DELETE(
 
     // TODO: Add permission check for admin/owner role
 
-    // Delete the table
-    const deletedTable = await db
-      .delete(table)
-      .where(eq(table.id, tableId))
-      .returning();
+    // Check if table has any active orders
+    const activeOrder = await db.query.order.findFirst({
+      where: and(
+        eq(order.tableId, tableId),
+        inArray(order.status, ["ordering", "payment_started", "partially_paid"])
+      ),
+    });
 
-    if (!deletedTable.length) {
+    if (activeOrder) {
       return NextResponse.json(
-        { error: "Table not found" },
-        { status: 404 }
+        {
+          error: "Cannot delete table with active order",
+          message: `Table has an active order (#${activeOrder.orderNumber}). Please complete or cancel the order before deleting the table.`,
+        },
+        { status: 400 }
       );
     }
+
+    // Delete the table
+    await db.delete(table).where(eq(table.id, tableId));
 
     return NextResponse.json({
       success: true,
