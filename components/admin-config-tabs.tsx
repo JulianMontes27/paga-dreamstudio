@@ -41,28 +41,39 @@ import {
 import { Button } from "@/components/ui/button";
 import { InviteMemberDialog } from "@/components/invite-member-dialog";
 import { EditOrganizationForm } from "./edit-organization-form";
-import type { Invitation, User, Organization, Member } from "@/db";
+import type { Invitation, Organization, Member } from "@/db";
 
-// Member data as returned by Better Auth API (role is string, not enum)
-interface MemberWithUser {
+// Define member with user relation (partial user data from API)
+type MemberWithUser = Member & {
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    image?: string;
+  };
+};
+
+// Combined team data types
+type CombinedTeamMember = MemberWithUser & { isPending: false };
+type PendingInvitation = {
   id: string;
-  userId: string;
-  organizationId: string;
-  role: string;
-  createdAt: Date;
-  user?: Pick<User, "id" | "name" | "email" | "phoneNumber">;
-}
+  email: string;
+  role: "waiter" | "administrator" | "owner" | null;
+  isPending: true;
+  user: null;
+};
+type CombinedTeamData = CombinedTeamMember | PendingInvitation;
 
 interface AdminConfigTabsProps {
-  organization: (Partial<Organization> & {
-    id: string;
-    name: string;
-    slug: string;
-    members?: Member[];
-    invitations?: Invitation[];
-  }) | null;
-  team: MemberWithUser[];
-  invitations: Invitation[];
+  organization:
+    | (Partial<Organization> & {
+        id: string;
+        name: string;
+        slug: string;
+        members?: MemberWithUser[];
+        invitations?: Invitation[];
+      })
+    | null;
   currentUserRole: string;
   currentUserId: string;
   mpOauthUrl?: string;
@@ -72,8 +83,6 @@ type TabType = "general" | "equipo" | "procesadores";
 
 export function AdminConfigTabs({
   organization,
-  team,
-  invitations,
   currentUserRole,
   currentUserId,
 }: AdminConfigTabsProps) {
@@ -85,6 +94,10 @@ export function AdminConfigTabs({
   );
   const [removingMember, setRemovingMember] = useState<string | null>(null);
   const [updatingRole, setUpdatingRole] = useState<string | null>(null);
+
+  // Extract members and invitations from organization
+  const team = organization?.members || [];
+  const invitations = organization?.invitations || [];
 
   const displayTeam = team.length > 0 ? team : [];
 
@@ -186,15 +199,15 @@ export function AdminConfigTabs({
   };
 
   // Combine team members with pending invitations
-  const combinedTeamData = [
-    ...displayTeam.map((member) => ({ ...member, isPending: false })),
+  const combinedTeamData: CombinedTeamData[] = [
+    ...displayTeam.map((member) => ({ ...member, isPending: false as const })),
     ...invitations
       .filter((inv) => inv.status === "pending")
       .map((inv) => ({
         id: inv.id,
         email: inv.email,
         role: inv.role,
-        isPending: true,
+        isPending: true as const,
         user: null,
       })),
   ];
@@ -206,12 +219,10 @@ export function AdminConfigTabs({
     const query = searchQuery.toLowerCase();
     const name = member.isPending
       ? "invitación pendiente"
-      : (member.user?.name || "").toLowerCase();
+      : (member.user.name || "").toLowerCase();
     const email = member.isPending
-      ? "email" in member
-        ? member.email.toLowerCase()
-        : ""
-      : (member.user?.email || "").toLowerCase();
+      ? member.email.toLowerCase()
+      : (member.user.email || "").toLowerCase();
     const role = formatRole(member.role || "").toLowerCase();
 
     return (
@@ -300,22 +311,20 @@ export function AdminConfigTabs({
                 {filteredTeamData.map((member) => {
                   const isPending = member.isPending;
                   const isCurrentUser =
-                    !isPending && member.user?.id === currentUserId;
+                    !isPending && member.user.id === currentUserId;
                   const fullName = isPending
                     ? "Invitación Pendiente"
-                    : member.user?.name || "Usuario sin nombre";
+                    : member.user.name || "Usuario sin nombre";
                   const email = isPending
-                    ? "email" in member
-                      ? member.email
-                      : "Sin correo"
-                    : member.user?.email || "Sin correo";
+                    ? member.email
+                    : member.user.email || "Sin correo";
                   const role = member.role || "member";
 
                   const initials = isPending
                     ? "?"
                     : fullName
                         .split(" ")
-                        .map((n) => n[0])
+                        .map((n: string) => n[0])
                         .join("")
                         .toUpperCase()
                         .slice(0, 2);
@@ -451,25 +460,20 @@ export function AdminConfigTabs({
                       {filteredTeamData.map((member) => {
                         const isPending = member.isPending;
                         const isCurrentUser =
-                          !isPending && member.user?.id === currentUserId;
+                          !isPending && member.user.id === currentUserId;
                         const fullName = isPending
                           ? "Invitación Pendiente"
-                          : member.user?.name || "Usuario sin nombre";
+                          : member.user.name || "Usuario sin nombre";
                         const email = isPending
-                          ? "email" in member
-                            ? member.email
-                            : "Sin correo"
-                          : member.user?.email || "Sin correo";
-                        // const phoneNumber = isPending
-                        //   ? null
-                        //   : member.user?.phoneNumber || null;
+                          ? member.email
+                          : member.user.email || "Sin correo";
                         const role = member.role || "member";
 
                         const initials = isPending
                           ? "?"
                           : fullName
                               .split(" ")
-                              .map((n) => n[0])
+                              .map((n: string) => n[0])
                               .join("")
                               .toUpperCase()
                               .slice(0, 2);

@@ -1,4 +1,4 @@
-import { redirect, notFound } from "next/navigation";
+import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { AdminConfigTabs } from "@/components/admin-config-tabs";
@@ -14,19 +14,6 @@ interface ConfiguracionPageProps {
 const ConfiguracionPage = async ({ params }: ConfiguracionPageProps) => {
   const { userId, orgId } = await params;
   const reqHeaders = await headers();
-
-  // Check if user can view configuration (waiters cannot access configuration)
-  const canViewConfiguration = await auth.api.hasPermission({
-    headers: reqHeaders,
-    body: {
-      permission: { configuration: ["view"] },
-      organizationId: orgId,
-    },
-  });
-
-  if (!canViewConfiguration?.success) {
-    redirect(`/profile/${userId}/organizaciones/${orgId}/mesas`);
-  }
 
   // Get full organization details with members and invitations
   const fullOrganization = await auth.api.getFullOrganization({
@@ -46,33 +33,6 @@ const ConfiguracionPage = async ({ params }: ConfiguracionPageProps) => {
   );
   const currentUserRole = currentUserMember?.role || "member";
 
-  // Map team members to include phoneNumber (default to null if not present)
-  const teamMembers = (fullOrganization.members || []).map(
-    (member: {
-      id: string;
-      userId: string;
-      role: string;
-      organizationId: string;
-      createdAt: Date;
-      user?: {
-        id: string;
-        name: string;
-        email: string;
-        image?: string;
-        phoneNumber?: string;
-      };
-    }) => ({
-      ...member,
-      user: member.user
-        ? {
-            ...member.user,
-            phoneNumber: member.user.phoneNumber || null,
-          }
-        : undefined,
-    })
-  );
-  const invitations = fullOrganization.invitations || [];
-
   return (
     <div className="px-3 py-3 sm:px-6 sm:py-6 space-y-6">
       {/* Page Header */}
@@ -83,8 +43,6 @@ const ConfiguracionPage = async ({ params }: ConfiguracionPageProps) => {
 
       <AdminConfigTabs
         organization={fullOrganization}
-        team={teamMembers}
-        invitations={invitations}
         currentUserRole={currentUserRole}
         currentUserId={userId}
       />

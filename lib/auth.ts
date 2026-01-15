@@ -101,17 +101,6 @@ export const auth = betterAuth({
     nextCookies(),
     openAPI(),
 
-    // magicLink({
-    //   sendMagicLink: async ({ email, url }) => {
-    //     try {
-    //       await sendMagicLinkEmail({ email, url });
-    //     } catch (error) {
-    //       console.error("Failed to send magic link email:", error);
-    //       throw new Error("Failed to send magic link email");
-    //     }
-    //   },
-    // }),
-
     emailOTP({
       async sendVerificationOTP({ email, otp, type }, request) {
         let subject: string;
