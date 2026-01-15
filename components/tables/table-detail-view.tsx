@@ -571,14 +571,15 @@ export function TableDetailView({
         </Card>
       )}
 
-      {/* Order History / Active Orders */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <Receipt className="h-4 w-4 text-muted-foreground" />
-          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-            {canViewHistory ? "Order History" : "Active Orders"}
-          </h2>
-        </div>
+      {/* Order History / Active Orders - Only visible to admins/owners */}
+      {canViewHistory && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Receipt className="h-4 w-4 text-muted-foreground" />
+            <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+              Order History
+            </h2>
+          </div>
 
         {displayOrders.length > 0 ? (
           <div className="border rounded-xl overflow-hidden divide-y">
@@ -634,17 +635,14 @@ export function TableDetailView({
             <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-muted flex items-center justify-center">
               <Receipt className="h-6 w-6 text-muted-foreground" />
             </div>
-            <h3 className="font-medium mb-1">
-              {canViewHistory ? "No orders yet" : "No active orders"}
-            </h3>
+            <h3 className="font-medium mb-1">No orders yet</h3>
             <p className="text-sm text-muted-foreground">
-              {canViewHistory
-                ? "Orders for this table will appear here"
-                : "Active unpaid orders will appear here"}
+              Orders for this table will appear here
             </p>
           </div>
         )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
