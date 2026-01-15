@@ -33,7 +33,6 @@ interface Order {
   status: string;
   orderType: string;
   subtotal: string;
-  taxAmount: string;
   tipAmount: string | null;
   totalAmount: string;
   customerName: string | null;

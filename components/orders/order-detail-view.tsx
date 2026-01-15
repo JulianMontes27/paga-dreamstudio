@@ -13,7 +13,6 @@ interface OrderDetailViewProps {
     status: string;
     orderType: string;
     subtotal: string;
-    taxAmount: string;
     tipAmount: string | null;
     totalAmount: string;
     totalPaid: string | null;

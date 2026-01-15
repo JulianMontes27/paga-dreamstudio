@@ -34,7 +34,6 @@ interface Order {
   orderNumber: string;
   status: string;
   subtotal: string;
-  taxAmount: string;
   tipAmount: string | null;
   totalAmount: string;
   orderItems: OrderItem[];
