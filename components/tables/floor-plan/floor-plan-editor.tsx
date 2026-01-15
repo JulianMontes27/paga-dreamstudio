@@ -26,9 +26,26 @@ interface FloorPlanEditorProps {
  * FloorPlanEditor - Wraps the canvas and unplaced tables panel in a shared DndContext
  * This allows dragging tables from the unplaced panel onto the canvas
  */
+/**
+ * Check if two rectangles overlap
+ */
+function checkCollision(
+  x1: number,
+  y1: number,
+  w1: number,
+  h1: number,
+  x2: number,
+  y2: number,
+  w2: number,
+  h2: number
+): boolean {
+  return !(x1 + w1 <= x2 || x2 + w2 <= x1 || y1 + h1 <= y2 || y2 + h2 <= y1);
+}
+
 export function FloorPlanEditor({ className }: FloorPlanEditorProps) {
   const {
     currentFloor,
+    tablesOnCurrentFloor,
     updateTablePosition,
     updateTableFloor,
     removeTableFromFloor,
@@ -134,6 +151,28 @@ export function FloorPlanEditor({ className }: FloorPlanEditorProps) {
             newY = Math.round(newY / gridSize) * gridSize;
           }
 
+          // Check for collisions with other tables
+          const tableWidth = tableData.width ?? 80;
+          const tableHeight = tableData.height ?? 80;
+          const hasCollision = tablesOnCurrentFloor.some((table) =>
+            checkCollision(
+              newX,
+              newY,
+              tableWidth,
+              tableHeight,
+              table.xPosition ?? 0,
+              table.yPosition ?? 0,
+              table.width ?? 80,
+              table.height ?? 80
+            )
+          );
+
+          if (hasCollision) {
+            // Don't place the table if it would overlap
+            pointerPositionRef.current = null;
+            return;
+          }
+
           updateTableFloor(tableData.id, currentFloor.id);
           updateTablePosition(tableData.id, newX, newY);
           pointerPositionRef.current = null;
@@ -171,11 +210,32 @@ export function FloorPlanEditor({ className }: FloorPlanEditorProps) {
         newX = Math.max(0, Math.min(newX, canvasWidth - tableWidth));
         newY = Math.max(0, Math.min(newY, canvasHeight - tableHeight));
 
+        // Check for collisions with other tables (excluding the dragged table itself)
+        const hasCollision = tablesOnCurrentFloor.some((table) => {
+          if (table.id === tableData.id) return false; // Skip self
+          return checkCollision(
+            newX,
+            newY,
+            tableWidth,
+            tableHeight,
+            table.xPosition ?? 0,
+            table.yPosition ?? 0,
+            table.width ?? 80,
+            table.height ?? 80
+          );
+        });
+
+        if (hasCollision) {
+          // Don't update position if it would cause overlap
+          return;
+        }
+
         updateTablePosition(tableData.id, newX, newY);
       }
     },
     [
       currentFloor,
+      tablesOnCurrentFloor,
       snapToGrid,
       gridSize,
       canvasScale,
@@ -209,7 +269,7 @@ export function FloorPlanEditor({ className }: FloorPlanEditorProps) {
       </div>
 
       {/* Drag overlay */}
-      <DragOverlay>
+      <DragOverlay dropAnimation={null} adjustScale={false}>
         {draggedTable && (
           <div
             className={`transition-opacity cursor-grabbing inline-block ${

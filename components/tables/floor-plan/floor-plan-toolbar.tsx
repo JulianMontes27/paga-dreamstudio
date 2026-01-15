@@ -11,13 +11,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  Maximize,
-  Grid3X3,
-  Magnet,
-  Save,
-  Loader2,
-} from "lucide-react";
+import { Grid3X3, Magnet, Save, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -32,7 +26,6 @@ export function FloorPlanToolbar({
 }: FloorPlanToolbarProps) {
   const router = useRouter();
   const {
-    setZoom,
     showGrid,
     setShowGrid,
     snapToGrid,
@@ -43,10 +36,6 @@ export function FloorPlanToolbar({
     markAsSaved,
     tables,
   } = useFloorPlan();
-
-  const handleFitToScreen = () => {
-    setZoom(1);
-  };
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -96,17 +85,10 @@ export function FloorPlanToolbar({
           className
         )}
       >
-        {/* Zoom controls */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={handleFitToScreen}>
-              <Maximize className="h-3.5 w-3.5" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Reset Zoom</TooltipContent>
-        </Tooltip>
-
-        <Separator orientation="vertical" className="h-5 sm:h-6 mx-0.5 sm:mx-1" />
+        <Separator
+          orientation="vertical"
+          className="h-5 sm:h-6 mx-0.5 sm:mx-1"
+        />
 
         {/* Grid controls */}
         <Tooltip>
@@ -143,7 +125,10 @@ export function FloorPlanToolbar({
           </TooltipContent>
         </Tooltip>
 
-        <Separator orientation="vertical" className="h-5 sm:h-6 mx-0.5 sm:mx-1" />
+        <Separator
+          orientation="vertical"
+          className="h-5 sm:h-6 mx-0.5 sm:mx-1"
+        />
 
         {/* Save button */}
         <Tooltip>

@@ -1,6 +1,13 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+  ReactNode,
+} from "react";
 
 // Types for floor and table data
 export interface FloorData {
@@ -27,12 +34,6 @@ export interface TableData {
   height: number | null;
   shape: string | null;
   orderActivity?: OrderActivity;
-  qrCode?: {
-    id: string;
-    code: string;
-    isActive: boolean;
-    scanCount: number;
-  } | null;
 }
 
 interface FloorPlanContextType {
@@ -105,7 +106,10 @@ export function FloorPlanProvider({
   // Sync with props when they change (e.g., after router.refresh())
   useEffect(() => {
     setFloorsState(initialFloors);
-    if (initialFloors.length > 0 && !initialFloors.find(f => f.id === selectedFloorId)) {
+    if (
+      initialFloors.length > 0 &&
+      !initialFloors.find((f) => f.id === selectedFloorId)
+    ) {
       setSelectedFloorId(initialFloors[0].id);
     }
   }, [initialFloors]);
@@ -124,13 +128,19 @@ export function FloorPlanProvider({
   const [canvasScale, setCanvasScale] = useState(1);
 
   // Setters
-  const setFloors = useCallback((newFloors: FloorData[]) => {
-    setFloorsState(newFloors);
-    // Select first floor if current selection is invalid
-    if (newFloors.length > 0 && !newFloors.find(f => f.id === selectedFloorId)) {
-      setSelectedFloorId(newFloors[0].id);
-    }
-  }, [selectedFloorId]);
+  const setFloors = useCallback(
+    (newFloors: FloorData[]) => {
+      setFloorsState(newFloors);
+      // Select first floor if current selection is invalid
+      if (
+        newFloors.length > 0 &&
+        !newFloors.find((f) => f.id === selectedFloorId)
+      ) {
+        setSelectedFloorId(newFloors[0].id);
+      }
+    },
+    [selectedFloorId]
+  );
 
   const setTables = useCallback((newTables: TableData[]) => {
     setTablesState(newTables);
@@ -145,37 +155,43 @@ export function FloorPlanProvider({
     setSelectedTableId(tableId);
   }, []);
 
-  const updateTablePosition = useCallback((tableId: string, x: number, y: number) => {
-    setTablesState(prevTables =>
-      prevTables.map(table =>
-        table.id === tableId
-          ? { ...table, xPosition: x, yPosition: y }
-          : table
-      )
-    );
-    setHasUnsavedChanges(true);
-  }, []);
+  const updateTablePosition = useCallback(
+    (tableId: string, x: number, y: number) => {
+      setTablesState((prevTables) =>
+        prevTables.map((table) =>
+          table.id === tableId
+            ? { ...table, xPosition: x, yPosition: y }
+            : table
+        )
+      );
+      setHasUnsavedChanges(true);
+    },
+    []
+  );
 
-  const updateTableFloor = useCallback((tableId: string, floorId: string | null) => {
-    setTablesState(prevTables =>
-      prevTables.map(table =>
-        table.id === tableId
-          ? {
-              ...table,
-              floorId,
-              // Reset position when moving to a new floor
-              xPosition: floorId ? 50 : null,
-              yPosition: floorId ? 50 : null,
-            }
-          : table
-      )
-    );
-    setHasUnsavedChanges(true);
-  }, []);
+  const updateTableFloor = useCallback(
+    (tableId: string, floorId: string | null) => {
+      setTablesState((prevTables) =>
+        prevTables.map((table) =>
+          table.id === tableId
+            ? {
+                ...table,
+                floorId,
+                // Reset position when moving to a new floor
+                xPosition: floorId ? 50 : null,
+                yPosition: floorId ? 50 : null,
+              }
+            : table
+        )
+      );
+      setHasUnsavedChanges(true);
+    },
+    []
+  );
 
   const removeTableFromFloor = useCallback((tableId: string) => {
-    setTablesState(prevTables =>
-      prevTables.map(table =>
+    setTablesState((prevTables) =>
+      prevTables.map((table) =>
         table.id === tableId
           ? {
               ...table,
@@ -195,14 +211,17 @@ export function FloorPlanProvider({
   }, []);
 
   // Computed values
-  const currentFloor = floors.find(f => f.id === selectedFloorId) ?? null;
+  const currentFloor = floors.find((f) => f.id === selectedFloorId) ?? null;
 
   const tablesOnCurrentFloor = tables.filter(
-    t => t.floorId === selectedFloorId && t.xPosition !== null && t.yPosition !== null
+    (t) =>
+      t.floorId === selectedFloorId &&
+      t.xPosition !== null &&
+      t.yPosition !== null
   );
 
   const unplacedTables = tables.filter(
-    t => t.floorId === null || t.xPosition === null || t.yPosition === null
+    (t) => t.floorId === null || t.xPosition === null || t.yPosition === null
   );
 
   const value: FloorPlanContextType = {
