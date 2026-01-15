@@ -1,5 +1,6 @@
 "use client";
 
+import { Floor } from "@/db";
 import {
   createContext,
   useContext,
@@ -8,18 +9,6 @@ import {
   useEffect,
   ReactNode,
 } from "react";
-
-// Types for floor and table data
-export interface FloorData {
-  id: string;
-  name: string;
-  organizationId: string;
-  displayOrder: number | null;
-  canvasWidth: number | null;
-  canvasHeight: number | null;
-}
-
-export type OrderActivity = "idle" | "active" | "payment_made";
 
 export interface TableData {
   id: string;
@@ -33,12 +22,11 @@ export interface TableData {
   width: number | null;
   height: number | null;
   shape: string | null;
-  orderActivity?: OrderActivity;
 }
 
 interface FloorPlanContextType {
   // Data
-  floors: FloorData[];
+  floors: Floor[];
   tables: TableData[];
   selectedFloorId: string | null;
   selectedTableId: string | null;
@@ -56,7 +44,7 @@ interface FloorPlanContextType {
   canvasScale: number;
 
   // Actions
-  setFloors: (floors: FloorData[]) => void;
+  setFloors: (floors: Floor[]) => void;
   setTables: (tables: TableData[]) => void;
   selectFloor: (floorId: string | null) => void;
   selectTable: (tableId: string | null) => void;
@@ -71,7 +59,7 @@ interface FloorPlanContextType {
   setIsSaving: (saving: boolean) => void;
 
   // Computed
-  currentFloor: FloorData | null;
+  currentFloor: Floor | null;
   tablesOnCurrentFloor: TableData[];
   unplacedTables: TableData[];
 }
@@ -80,7 +68,7 @@ const FloorPlanContext = createContext<FloorPlanContextType | null>(null);
 
 interface FloorPlanProviderProps {
   children: ReactNode;
-  initialFloors?: FloorData[];
+  initialFloors?: Floor[];
   initialTables?: TableData[];
   organizationId?: string;
   userId?: string;
@@ -96,7 +84,7 @@ export function FloorPlanProvider({
   canEdit = false,
 }: FloorPlanProviderProps) {
   // Data state
-  const [floors, setFloorsState] = useState<FloorData[]>(initialFloors);
+  const [floors, setFloorsState] = useState<Floor[]>(initialFloors);
   const [tables, setTablesState] = useState<TableData[]>(initialTables);
   const [selectedFloorId, setSelectedFloorId] = useState<string | null>(
     initialFloors.length > 0 ? initialFloors[0].id : null
@@ -129,7 +117,7 @@ export function FloorPlanProvider({
 
   // Setters
   const setFloors = useCallback(
-    (newFloors: FloorData[]) => {
+    (newFloors: Floor[]) => {
       setFloorsState(newFloors);
       // Select first floor if current selection is invalid
       if (

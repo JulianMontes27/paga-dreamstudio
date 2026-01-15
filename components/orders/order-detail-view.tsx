@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Clock, CreditCard, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { AddItemsDialog } from "./add-items-dialog";
+import { DeleteOrderButton } from "./delete-order-button";
 
 interface OrderDetailViewProps {
   order: {
@@ -58,6 +59,7 @@ interface OrderDetailViewProps {
       name: string;
     } | null;
   }>;
+  onDeleteOrder?: (orderId: string) => void | Promise<void>;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -73,6 +75,7 @@ export function OrderDetailView({
   // userId,
   // orgId,
   menuItems,
+  onDeleteOrder,
 }: OrderDetailViewProps) {
   const router = useRouter();
 
@@ -121,6 +124,11 @@ export function OrderDetailView({
           {canAddItems && (
             <AddItemsDialog orderId={order.id} menuItems={menuItems} />
           )}
+          <DeleteOrderButton
+            orderId={order.id}
+            orderNumber={order.orderNumber}
+            onDelete={onDeleteOrder}
+          />
           <Badge variant="secondary" className="capitalize text-xs sm:text-sm">
             {order.status.replace("_", " ")}
           </Badge>

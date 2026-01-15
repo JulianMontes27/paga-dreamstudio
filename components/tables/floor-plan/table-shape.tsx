@@ -1,7 +1,6 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { OrderActivity } from "./floor-plan-context";
 
 type TableShape = "rectangular" | "circular" | "oval" | "bar";
 type TableStatus = "available" | "occupied" | "reserved" | "cleaning";
@@ -14,11 +13,13 @@ interface TableShapeProps {
   tableNumber: string;
   capacity: number;
   isSelected?: boolean;
-  orderActivity?: OrderActivity;
   className?: string;
 }
 
-const STATUS_COLORS: Record<TableStatus, { bg: string; border: string; text: string }> = {
+const STATUS_COLORS: Record<
+  TableStatus,
+  { bg: string; border: string; text: string }
+> = {
   available: {
     bg: "bg-green-100 dark:bg-green-900/30",
     border: "border-green-500",
@@ -49,7 +50,6 @@ export function TableShape({
   tableNumber,
   capacity,
   isSelected = false,
-  orderActivity = "idle",
   className,
 }: TableShapeProps) {
   const colors = STATUS_COLORS[status] || STATUS_COLORS.available;
@@ -85,31 +85,10 @@ export function TableShape({
         minHeight: 40,
       }}
     >
-      {/* Activity indicator dot */}
-      {orderActivity !== "idle" && (
-        <span className="absolute -top-1 -right-1 flex h-3 w-3">
-          <span
-            className={cn(
-              "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75",
-              orderActivity === "active" && "bg-green-400",
-              orderActivity === "payment_made" && "bg-yellow-400"
-            )}
-          />
-          <span
-            className={cn(
-              "relative inline-flex rounded-full h-3 w-3",
-              orderActivity === "active" && "bg-green-500",
-              orderActivity === "payment_made" && "bg-yellow-500"
-            )}
-          />
-        </span>
-      )}
       <span className={cn("text-sm font-bold", colors.text)}>
         {tableNumber}
       </span>
-      <span className={cn("text-xs", colors.text)}>
-        {capacity}p
-      </span>
+      <span className={cn("text-xs", colors.text)}>{capacity}p</span>
     </div>
   );
 }

@@ -7,16 +7,14 @@ import {
   FloorPlanEditor,
   FloorSelector,
   FloorPlanToolbar,
-  FloorData,
-  TableData,
 } from "./floor-plan";
 import { Button } from "@/components/ui/button";
 import { List, Map } from "lucide-react";
-import { Table } from "@/db";
+import { Floor, Table } from "@/db";
 
 interface TablesViewProps {
   tables: Table[];
-  floors: FloorData[];
+  floors: Floor[];
   canUpdate: boolean;
   organizationId: string;
   userId: string;
@@ -30,20 +28,6 @@ export function TablesView({
   userId,
 }: TablesViewProps) {
   const [viewMode, setViewMode] = useState<"list" | "map">("map");
-
-  // Transform tables for floor plan view
-  const floorPlanTables: TableData[] = tables.map((table) => ({
-    id: table.id,
-    tableNumber: table.tableNumber,
-    capacity: table.capacity,
-    status: table.status,
-    floorId: table.floorId,
-    xPosition: table.xPosition,
-    yPosition: table.yPosition,
-    width: table.width,
-    height: table.height,
-    shape: table.shape,
-  }));
 
   // Transform tables for list view (with checkout URL)
   const tablesWithCheckout = tables.map((table) => ({
@@ -90,7 +74,7 @@ export function TablesView({
       {viewMode === "map" && (
         <FloorPlanProvider
           initialFloors={floors}
-          initialTables={floorPlanTables}
+          initialTables={tables}
           userId={userId}
           organizationId={organizationId}
           canEdit={canUpdate}

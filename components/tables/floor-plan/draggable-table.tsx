@@ -119,7 +119,6 @@ export function DraggableTable({ table }: DraggableTableProps) {
           tableNumber={table.tableNumber}
           capacity={table.capacity}
           isSelected={canEdit && isSelected}
-          orderActivity={table.orderActivity}
         />
       </div>
     </div>
