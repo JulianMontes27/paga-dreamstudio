@@ -240,10 +240,6 @@ export function OrderDetailView({
             <span className="text-muted-foreground">Subtotal</span>
             <span className="font-medium">{formatCurrency(order.subtotal)}</span>
           </div>
-          <div className="flex justify-between text-xs sm:text-sm">
-            <span className="text-muted-foreground">Tax</span>
-            <span className="font-medium">{formatCurrency(order.taxAmount)}</span>
-          </div>
           {order.tipAmount && parseFloat(order.tipAmount) > 0 && (
             <div className="flex justify-between text-xs sm:text-sm">
               <span className="text-muted-foreground">Tip</span>

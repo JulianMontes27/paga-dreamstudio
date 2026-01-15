@@ -20,7 +20,6 @@ export interface CreateOrderParams {
   tableId: string;
   items: OrderItem[];
   subtotal: number;
-  taxAmount?: number;
   tipAmount?: number;
   totalAmount: number;
   customerName?: string;
@@ -40,7 +39,6 @@ export async function createOrder(params: CreateOrderParams) {
   const orderNumber = `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
   // Calculate amounts
-  const taxAmount = params.taxAmount ?? 0;
   const tipAmount = params.tipAmount ?? 0;
 
   // Create the order
@@ -54,7 +52,6 @@ export async function createOrder(params: CreateOrderParams) {
       status: "ordering",
       orderType: "dine-in",
       subtotal: params.subtotal.toString(),
-      taxAmount: taxAmount.toString(),
       tipAmount: tipAmount.toString(),
       totalAmount: params.totalAmount.toString(),
       notes: params.notes,

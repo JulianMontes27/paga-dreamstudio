@@ -190,7 +190,6 @@ async function handleTraditionalPayment(
       tableId: tableInfo.id,
       items: items as Array<{ name: string; quantity: number; price: number }>,
       subtotal: total - tipAmount,
-      taxAmount: 0,
       tipAmount: tipAmount,
       totalAmount: total,
       notes: "Order created via NFC checkout",

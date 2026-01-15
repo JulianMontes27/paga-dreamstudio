@@ -128,16 +128,13 @@ export async function POST(
       // Recalculate order totals
       const currentSubtotal = parseFloat(existingOrder.subtotal);
       const newSubtotal = currentSubtotal + totalAdded;
-      const taxRate = 0.1; // 10% tax - adjust as needed
-      const newTaxAmount = newSubtotal * taxRate;
-      const newTotalAmount = newSubtotal + newTaxAmount;
+      const newTotalAmount = newSubtotal;
 
       // Update the order
       await tx
         .update(order)
         .set({
           subtotal: newSubtotal.toFixed(2),
-          taxAmount: newTaxAmount.toFixed(2),
           totalAmount: newTotalAmount.toFixed(2),
         })
         .where(eq(order.id, orderId));

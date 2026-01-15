@@ -109,7 +109,6 @@ export async function POST(request: NextRequest) {
           status: "ordering",
           orderType: "dine-in",
           subtotal: "0",
-          taxAmount: "0",
           totalAmount: "0",
           createdBy: session.user.id,
         })

@@ -171,12 +171,8 @@ export const menuItem = pgTable(
     preparationTime: integer("preparation_time"),
     allergens: jsonb(),
     nutritionalInfo: jsonb("nutritional_info"),
-    createdAt: timestamp("created_at")
-      .defaultNow()
-      .notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
   (table) => [
     foreignKey({
@@ -201,12 +197,8 @@ export const menuCategory = pgTable(
     description: text(),
     displayOrder: integer("display_order").default(0),
     isActive: boolean("is_active").default(true),
-    createdAt: timestamp("created_at")
-      .defaultNow()
-      .notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
   (table) => [
     foreignKey({
@@ -279,12 +271,8 @@ export const floor = pgTable(
     displayOrder: integer("display_order").default(0),
     canvasWidth: integer("canvas_width").default(800),
     canvasHeight: integer("canvas_height").default(600),
-    createdAt: timestamp("created_at")
-      .defaultNow()
-      .notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
   (table) => [
     foreignKey({
@@ -360,7 +348,7 @@ export const order = pgTable(
     status: orderStatus().default("ordering").notNull(),
     orderType: text("order_type").default("dine-in").notNull(),
     subtotal: numeric({ precision: 10, scale: 2 }).notNull(),
-    taxAmount: numeric("tax_amount", { precision: 10, scale: 2 }).notNull(),
+
     tipAmount: numeric("tip_amount", { precision: 10, scale: 2 }).default(
       "0.00"
     ),
@@ -390,12 +378,8 @@ export const order = pgTable(
       "0.00"
     ),
     isLocked: boolean("is_locked").default(false),
-    createdAt: timestamp("created_at")
-      .defaultNow()
-      .notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
   (orderTable) => [
     foreignKey({
@@ -452,9 +436,7 @@ export const paymentClaim = pgTable(
     }).notNull(),
     totalToPay: numeric("total_to_pay", { precision: 10, scale: 2 }).notNull(),
     status: text().default("reserved").notNull(),
-    claimedAt: timestamp("claimed_at")
-      .defaultNow()
-      .notNull(),
+    claimedAt: timestamp("claimed_at").defaultNow().notNull(),
     expiresAt: timestamp("expires_at").notNull(),
     paymentProcessor: text("payment_processor"),
     paymentId: text("payment_id"),
@@ -469,12 +451,8 @@ export const paymentClaim = pgTable(
       scale: 2,
     }).default("0.00"),
     sessionToken: text("session_token").notNull(),
-    createdAt: timestamp("created_at")
-      .defaultNow()
-      .notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
   (table) => [
     foreignKey({
@@ -497,12 +475,8 @@ export const orderItem = pgTable(
     totalPrice: numeric("total_price", { precision: 10, scale: 2 }).notNull(),
     specialInstructions: text("special_instructions"),
     status: text().default("pending").notNull(),
-    createdAt: timestamp("created_at")
-      .defaultNow()
-      .notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
   (table) => [
     foreignKey({
@@ -533,12 +507,8 @@ export const table = pgTable(
     capacity: integer().notNull(),
     status: tableStatus().default("available").notNull(),
     isNfcEnabled: boolean("is_nfc_enabled").default(true),
-    createdAt: timestamp("created_at")
-      .defaultNow()
-      .notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
     nfcScanCount: integer("nfc_scan_count").default(0),
     lastNfcScanAt: timestamp("last_nfc_scan_at", {
       withTimezone: true,

@@ -98,7 +98,9 @@ export function TableDetailView({
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteOrderDialogOpen, setDeleteOrderDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeletingOrder, setIsDeletingOrder] = useState(false);
   const canViewHistory = userRole === "admin" || userRole === "owner";
   const canUpdate = userRole === "admin" || userRole === "owner";
 
@@ -221,6 +223,31 @@ export function TableDetailView({
       toast.error("Failed to delete table");
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const handleDeleteOrder = async () => {
+    if (!activeOrder) return;
+
+    setIsDeletingOrder(true);
+
+    try {
+      const response = await fetch(`/api/orders/${activeOrder.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete order");
+      }
+
+      toast.success(`Order #${activeOrder.orderNumber} deleted successfully`);
+      setDeleteOrderDialogOpen(false);
+      router.refresh();
+    } catch (error) {
+      console.error("Error deleting order:", error);
+      toast.error("Failed to delete order");
+    } finally {
+      setIsDeletingOrder(false);
     }
   };
 
@@ -387,6 +414,35 @@ export function TableDetailView({
         </DialogContent>
       </Dialog>
 
+      {/* Delete Order Dialog */}
+      <Dialog open={deleteOrderDialogOpen} onOpenChange={setDeleteOrderDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Order</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete order &quot;#{activeOrder?.orderNumber}
+              &quot;? This will remove all items and cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteOrderDialogOpen(false)}
+              disabled={isDeletingOrder}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteOrder}
+              disabled={isDeletingOrder}
+            >
+              {isDeletingOrder ? "Deleting..." : "Delete Order"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
         <div className="border rounded-lg p-4">
@@ -510,12 +566,6 @@ export function TableDetailView({
                   {formatCurrency(activeOrder.subtotal)}
                 </span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Tax</span>
-                <span className="tabular-nums">
-                  {formatCurrency(activeOrder.taxAmount)}
-                </span>
-              </div>
               {activeOrder.tipAmount &&
                 parseFloat(activeOrder.tipAmount) > 0 && (
                   <div className="flex justify-between text-sm">
@@ -557,15 +607,26 @@ export function TableDetailView({
             </div>
 
             {/* View Order Button */}
-            <div className="px-6 py-4 border-t">
+            <div className="px-6 py-4 border-t flex gap-2">
               <Link
                 href={`/profile/${userId}/organizaciones/${organizationSlug}/pedidos/${activeOrder.id}`}
+                className="flex-1"
               >
                 <Button variant="outline" className="w-full gap-2">
                   <ExternalLink className="h-4 w-4" />
                   View Order Details
                 </Button>
               </Link>
+              {canUpdate && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setDeleteOrderDialogOpen(true)}
+                  className="text-destructive hover:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>

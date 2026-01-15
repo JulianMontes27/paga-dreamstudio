@@ -126,7 +126,6 @@ export async function POST(
           status: "ordering", // Indicates collaborative ordering mode
           orderType: "dine-in",
           subtotal: total.toString(),
-          taxAmount: "0.00",
           tipAmount: "0.00",
           totalAmount: total.toString(),
           totalClaimed: "0.00",
