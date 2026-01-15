@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { order, orderItem, table } from "@/db/schema";
+import { order, table } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
@@ -59,7 +59,7 @@ export async function DELETE(
       );
     }
 
-    // Delete the order in a transaction
+    // Delete the order in a transaction (if one fails, the db rolls back all operations on the db, for safety)
     // Order items will be automatically deleted due to CASCADE delete in schema
     await db.transaction(async (tx) => {
       // Delete the order (order items cascade automatically)

@@ -6,7 +6,6 @@ import { ArrowLeft, Clock, CreditCard, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { AddItemsDialog } from "./add-items-dialog";
 import { DeleteOrderButton } from "./delete-order-button";
-import { Order } from "@/db";
 import { toast } from "sonner";
 
 interface OrderDetailViewProps {
