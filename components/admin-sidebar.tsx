@@ -35,7 +35,7 @@ const primaryMenuItems: MenuItem[] = [
     href: "/mesas",
     description: "Gestiona las mesas",
     exact: false,
-    roles: ["owner", "administrator"], 
+    roles: ["owner", "administrator", "waiter"],
   },
   {
     title: "Pedidos",
@@ -43,7 +43,7 @@ const primaryMenuItems: MenuItem[] = [
     href: "/pedidos",
     description: "Listado completo de pedidos",
     exact: false,
-    roles: ["owner", "administrator"],
+    roles: ["owner", "administrator", "waiter"],
   },
   {
     title: "Menu",
@@ -51,7 +51,7 @@ const primaryMenuItems: MenuItem[] = [
     href: "/menu",
     description: "Menu del restaurante",
     exact: false,
-    roles: ["owner", "administrator", "waiter"], 
+    roles: ["owner", "administrator", "waiter"],
   },
   {
     title: "Configuración",
@@ -59,7 +59,7 @@ const primaryMenuItems: MenuItem[] = [
     href: "/configuracion",
     description: "Ajustes del sistema",
     exact: true,
-    roles: ["owner", "administrator"], 
+    roles: ["owner", "administrator"],
   },
 ];
 

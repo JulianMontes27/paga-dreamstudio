@@ -30,7 +30,20 @@ export async function POST(request: NextRequest) {
     const validatedData = createTableSchema.parse(body);
 
     // Verify user has permission to create tables in this organization
-    // TODO: Add proper permission check here based on your auth system
+    const hasPermission = await auth.api.hasPermission({
+      headers: await headers(),
+      body: {
+        permission: { table: ["create"] },
+        organizationId: validatedData.organizationId,
+      },
+    });
+
+    if (!hasPermission?.success) {
+      return NextResponse.json(
+        { error: "You don't have permission to create tables" },
+        { status: 403 }
+      );
+    }
 
     // Verify organization exists
     const org = await db

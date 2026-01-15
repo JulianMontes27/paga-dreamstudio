@@ -14,11 +14,20 @@ export default async function TablesPage({
   const { userId, orgId } = await params;
   const reqHeaders = await headers();
 
-  // Check table read permission
+  // Check table create permission for the button
+  const canCreateTable = await auth.api.hasPermission({
+    headers: reqHeaders,
+    body: {
+      permission: { table: ["create"] },
+      organizationId: orgId,
+    },
+  });
+
+  // Check table update permission for editing
   const canUpdateTable = await auth.api.hasPermission({
     headers: reqHeaders,
     body: {
-      permission: { table: ["create", "delete", "update"] },
+      permission: { table: ["update"] },
       organizationId: orgId,
     },
   });
@@ -44,7 +53,7 @@ export default async function TablesPage({
       {/* Page Header */}
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-xl sm:text-2xl font-semibold">Mesas</h1>
-        {canUpdateTable && <CreateTableButton organizationId={orgId} />}
+        {canCreateTable?.success && <CreateTableButton organizationId={orgId} />}
       </div>
 
       {/* Tables View */}
