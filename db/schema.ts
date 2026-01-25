@@ -74,6 +74,8 @@ export const orderStatus = pgEnum("order_status", [
  * ->>>>>>>>>>>>>>>>>>>>>>>>>>>>
  */
 
+// INSERT INTO "public"."document_type" ("id", "country_id", "name") VALUES ('0b548efa-0689-4935-8c42-5c219e7ffd60', 'df99591d-d9f4-4da4-adb5-ef8dee21a853', 'Cédula de Extranjería'), ('76201a7e-fd86-4ba3-aba6-eabceabb983e', 'df99591d-d9f4-4da4-adb5-ef8dee21a853', 'PEP'), ('bb7988e4-ee61-4776-9ef1-921fd6cd94f3', 'df99591d-d9f4-4da4-adb5-ef8dee21a853', 'PPT'), ('ca2f187a-7fac-491f-a9b7-36fa5975855c', 'df99591d-d9f4-4da4-adb5-ef8dee21a853', 'Pasaporte'), ('f87aaaf0-53d1-4e63-90d5-afe3c8784e31', 'df99591d-d9f4-4da4-adb5-ef8dee21a853', 'Cédula de Ciudadanía');
+
 export const verification = pgTable("verification", {
   id: text().primaryKey().notNull(),
   identifier: text().notNull(),
@@ -108,8 +110,6 @@ export const user = pgTable(
     isAnonymous: boolean(),
     phoneNumber: text(),
     phoneNumberVerified: boolean(),
-    userMetadata: jsonb(),
-    appMetadata: jsonb(),
     invitedAt: timestamp({ withTimezone: true }),
     lastSignInAt: timestamp({ withTimezone: true }),
     documentId: text("document_id"),

@@ -1,6 +1,9 @@
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
+import { db } from "@/db";
+import { documentType, countries } from "@/db";
+import { eq } from "drizzle-orm";
 import {
   Card,
   CardContent,
@@ -9,7 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Link2, LogOut, User } from "lucide-react";
+import { Shield, Link2, LogOut } from "lucide-react";
 import { UnlinkAccountButton } from "@/components/unlink-account-button";
 import { LinkAccountButton } from "@/components/link-account-button";
 import { PasswordManager } from "@/components/password-manager";
@@ -18,8 +21,11 @@ import { PhoneVerificationManager } from "@/components/phone-verification-manage
 import { BirthDateManager } from "@/components/birth-date-manager";
 import { EmailManager } from "@/components/email-manager";
 import { DocumentManager } from "@/components/document-manager";
-import { NameManager } from "@/components/name-manager";
 import { SignOutButton } from "@/components/sign-out-button";
+import { NameManager } from "@/components/name-manager";
+import { ProfileAvatarManager } from "@/components/profile-avatar-manager";
+import { GenderManager } from "@/components/gender-manager";
+import { TipoPersonaManager } from "@/components/tipo-persona-manager";
 
 export default async function ProfilePage() {
   // Secure authentication - validates with server
@@ -30,6 +36,16 @@ export default async function ProfilePage() {
     redirect("/sign-in");
   }
   const user = session.user;
+
+  // Fetch document types from database (for Colombia)
+  const documentTypes = await db
+    .select({
+      id: documentType.id,
+      name: documentType.name,
+    })
+    .from(documentType)
+    .innerJoin(countries, eq(documentType.countryId, countries.id))
+    .where(eq(countries.countryCode, "CO"));
 
   // Fetch user's connected accounts using Better Auth API
   const oauthAccounts = await auth.api.listUserAccounts({
@@ -102,7 +118,7 @@ export default async function ProfilePage() {
   // Find providers that are not yet connected
   const connectedProviderIds = oauthAccounts.map((acc) => acc.providerId);
   const availableToLink = availableProviders.filter(
-    (provider) => !connectedProviderIds.includes(provider.id)
+    (provider) => !connectedProviderIds.includes(provider.id),
   );
 
   return (
@@ -111,19 +127,10 @@ export default async function ProfilePage() {
       <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
         <div className="flex items-center gap-3 sm:gap-6 w-full sm:w-auto">
           {/* Avatar */}
-          <div className="relative flex-shrink-0">
-            {user.image ? (
-              <img
-                src={user.image}
-                alt={user.name || "Usuario"}
-                className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full object-cover border-2 border-primary/20"
-              />
-            ) : (
-              <div className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border-2 border-primary/20 flex items-center justify-center">
-                <User className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 text-primary" />
-              </div>
-            )}
-          </div>
+          <ProfileAvatarManager
+            currentImage={user.image ?? null}
+            userName={user.name}
+          />
 
           {/* Name and Email */}
           <div className="flex-1 min-w-0">
@@ -174,15 +181,29 @@ export default async function ProfilePage() {
 
           {/* Phone Number */}
           <PhoneVerificationManager
-            phoneNumber={user.phoneNumber}
+            phoneNumber={user.phoneNumber ?? null}
             phoneNumberVerified={user.phoneNumberVerified ?? false}
           />
 
           {/* Birth Date */}
-          <BirthDateManager birthDate={user.birthdate} />
+          <BirthDateManager birthDate={user.birthdate ?? null} />
 
           {/* Document Type and Number */}
-          <DocumentManager documentType={null} documentNumber={null} />
+          <DocumentManager
+            documentType={user.documentTypeId ?? null}
+            documentNumber={user.documentId ?? null}
+            documentTypes={documentTypes}
+          />
+
+          {/* Gender */}
+          <GenderManager gender={user.gender ?? null} />
+
+          {/* Tipo Persona */}
+          <TipoPersonaManager
+            tipoPersona={user.tipoPersona ?? null}
+            razonSocial={user.razonSocial ?? null}
+            nit={user.nit ?? null}
+          />
         </div>
       </div>
 
@@ -242,7 +263,7 @@ export default async function ProfilePage() {
                   </div>
                 </div>
               );
-            }
+            },
           )}
 
           {/* Available Providers to Link */}
@@ -282,13 +303,15 @@ export default async function ProfilePage() {
         <div className="space-y-3">
           {/* Password */}
           <PasswordManager
-            hasOAuthAccounts={oauthAccounts.some(acc => acc.providerId !== "credential")}
+            hasOAuthAccounts={oauthAccounts.some(
+              (acc) => acc.providerId !== "credential",
+            )}
           />
         </div>
       </div>
 
       {/* Active Devices */}
-      <div className="space-y-4 sm:space-y-5">
+      <div className="space-y-4 sm:space-y-5 pt-4 sm:pt-6">
         <h2 className="text-lg sm:text-xl font-semibold leading-tight">
           Dispositivos activos
         </h2>
