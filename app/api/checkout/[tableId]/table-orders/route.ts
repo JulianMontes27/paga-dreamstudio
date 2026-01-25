@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { table, order, orderItem } from "@/db/schema";
 import { eq, and, or } from "drizzle-orm";
-import { getSecurityHeaders } from "@/lib/rate-limit";
 
 /**
  * GET /api/checkout/[tableId]/table-orders
@@ -11,7 +10,7 @@ import { getSecurityHeaders } from "@/lib/rate-limit";
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ tableId: string }> }
+  { params }: { params: Promise<{ tableId: string }> },
 ) {
   try {
     const { tableId } = await params;
@@ -24,10 +23,7 @@ export async function GET(
       .limit(1);
 
     if (!tableData.length) {
-      return NextResponse.json(
-        { error: "Table not found" },
-        { status: 404, headers: getSecurityHeaders() }
-      );
+      return NextResponse.json({ error: "Table not found" }, { status: 404 });
     }
 
     // Find all active orders for this table
@@ -41,9 +37,9 @@ export async function GET(
             eq(order.status, "ordering"),
             eq(order.status, "payment_started"),
             eq(order.status, "partially_paid"),
-            eq(order.status, "paid")
-          )
-        )
+            eq(order.status, "paid"),
+          ),
+        ),
       )
       .orderBy(order.createdAt);
 
@@ -67,19 +63,16 @@ export async function GET(
           status: ord.status,
           createdAt: ord.createdAt,
         };
-      })
+      }),
     );
 
-    return NextResponse.json(
-      { orders: ordersWithItems },
-      { headers: getSecurityHeaders() }
-    );
+    return NextResponse.json({ orders: ordersWithItems });
   } catch (error) {
     console.error("Error fetching table orders:", error);
 
     return NextResponse.json(
       { error: "Failed to fetch orders" },
-      { status: 500, headers: getSecurityHeaders() }
+      { status: 500 },
     );
   }
 }

@@ -13,47 +13,29 @@ import {
 } from "@/components/ui/select";
 import { Search, X, Receipt, ChevronRight } from "lucide-react";
 import Link from "next/link";
-
-interface OrderItem {
-  id: string;
-  quantity: number;
-  unitPrice: string;
-  totalPrice: string;
-  itemName: string | null;
-  menuItem: {
-    id: string;
-    name: string;
-    price: string;
-  } | null;
-}
-
-interface Order {
-  id: string;
-  orderNumber: string;
-  status: string;
-  orderType: string;
-  subtotal: string;
-  tipAmount: string | null;
-  totalAmount: string;
-  customerName: string | null;
-  createdAt: Date;
-  paidAt: Date | null;
-  table: {
-    id: string;
-    tableNumber: string;
-  } | null;
-  orderItems: OrderItem[];
-}
+import { MenuItem, Order, OrderItem } from "@/db";
 
 interface OrdersViewProps {
-  orders: Order[];
+  orders: (Order & {
+    table: {
+      id: string;
+      tableNumber: string;
+    } | null;
+    orderItems: (OrderItem & {
+      menuItem: MenuItem | null;
+    })[];
+  })[];
   userId: string;
   orgId: string;
 }
 
 const STATUS_OPTIONS = [
   { value: "ordering", label: "Ordering", color: "bg-blue-500" },
-  { value: "payment_started", label: "Payment Started", color: "bg-yellow-500" },
+  {
+    value: "payment_started",
+    label: "Payment Started",
+    color: "bg-yellow-500",
+  },
   { value: "partially_paid", label: "Partially Paid", color: "bg-orange-500" },
   { value: "paid", label: "Paid", color: "bg-green-500" },
   { value: "cancelled", label: "Cancelled", color: "bg-red-500" },
@@ -90,7 +72,11 @@ export function OrdersView({ orders, userId, orgId }: OrdersViewProps) {
     // Date filter
     if (dateFilter !== "all") {
       const now = new Date();
-      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const startOfToday = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+      );
 
       filtered = filtered.filter((order) => {
         const orderDate = new Date(order.createdAt);
@@ -195,7 +181,12 @@ export function OrdersView({ orders, userId, orgId }: OrdersViewProps) {
           </Select>
 
           {hasActiveFilters && (
-            <Button variant="ghost" size="icon" onClick={clearAllFilters} className="shrink-0">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={clearAllFilters}
+              className="shrink-0"
+            >
               <X className="h-4 w-4" />
             </Button>
           )}
@@ -229,7 +220,9 @@ export function OrdersView({ orders, userId, orgId }: OrdersViewProps) {
                 {/* Order info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                    <span className="font-medium text-sm sm:text-base">#{order.orderNumber}</span>
+                    <span className="font-medium text-sm sm:text-base">
+                      #{order.orderNumber}
+                    </span>
                     <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground flex-wrap">
                       {order.table && (
                         <span>Table {order.table.tableNumber}</span>
@@ -237,7 +230,9 @@ export function OrdersView({ orders, userId, orgId }: OrdersViewProps) {
                       {order.customerName && (
                         <>
                           {order.table && <span>·</span>}
-                          <span className="truncate max-w-[150px]">{order.customerName}</span>
+                          <span className="truncate max-w-[150px]">
+                            {order.customerName}
+                          </span>
                         </>
                       )}
                     </div>
@@ -245,8 +240,15 @@ export function OrdersView({ orders, userId, orgId }: OrdersViewProps) {
                   <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground mt-1">
                     <span>{order.orderItems.length} items</span>
                     <span>·</span>
-                    <span className="hidden xs:inline">{formatDate(order.createdAt)}</span>
-                    <span className="xs:hidden">{new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                    <span className="hidden xs:inline">
+                      {formatDate(order.createdAt)}
+                    </span>
+                    <span className="xs:hidden">
+                      {new Date(order.createdAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </span>
                   </div>
                   {/* Mobile: Show amount and status below order info */}
                   <div className="flex items-center gap-2 mt-2 sm:hidden">

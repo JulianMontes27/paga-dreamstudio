@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     if (!tableId || !organizationId) {
       return NextResponse.json(
         { error: "tableId and organizationId are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     if (!canCreateOrder?.success) {
       return NextResponse.json(
         { error: "You don't have permission to create orders" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -50,17 +50,14 @@ export async function POST(request: NextRequest) {
     });
 
     if (!tableData) {
-      return NextResponse.json(
-        { error: "Table not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Table not found" }, { status: 404 });
     }
 
     // Verify table belongs to the organization
     if (tableData.organizationId !== organizationId) {
       return NextResponse.json(
         { error: "Table does not belong to this organization" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -69,7 +66,7 @@ export async function POST(request: NextRequest) {
     if (invalidStatuses.includes(tableData.status.toLowerCase())) {
       return NextResponse.json(
         { error: `Cannot create order. Table is ${tableData.status}` },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -78,14 +75,18 @@ export async function POST(request: NextRequest) {
       where: (orders, { eq, and, inArray }) =>
         and(
           eq(orders.tableId, tableId),
-          inArray(orders.status, ["ordering", "payment_started", "partially_paid"])
+          inArray(orders.status, [
+            "ordering",
+            "payment_started",
+            "partially_paid",
+          ]),
         ),
     });
 
     if (existingActiveOrder) {
       return NextResponse.json(
         { error: "This table already has an active order" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -110,7 +111,8 @@ export async function POST(request: NextRequest) {
           orderType: "dine-in",
           subtotal: "0",
           totalAmount: "0",
-          createdBy: session.user.id,
+          servedBy: session.user.id,
+          // createdBy: session.user.id,
         })
         .returning();
 
@@ -123,15 +125,12 @@ export async function POST(request: NextRequest) {
       return createdOrder;
     });
 
-    return NextResponse.json(
-      { order: newOrder },
-      { status: 201 }
-    );
+    return NextResponse.json({ order: newOrder }, { status: 201 });
   } catch (error) {
     console.error("Error creating order:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

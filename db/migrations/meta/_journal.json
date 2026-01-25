@@ -64,6 +64,27 @@
       "when": 1768452790675,
       "tag": "0008_wet_menace",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1769373957551,
+      "tag": "0009_high_maddog",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1769374266945,
+      "tag": "0010_stiff_hitman",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1769374864181,
+      "tag": "0011_absurd_hulk",
+      "breakpoints": true
     }
   ]
 }

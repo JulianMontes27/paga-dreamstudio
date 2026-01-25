@@ -1,7 +1,7 @@
 import TableCheckoutInterface from "@/components/checkout-interface";
 import { notFound } from "next/navigation";
 import { db, table, order } from "@/db";
-import { eq } from "drizzle-orm";
+import { and, eq, or } from "drizzle-orm";
 
 interface CheckoutPageProps {
   params: Promise<{ tableId: string }>;
@@ -19,7 +19,15 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) {
     where: eq(table.id, tableId),
     with: {
       orders: {
-        where: eq(order.status, "ordering"),
+        // Get the ACTIVE (dine-in) Order
+        where: and(
+          eq(order.orderType, "dine-in"),
+          or(
+            eq(order.status, "ordering"),
+            eq(order.status, "payment_started"),
+            eq(order.status, "partially_paid"),
+          ),
+        ),
         orderBy: (orders, { desc }) => [desc(orders.createdAt)],
         with: {
           orderItems: true,
@@ -32,23 +40,31 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) {
     notFound();
   }
 
-  const orders = tableData.orders || [];
+  const activeOrder = tableData.orders[0] ?? null;
 
-  // Find active order
-  const activeOrder =
-    orders.find(
-      (o) =>
-        o.status === "ordering" ||
-        o.status === "payment_started" ||
-        o.status === "partially_paid"
-    ) || null;
+  const cleanedActiveOrder = activeOrder
+    ? {
+        id: activeOrder.id,
+        orderNumber: activeOrder.orderNumber,
+        orderItems: activeOrder.orderItems,
+        status: activeOrder.status,
+        subtotal: activeOrder.subtotal,
+        totalPaid: activeOrder.totalPaid,
+      }
+    : null;
+
+  // Clean table data for the checkout interface
+  const cleanedTableData = {
+    id: tableData.id,
+    tableNumber: tableData.tableNumber,
+    organizationId: tableData.organizationId,
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <TableCheckoutInterface
-        tableId={tableId}
-        tableData={tableData}
-        activeOrder={activeOrder}
+        tableData={cleanedTableData}
+        activeOrder={cleanedActiveOrder}
       />
     </div>
   );

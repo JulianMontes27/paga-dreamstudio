@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { order, menuItem } from "@/db/schema";
+import { order, organization } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { OrderDetailView } from "@/components/orders/order-detail-view";
@@ -29,9 +29,8 @@ export default async function OrderDetailPage({
     notFound();
   }
 
-  // Fetch menu items for adding to order
   const menuItems = await db.query.menuItem.findMany({
-    where: eq(menuItem.organizationId, orgId),
+    where: eq(organization.id, orgId),
     with: {
       menuCategory: true,
     },

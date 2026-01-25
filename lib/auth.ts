@@ -17,8 +17,6 @@ import OrganizationInvitationEmail from "@/components/email-organization-invitat
 import { ac, administrator, waiter, owner } from "@/lib/auth-permissions";
 import { and, eq } from "drizzle-orm";
 import bcrypt from "bcrypt";
-// import ForgotPasswordEmail from "@/components/email-reset-password";
-// import { sendMagicLinkEmail } from "./helpers/email";
 
 // Initialize Resend lazily
 const resend = new Resend(process.env.RESEND_API_KEY as string);

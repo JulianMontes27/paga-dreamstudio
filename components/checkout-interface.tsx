@@ -18,49 +18,50 @@ type PaymentMethod =
   | "nequi"
   | "cash";
 
-interface OrderItem {
-  id: string;
-  itemName: string | null;
-  quantity: number;
-  unitPrice: string;
-  specialInstructions?: string | null;
-  menuItem?: {
-    name: string;
-  } | null;
-}
-
-interface Order {
-  id: string;
-  orderNumber: string;
-  status: string;
-  subtotal: string;
-  tipAmount: string | null;
-  totalAmount: string;
-  orderItems: OrderItem[];
-}
-
 interface TableData {
-  id: string;
   tableNumber: string;
   organizationId: string;
+}
+
+interface ActiveOrder {
+  id: string;
+  orderNumber: string;
+  orderItems: {
+    id: string;
+    createdAt: Date;
+    updatedAt: Date;
+    status: string;
+    orderId: string;
+    menuItemId: string | null;
+    itemName: string | null;
+    quantity: number;
+    unitPrice: string;
+    totalPrice: string;
+    specialInstructions: string | null;
+  }[];
+  status:
+    | "ordering"
+    | "payment_started"
+    | "partially_paid"
+    | "paid"
+    | "cancelled";
+  subtotal: string;
+  totalPaid: string | null;
 }
 
 const IMPOCONSUMO_RATE = 0.08;
 const SERVICE_RATE = 0.1; // 10% propina voluntaria
 
 export default function TableCheckoutInterface({
-  tableId,
   tableData,
   activeOrder,
 }: {
-  tableId: string;
   tableData: TableData;
-  activeOrder: Order | null;
+  activeOrder: ActiveOrder | null;
 }) {
-  console.log(tableId)
   const [includeService, setIncludeService] = useState(true);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(
-    null
+    null,
   );
   const [isProcessing, setIsProcessing] = useState(false);
   const [isPaid, setIsPaid] = useState(false);
@@ -89,24 +90,24 @@ export default function TableCheckoutInterface({
         ? parseFloat(activeOrder.subtotal)
         : orderItems.reduce(
             (sum, item) => sum + parseFloat(item.unitPrice) * item.quantity,
-            0
+            0,
           ),
-    [activeOrder, orderItems]
+    [activeOrder, orderItems], // Do the work once, then reuse it until dependencies change
   );
 
   const impoconsumo = useMemo(() => subtotal * IMPOCONSUMO_RATE, [subtotal]);
   const totalSinServicio = useMemo(
     () => subtotal + impoconsumo,
-    [subtotal, impoconsumo]
+    [subtotal, impoconsumo],
   );
   const servicio = useMemo(() => subtotal * SERVICE_RATE, [subtotal]);
   const totalConServicio = useMemo(
     () => totalSinServicio + servicio,
-    [totalSinServicio, servicio]
+    [totalSinServicio, servicio],
   );
   const totalFinal = useMemo(
     () => (includeService ? totalConServicio : totalSinServicio),
-    [includeService, totalConServicio, totalSinServicio]
+    [includeService, totalConServicio, totalSinServicio],
   );
 
   const handlePayment = async () => {
@@ -220,9 +221,7 @@ export default function TableCheckoutInterface({
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-semibold text-gray-900">
-              Checkout
-            </h1>
+            <h1 className="text-xl font-semibold text-gray-900">Checkout</h1>
             <p className="text-sm text-gray-500">
               Mesa {tableData.tableNumber}
               {activeOrder && ` · Orden #${activeOrder.orderNumber}`}
@@ -273,7 +272,7 @@ export default function TableCheckoutInterface({
                         {item.quantity}×
                       </span>
                       <span className="font-medium text-gray-900">
-                        {item.menuItem?.name || item.itemName || "Item"}
+                        {item?.itemName || "Item"}
                       </span>
                     </div>
                     {item.specialInstructions && (
@@ -283,9 +282,7 @@ export default function TableCheckoutInterface({
                     )}
                   </div>
                   <span className="font-medium tabular-nums text-gray-900">
-                    {formatCurrency(
-                      parseFloat(item.unitPrice) * item.quantity
-                    )}
+                    {formatCurrency(parseFloat(item.unitPrice) * item.quantity)}
                   </span>
                 </div>
               ))}

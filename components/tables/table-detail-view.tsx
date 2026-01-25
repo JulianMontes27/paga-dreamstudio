@@ -108,12 +108,12 @@ export function TableDetailView({
   const displayOrders = canViewHistory
     ? orders
     : orders.filter(
-        (o) => !["paid", "cancelled"].includes(o.status.toLowerCase())
+        (o) => !["paid", "cancelled"].includes(o.status.toLowerCase()),
       );
 
   // Check if table can accept new orders
   const canStartOrder = !["occupied", "cleaning", "reserved"].includes(
-    table.status.toLowerCase()
+    table.status.toLowerCase(),
   );
 
   const handleStartOrder = async () => {
@@ -144,7 +144,7 @@ export function TableDetailView({
 
       // Navigate to the new order page
       router.push(
-        `/profile/${userId}/organizaciones/${organizationSlug}/pedidos/${newOrder.id}`
+        `/profile/${userId}/organizaciones/${organizationSlug}/pedidos/${newOrder.id}`,
       );
 
       toast.success(`Order started for Table ${table.tableNumber}`);
@@ -197,7 +197,7 @@ export function TableDetailView({
           return "Failed to update table status";
         },
         finally: () => setIsLoading(false),
-      }
+      },
     );
   };
 
@@ -216,7 +216,7 @@ export function TableDetailView({
       toast.success(`Table ${table.tableNumber} deleted successfully`);
       setDeleteDialogOpen(false);
       router.push(
-        `/profile/${userId}/organizaciones/${organizationSlug}/mesas`
+        `/profile/${userId}/organizaciones/${organizationSlug}/mesas`,
       );
     } catch (error) {
       console.error("Error deleting table:", error);
@@ -415,12 +415,16 @@ export function TableDetailView({
       </Dialog>
 
       {/* Delete Order Dialog */}
-      <Dialog open={deleteOrderDialogOpen} onOpenChange={setDeleteOrderDialogOpen}>
+      <Dialog
+        open={deleteOrderDialogOpen}
+        onOpenChange={setDeleteOrderDialogOpen}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete Order</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete order &quot;#{activeOrder?.orderNumber}
+              Are you sure you want to delete order &quot;#
+              {activeOrder?.orderNumber}
               &quot;? This will remove all items and cannot be undone.
             </DialogDescription>
           </DialogHeader>
@@ -566,7 +570,7 @@ export function TableDetailView({
                   {formatCurrency(activeOrder.subtotal)}
                 </span>
               </div>
-              {activeOrder.tipAmount &&
+              {/* {activeOrder.tipAmount &&
                 parseFloat(activeOrder.tipAmount) > 0 && (
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Tip</span>
@@ -574,7 +578,7 @@ export function TableDetailView({
                       {formatCurrency(activeOrder.tipAmount)}
                     </span>
                   </div>
-                )}
+                )} */}
               <Separator />
               <div className="flex justify-between pt-1">
                 <span className="font-semibold">Total</span>
@@ -598,7 +602,7 @@ export function TableDetailView({
                     <span className="tabular-nums text-orange-600 font-medium">
                       {formatCurrency(
                         parseFloat(activeOrder.totalAmount) -
-                          parseFloat(activeOrder.totalPaid || "0")
+                          parseFloat(activeOrder.totalPaid || "0"),
                       )}
                     </span>
                   </div>
@@ -642,66 +646,68 @@ export function TableDetailView({
             </h2>
           </div>
 
-        {displayOrders.length > 0 ? (
-          <div className="border rounded-xl overflow-hidden divide-y">
-            {displayOrders.map((order) => {
-              const statusConfig = ORDER_STATUS_CONFIG[
-                order.status.toLowerCase()
-              ] || {
-                color: "bg-gray-500",
-                label: order.status,
-              };
+          {displayOrders.length > 0 ? (
+            <div className="border rounded-xl overflow-hidden divide-y">
+              {displayOrders.map((order) => {
+                const statusConfig = ORDER_STATUS_CONFIG[
+                  order.status.toLowerCase()
+                ] || {
+                  color: "bg-gray-500",
+                  label: order.status,
+                };
 
-              return (
-                <Link
-                  key={order.id}
-                  href={`/profile/${userId}/organizaciones/${organizationSlug}/pedidos/${order.id}`}
-                  className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors group"
-                >
-                  <div
-                    className={`h-2.5 w-2.5 rounded-full shrink-0 ${statusConfig.color}`}
-                    title={statusConfig.label}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">#{order.orderNumber}</span>
-                      <span className="text-muted-foreground">·</span>
-                      <span className="text-sm text-muted-foreground">
-                        {order.orderItems.length}{" "}
-                        {order.orderItems.length === 1 ? "item" : "items"}
-                      </span>
+                return (
+                  <Link
+                    key={order.id}
+                    href={`/profile/${userId}/organizaciones/${organizationSlug}/pedidos/${order.id}`}
+                    className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors group"
+                  >
+                    <div
+                      className={`h-2.5 w-2.5 rounded-full shrink-0 ${statusConfig.color}`}
+                      title={statusConfig.label}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">
+                          #{order.orderNumber}
+                        </span>
+                        <span className="text-muted-foreground">·</span>
+                        <span className="text-sm text-muted-foreground">
+                          {order.orderItems.length}{" "}
+                          {order.orderItems.length === 1 ? "item" : "items"}
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {formatDate(order.createdAt)}
+                      </p>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      {formatDate(order.createdAt)}
-                    </p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className="font-semibold tabular-nums">
-                      {formatCurrency(order.totalAmount)}
-                    </p>
-                    <Badge
-                      variant="secondary"
-                      className="capitalize text-xs mt-1"
-                    >
-                      {statusConfig.label}
-                    </Badge>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                </Link>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="text-center py-12 border rounded-xl bg-muted/20">
-            <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-muted flex items-center justify-center">
-              <Receipt className="h-6 w-6 text-muted-foreground" />
+                    <div className="text-right shrink-0">
+                      <p className="font-semibold tabular-nums">
+                        {formatCurrency(order.totalAmount)}
+                      </p>
+                      <Badge
+                        variant="secondary"
+                        className="capitalize text-xs mt-1"
+                      >
+                        {statusConfig.label}
+                      </Badge>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                  </Link>
+                );
+              })}
             </div>
-            <h3 className="font-medium mb-1">No orders yet</h3>
-            <p className="text-sm text-muted-foreground">
-              Orders for this table will appear here
-            </p>
-          </div>
-        )}
+          ) : (
+            <div className="text-center py-12 border rounded-xl bg-muted/20">
+              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-muted flex items-center justify-center">
+                <Receipt className="h-6 w-6 text-muted-foreground" />
+              </div>
+              <h3 className="font-medium mb-1">No orders yet</h3>
+              <p className="text-sm text-muted-foreground">
+                Orders for this table will appear here
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>

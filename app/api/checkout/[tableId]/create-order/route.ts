@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { table, organization, order, orderItem } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { getSecurityHeaders } from "@/lib/rate-limit";
 import { randomUUID } from "crypto";
 
 interface OrderItemInput {
@@ -20,7 +19,7 @@ interface OrderItemInput {
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ tableId: string }> }
+  { params }: { params: Promise<{ tableId: string }> },
 ) {
   try {
     const { tableId } = await params;
@@ -32,14 +31,14 @@ export async function POST(
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
         { error: "Invalid order items" },
-        { status: 400, headers: getSecurityHeaders() }
+        { status: 400 },
       );
     }
 
     if (typeof total !== "number" || total <= 0) {
       return NextResponse.json(
         { error: "Invalid order total" },
-        { status: 400, headers: getSecurityHeaders() }
+        { status: 400 },
       );
     }
 
@@ -55,10 +54,7 @@ export async function POST(
       .limit(1);
 
     if (!tableData.length) {
-      return NextResponse.json(
-        { error: "Table not found" },
-        { status: 404, headers: getSecurityHeaders() }
-      );
+      return NextResponse.json({ error: "Table not found" }, { status: 404 });
     }
 
     const { organization: org, table: tableInfo } = tableData[0];
@@ -74,10 +70,7 @@ export async function POST(
         .limit(1);
 
       if (!existingOrder) {
-        return NextResponse.json(
-          { error: "Order not found" },
-          { status: 404, headers: getSecurityHeaders() }
-        );
+        return NextResponse.json({ error: "Order not found" }, { status: 404 });
       }
 
       // Calculate new total
@@ -126,13 +119,13 @@ export async function POST(
           status: "ordering", // Indicates collaborative ordering mode
           orderType: "dine-in",
           subtotal: total.toString(),
-          tipAmount: "0.00",
           totalAmount: total.toString(),
           totalClaimed: "0.00",
           totalPaid: "0.00",
           isLocked: false,
-          notes: "Order created via collaborative checkout",
-          paymentStatus: "pending",
+          // tipAmount: "0.00",
+          // notes: "Order created via collaborative checkout",
+          // paymentStatus: "pending",
         })
         .returning();
 
@@ -154,13 +147,10 @@ export async function POST(
       resultOrder = newOrder;
     }
 
-    return NextResponse.json(
-      {
-        success: true,
-        order: resultOrder,
-      },
-      { headers: getSecurityHeaders() }
-    );
+    return NextResponse.json({
+      success: true,
+      order: resultOrder,
+    });
   } catch (error) {
     console.error("Error creating order:", error);
 
@@ -169,7 +159,7 @@ export async function POST(
         error: "Failed to create order",
         message: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500, headers: getSecurityHeaders() }
+      { status: 500 },
     );
   }
 }

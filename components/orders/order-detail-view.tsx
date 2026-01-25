@@ -7,58 +7,30 @@ import { useRouter } from "next/navigation";
 import { AddItemsDialog } from "./add-items-dialog";
 import { DeleteOrderButton } from "./delete-order-button";
 import { toast } from "sonner";
+import type {
+  Order,
+  Table,
+  OrderItem,
+  PaymentClaim,
+  MenuItem,
+  MenuCategory,
+} from "@/db/schema";
 
 interface OrderDetailViewProps {
-  order: {
-    id: string;
-    orderNumber: string;
-    status: string;
-    orderType: string;
-    subtotal: string;
-    tipAmount: string | null;
-    totalAmount: string;
-    totalPaid: string | null;
-    processorFee: string | null;
-    marketplaceFee: string | null;
-    notes: string | null;
-    customerName: string | null;
-    customerPhone: string | null;
-    createdAt: Date;
-    paidAt: Date | null;
-    table: {
-      id: string;
-      tableNumber: string;
-    } | null;
-    orderItems: Array<{
-      id: string;
-      quantity: number;
-      unitPrice: string;
-      totalPrice: string;
-      itemName: string | null;
-      specialInstructions: string | null;
-      menuItem: {
-        id: string;
-        name: string;
-      } | null;
-    }>;
-    paymentClaims: Array<{
-      id: string;
-      totalToPay: string;
-      status: string;
-      paidAt: Date | null;
-    }>;
+  order: Order & {
+    table: Table | null;
+
+    orderItems: Array<OrderItem>;
+
+    paymentClaims: PaymentClaim[];
   };
+
+  menuItems: (MenuItem & {
+    menuCategory: MenuCategory | null;
+  })[];
+
   orgId: string;
-  menuItems: Array<{
-    id: string;
-    name: string;
-    description: string | null;
-    price: string;
-    menuCategory: {
-      id: string;
-      name: string;
-    } | null;
-  }>;
+
   onDeleteOrder?: (orderId: string) => void | Promise<void>;
 }
 
@@ -234,7 +206,7 @@ export function OrderDetailView({
                   </span>
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-sm sm:text-base break-words">
-                      {item.menuItem?.name || item.itemName || "Unknown item"}
+                      {item.itemName || "Unknown item"}
                     </div>
                     {item.specialInstructions && (
                       <div className="text-xs sm:text-sm text-muted-foreground break-words mt-0.5">
@@ -277,14 +249,14 @@ export function OrderDetailView({
               {formatCurrency(order.subtotal)}
             </span>
           </div>
-          {order.tipAmount && parseFloat(order.tipAmount) > 0 && (
+          {/* {order.tipAmount && parseFloat(order.tipAmount) > 0 && (
             <div className="flex justify-between text-xs sm:text-sm">
               <span className="text-muted-foreground">Tip</span>
               <span className="font-medium">
                 {formatCurrency(order.tipAmount)}
               </span>
             </div>
-          )}
+          )} */}
           <div className="flex justify-between font-semibold text-sm sm:text-base pt-2 border-t">
             <span>Total</span>
             <span>{formatCurrency(order.totalAmount)}</span>
@@ -292,7 +264,7 @@ export function OrderDetailView({
         </div>
       </div>
 
-      {/* Fees (shown if there are any fees) */}
+      {/* Fees (shown if there are any fees)
       {((order.processorFee && parseFloat(order.processorFee) > 0) ||
         (order.marketplaceFee && parseFloat(order.marketplaceFee) > 0)) && (
         <div className="space-y-3">
@@ -333,13 +305,13 @@ export function OrderDetailView({
                 {formatCurrency(
                   parseFloat(order.totalPaid || "0") -
                     (parseFloat(order.processorFee || "0") +
-                      parseFloat(order.marketplaceFee || "0"))
+                      parseFloat(order.marketplaceFee || "0")),
                 )}
               </span>
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Payment Claims */}
       {order.paymentClaims.length > 0 && (
@@ -388,7 +360,7 @@ export function OrderDetailView({
       )}
 
       {/* Notes */}
-      {order.notes && (
+      {/* {order.notes && (
         <div className="space-y-3">
           <h2 className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wide">
             Notes
@@ -397,7 +369,7 @@ export function OrderDetailView({
             <p className="text-xs sm:text-sm break-words">{order.notes}</p>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Customer Info */}
       {(order.customerName || order.customerPhone) && (

@@ -69,6 +69,11 @@ export const orderStatus = pgEnum("order_status", [
   "cancelled",
 ]);
 
+/**
+ * ->>>>>>>>>>>>>>>>>>>>>>>>>>>>
+ * ->>>>>>>>>>>>>>>>>>>>>>>>>>>>
+ */
+
 export const verification = pgTable("verification", {
   id: text().primaryKey().notNull(),
   identifier: text().notNull(),
@@ -125,7 +130,7 @@ export const user = pgTable(
     }),
     unique("user_email_key").on(table.email),
     unique("user_phoneNumber_key").on(table.phoneNumber),
-  ]
+  ],
 );
 
 export const organization = pgTable(
@@ -154,7 +159,7 @@ export const organization = pgTable(
     rutUrl: text("rut_url"),
     cerlUrl: text("cerl_url"),
   },
-  (table) => [unique("organization_slug_key").on(table.slug)]
+  (table) => [unique("organization_slug_key").on(table.slug)],
 );
 
 export const menuItem = pgTable(
@@ -185,7 +190,7 @@ export const menuItem = pgTable(
       foreignColumns: [organization.id],
       name: "menu_item_organization_id_organization_id_fk",
     }).onDelete("cascade"),
-  ]
+  ],
 );
 
 export const menuCategory = pgTable(
@@ -206,7 +211,7 @@ export const menuCategory = pgTable(
       foreignColumns: [organization.id],
       name: "menu_category_organization_id_organization_id_fk",
     }).onDelete("cascade"),
-  ]
+  ],
 );
 
 export const member = pgTable(
@@ -231,7 +236,7 @@ export const member = pgTable(
       foreignColumns: [user.id],
       name: "member_userId_fkey",
     }).onDelete("cascade"),
-  ]
+  ],
 );
 
 export const invitation = pgTable(
@@ -259,7 +264,7 @@ export const invitation = pgTable(
       foreignColumns: [organization.id],
       name: "invitation_organizationId_fkey",
     }).onDelete("cascade"),
-  ]
+  ],
 );
 
 export const floor = pgTable(
@@ -280,7 +285,7 @@ export const floor = pgTable(
       foreignColumns: [organization.id],
       name: "floor_organization_id_organization_id_fk",
     }).onDelete("cascade"),
-  ]
+  ],
 );
 
 export const documentType = pgTable(
@@ -296,7 +301,7 @@ export const documentType = pgTable(
       foreignColumns: [countries.id],
       name: "document_type_country_id_fkey",
     }),
-  ]
+  ],
 );
 
 export const countries = pgTable(
@@ -307,7 +312,7 @@ export const countries = pgTable(
     countryCode: text("country_code"),
     currency: text().notNull(),
   },
-  (table) => [unique("countries_country_name_key").on(table.countryName)]
+  (table) => [unique("countries_country_name_key").on(table.countryName)],
 );
 
 export const account = pgTable(
@@ -335,7 +340,7 @@ export const account = pgTable(
       foreignColumns: [user.id],
       name: "account_userId_fkey",
     }).onDelete("cascade"),
-  ]
+  ],
 );
 
 export const order = pgTable(
@@ -347,35 +352,19 @@ export const order = pgTable(
     orderNumber: text("order_number").notNull(),
     status: orderStatus().default("ordering").notNull(),
     orderType: text("order_type").default("dine-in").notNull(),
-    subtotal: numeric({ precision: 10, scale: 2 }).notNull(),
-
-    tipAmount: numeric("tip_amount", { precision: 10, scale: 2 }).default(
-      "0.00"
-    ),
-    totalAmount: numeric("total_amount", { precision: 10, scale: 2 }).notNull(),
-    notes: text(),
     customerName: text("customer_name"),
     customerPhone: text("customer_phone"),
-    createdBy: text("created_by"),
     servedBy: text("served_by"),
+
+    subtotal: numeric({ precision: 10, scale: 2 }).notNull(), // The cost of the Order Items, not including any other costs (fees and/or taxes)
+    totalAmount: numeric("total_amount", { precision: 10, scale: 2 }).notNull(),
     paidAt: timestamp("paid_at"),
-    paymentProcessor: text("payment_processor"),
-    paymentId: text("payment_id"),
-    preferenceId: text("preference_id"),
-    paymentStatus: text("payment_status").default("pending"),
-    paymentMetadata: jsonb("payment_metadata"),
-    processorFee: numeric("processor_fee", { precision: 10, scale: 2 }).default(
-      "0.00"
-    ),
-    marketplaceFee: numeric("marketplace_fee", {
-      precision: 10,
-      scale: 2,
-    }).default("0.00"),
+
     totalClaimed: numeric("total_claimed", { precision: 10, scale: 2 }).default(
-      "0.00"
+      "0.00",
     ),
     totalPaid: numeric("total_paid", { precision: 10, scale: 2 }).default(
-      "0.00"
+      "0.00",
     ),
     isLocked: boolean("is_locked").default(false),
     createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -392,75 +381,7 @@ export const order = pgTable(
       foreignColumns: [table.id],
       name: "order_table_id_table_id_fk",
     }).onDelete("set null"),
-  ]
-);
-
-export const session = pgTable(
-  "session",
-  {
-    id: text().primaryKey().notNull(),
-    expiresAt: timestamp({ withTimezone: true }).notNull(),
-    token: text().notNull(),
-    createdAt: timestamp({ withTimezone: true })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-    updatedAt: timestamp({ withTimezone: true }).notNull(),
-    ipAddress: text(),
-    userAgent: text(),
-    userId: text().notNull(),
-    impersonatedBy: text(),
-    activeOrganizationId: text(),
-  },
-  (table) => [
-    foreignKey({
-      columns: [table.userId],
-      foreignColumns: [user.id],
-      name: "session_userId_fkey",
-    }).onDelete("cascade"),
-    unique("session_token_key").on(table.token),
-  ]
-);
-
-export const paymentClaim = pgTable(
-  "payment_claim",
-  {
-    id: text().primaryKey().notNull(),
-    orderId: text("order_id").notNull(),
-    claimedAmount: numeric("claimed_amount", {
-      precision: 10,
-      scale: 2,
-    }).notNull(),
-    splitFeePortion: numeric("split_fee_portion", {
-      precision: 10,
-      scale: 2,
-    }).notNull(),
-    totalToPay: numeric("total_to_pay", { precision: 10, scale: 2 }).notNull(),
-    status: text().default("reserved").notNull(),
-    claimedAt: timestamp("claimed_at").defaultNow().notNull(),
-    expiresAt: timestamp("expires_at").notNull(),
-    paymentProcessor: text("payment_processor"),
-    paymentId: text("payment_id"),
-    preferenceId: text("preference_id"),
-    paymentMetadata: jsonb("payment_metadata"),
-    paidAt: timestamp("paid_at"),
-    processorFee: numeric("processor_fee", { precision: 10, scale: 2 }).default(
-      "0.00"
-    ),
-    marketplaceFee: numeric("marketplace_fee", {
-      precision: 10,
-      scale: 2,
-    }).default("0.00"),
-    sessionToken: text("session_token").notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  },
-  (table) => [
-    foreignKey({
-      columns: [table.orderId],
-      foreignColumns: [order.id],
-      name: "payment_claim_order_id_order_id_fk",
-    }).onDelete("cascade"),
-  ]
+  ],
 );
 
 export const orderItem = pgTable(
@@ -489,7 +410,75 @@ export const orderItem = pgTable(
       foreignColumns: [order.id],
       name: "order_item_order_id_order_id_fk",
     }).onDelete("cascade"),
-  ]
+  ],
+);
+
+export const session = pgTable(
+  "session",
+  {
+    id: text().primaryKey().notNull(),
+    expiresAt: timestamp({ withTimezone: true }).notNull(),
+    token: text().notNull(),
+    createdAt: timestamp({ withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: timestamp({ withTimezone: true }).notNull(),
+    ipAddress: text(),
+    userAgent: text(),
+    userId: text().notNull(),
+    impersonatedBy: text(),
+    activeOrganizationId: text(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.userId],
+      foreignColumns: [user.id],
+      name: "session_userId_fkey",
+    }).onDelete("cascade"),
+    unique("session_token_key").on(table.token),
+  ],
+);
+
+export const paymentClaim = pgTable(
+  "payment_claim",
+  {
+    id: text().primaryKey().notNull(),
+    orderId: text("order_id").notNull(),
+    claimedAmount: numeric("claimed_amount", {
+      precision: 10,
+      scale: 2,
+    }).notNull(),
+    splitFeePortion: numeric("split_fee_portion", {
+      precision: 10,
+      scale: 2,
+    }).notNull(),
+    totalToPay: numeric("total_to_pay", { precision: 10, scale: 2 }).notNull(),
+    status: text().default("reserved").notNull(),
+    claimedAt: timestamp("claimed_at").defaultNow().notNull(),
+    expiresAt: timestamp("expires_at").notNull(),
+    paymentProcessor: text("payment_processor"),
+    paymentId: text("payment_id"),
+    preferenceId: text("preference_id"),
+    paymentMetadata: jsonb("payment_metadata"),
+    paidAt: timestamp("paid_at"),
+    processorFee: numeric("processor_fee", { precision: 10, scale: 2 }).default(
+      "0.00",
+    ),
+    marketplaceFee: numeric("marketplace_fee", {
+      precision: 10,
+      scale: 2,
+    }).default("0.00"),
+    sessionToken: text("session_token").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.orderId],
+      foreignColumns: [order.id],
+      name: "payment_claim_order_id_order_id_fk",
+    }).onDelete("cascade"),
+  ],
 );
 
 export const table = pgTable(
@@ -525,7 +514,7 @@ export const table = pgTable(
       foreignColumns: [organization.id],
       name: "table_organization_id_organization_id_fk",
     }).onDelete("cascade"),
-  ]
+  ],
 );
 
 /**

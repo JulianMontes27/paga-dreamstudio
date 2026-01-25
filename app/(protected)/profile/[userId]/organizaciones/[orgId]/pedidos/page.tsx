@@ -14,7 +14,12 @@ export default async function OrdersPage({
   const orders = await db.query.order.findMany({
     where: eq(order.organizationId, orgId),
     with: {
-      table: true,
+      table: {
+        columns: {
+          id: true,
+          tableNumber: true,
+        },
+      },
       orderItems: {
         with: {
           menuItem: true,
